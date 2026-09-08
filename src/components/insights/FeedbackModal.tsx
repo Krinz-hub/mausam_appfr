@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { PrimaryButton } from '../buttons/PrimaryButton';
 import { SecondaryButton } from '../buttons/SecondaryButton';
@@ -26,12 +27,12 @@ export interface FeedbackModalProps {
   onSubmitReason: (decisionId: string, reason: FeedbackReason) => void;
 }
 
-const REASONS: { id: FeedbackReason; label: string; icon: string }[] = [
-  { id: 'too_early', label: 'Too early', icon: '⏱️' },
-  { id: 'too_late', label: 'Too late', icon: '⌛' },
-  { id: 'not_relevant', label: 'Not relevant to me', icon: '🎯' },
-  { id: 'forecast_changed', label: 'Forecast changed / wrong', icon: '🌧️' },
-  { id: 'other', label: 'Other', icon: '💬' },
+const REASONS: { id: FeedbackReason; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { id: 'too_early', label: 'Too early', icon: 'alarm-outline' },
+  { id: 'too_late', label: 'Too late', icon: 'hourglass-outline' },
+  { id: 'not_relevant', label: 'Not relevant to me', icon: 'close-circle-outline' },
+  { id: 'forecast_changed', label: 'Forecast changed / wrong', icon: 'rainy-outline' },
+  { id: 'other', label: 'Other', icon: 'chatbubble-ellipses-outline' },
 ];
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({
@@ -114,13 +115,23 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                         ? theme.colors.cardSelectedBg
                         : theme.colors.backgroundCardMuted,
                       borderColor: isSelected
-                        ? theme.colors.borderSelected
-                        : theme.colors.border,
+                        ? theme.colors.primary
+                        : 'transparent',
+                      borderWidth: isSelected ? 1.5 : 0,
                       borderRadius: theme.radius.sm,
                     },
                   ]}
                 >
-                  <Text style={styles.reasonIcon}>{r.icon}</Text>
+                  <Ionicons
+                    name={r.icon}
+                    size={18}
+                    color={
+                      isSelected
+                        ? theme.colors.primaryDark
+                        : theme.colors.textSecondary
+                    }
+                    style={{ marginRight: 10 }}
+                  />
                   <Text
                     style={[
                       styles.reasonLabel,
@@ -136,7 +147,13 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   >
                     {r.label}
                   </Text>
-                  {isSelected && <Text style={{ color: theme.colors.primary }}>✓</Text>}
+                  {isSelected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                  )}
                 </Pressable>
               );
             })}
@@ -185,8 +202,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginVertical: 4,
-    borderWidth: 1.5,
   },
+
   reasonIcon: {
     fontSize: 18,
     marginRight: 10,

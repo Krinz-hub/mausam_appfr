@@ -7,6 +7,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/design';
 import {
   AppScreen,
@@ -91,7 +92,7 @@ export default function OnboardingScreen() {
             accessibilityLabel="Previous step"
             style={styles.backButton}
           >
-            <Text style={[styles.backText, { color: theme.colors.textSecondary }]}>←</Text>
+            <Ionicons name="arrow-back" size={22} color={theme.colors.textSecondary} />
           </Pressable>
         )}
         <View style={{ flex: 1, marginHorizontal: currentStep > 1 && currentStep < 6 ? 12 : 0 }}>
@@ -135,7 +136,7 @@ export default function OnboardingScreen() {
             >
               Weather that understands your day, routines, and health.
             </Text>
-            <Text style={[styles.heartIcon, { color: theme.colors.primary }]}>♡</Text>
+            <Ionicons name="heart-outline" size={24} color={theme.colors.primary} style={{ marginTop: 16 }} />
           </View>
 
           <View style={styles.bottomCta}>
@@ -175,7 +176,7 @@ export default function OnboardingScreen() {
                 id="daily"
                 title="Daily life"
                 subtitle="Home & errands"
-                icon="🏠"
+                iconName="home-outline"
                 selected={userTypeKeys.includes('daily')}
                 onToggle={toggleUserType}
               />
@@ -183,7 +184,7 @@ export default function OnboardingScreen() {
                 id="exercise"
                 title="Exercise"
                 subtitle="Rides & runs"
-                icon="🏃"
+                iconName="fitness-outline"
                 selected={userTypeKeys.includes('exercise')}
                 onToggle={toggleUserType}
               />
@@ -191,7 +192,7 @@ export default function OnboardingScreen() {
                 id="work"
                 title="Outdoor work"
                 subtitle="Jobs & sites"
-                icon="💼"
+                iconName="briefcase-outline"
                 selected={userTypeKeys.includes('work')}
                 onToggle={toggleUserType}
               />
@@ -199,7 +200,7 @@ export default function OnboardingScreen() {
                 id="gardening"
                 title="Gardening"
                 subtitle="Plants & soil"
-                icon="🌱"
+                iconName="leaf-outline"
                 selected={userTypeKeys.includes('gardening')}
                 onToggle={toggleUserType}
               />
@@ -209,7 +210,7 @@ export default function OnboardingScreen() {
                 id="commute"
                 title="Commute"
                 subtitle="Transit & drive"
-                icon="🚗"
+                iconName="car-outline"
                 selected={userTypeKeys.includes('commute')}
                 onToggle={toggleUserType}
               />
@@ -217,7 +218,7 @@ export default function OnboardingScreen() {
                 id="travel"
                 title="Travel"
                 subtitle="Trips & flights"
-                icon="✈️"
+                iconName="airplane-outline"
                 selected={userTypeKeys.includes('travel')}
                 onToggle={toggleUserType}
               />
@@ -225,7 +226,7 @@ export default function OnboardingScreen() {
                 id="health"
                 title="Health / comfort"
                 subtitle="Air quality & UV"
-                icon="❤️"
+                iconName="heart-outline"
                 selected={userTypeKeys.includes('health')}
                 onToggle={toggleUserType}
               />
@@ -233,7 +234,7 @@ export default function OnboardingScreen() {
                 id="curious"
                 title="Just curious"
                 subtitle="Daily forecast"
-                icon="🔭"
+                iconName="search-outline"
                 selected={userTypeKeys.includes('curious')}
                 onToggle={toggleUserType}
               />
@@ -330,35 +331,35 @@ export default function OnboardingScreen() {
               <SelectionCard
                 id="rain"
                 title="Rain"
-                icon="🌧️"
+                iconName="rainy-outline"
                 selected={weatherFactorKeys.includes('rain')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="cold"
                 title="Cold"
-                icon="❄️"
+                iconName="snow-outline"
                 selected={weatherFactorKeys.includes('cold')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="humidity"
                 title="Humidity"
-                icon="💧"
+                iconName="water-outline"
                 selected={weatherFactorKeys.includes('humidity')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="uv"
                 title="UV Index"
-                icon="☀️"
+                iconName="sunny-outline"
                 selected={weatherFactorKeys.includes('uv')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="storm"
                 title="Storm"
-                icon="⛈️"
+                iconName="thunderstorm-outline"
                 selected={weatherFactorKeys.includes('storm')}
                 onToggle={toggleWeatherFactor}
               />
@@ -367,28 +368,28 @@ export default function OnboardingScreen() {
               <SelectionCard
                 id="heat"
                 title="Heat"
-                icon="☀️"
+                iconName="flame-outline"
                 selected={weatherFactorKeys.includes('heat')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="wind"
                 title="Wind"
-                icon="💨"
+                iconName="speedometer-outline"
                 selected={weatherFactorKeys.includes('wind')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="air_quality"
                 title="Air quality"
-                icon="🌫️"
+                iconName="leaf-outline"
                 selected={weatherFactorKeys.includes('air_quality')}
                 onToggle={toggleWeatherFactor}
               />
               <SelectionCard
                 id="snow"
                 title="Frost / Snow"
-                icon="❄️"
+                iconName="snow-outline"
                 selected={weatherFactorKeys.includes('snow')}
                 onToggle={toggleWeatherFactor}
               />
@@ -434,7 +435,7 @@ export default function OnboardingScreen() {
               id="morning"
               title="Morning"
               subtitle="5 AM – 12 PM"
-              icon="☀️"
+              iconName="sunny-outline"
               layout="pill"
               selected={activePeriods.includes('morning')}
               onToggle={() => toggleActivePeriod('morning')}
@@ -443,7 +444,7 @@ export default function OnboardingScreen() {
               id="afternoon"
               title="Afternoon"
               subtitle="12 PM – 5 PM"
-              icon="☀️"
+              iconName="partly-sunny-outline"
               layout="pill"
               selected={activePeriods.includes('afternoon')}
               onToggle={() => toggleActivePeriod('afternoon')}
@@ -452,7 +453,7 @@ export default function OnboardingScreen() {
               id="evening"
               title="Evening"
               subtitle="5 PM – 10 PM"
-              icon="🌙"
+              iconName="moon-outline"
               layout="pill"
               selected={activePeriods.includes('evening')}
               onToggle={() => toggleActivePeriod('evening')}
@@ -461,7 +462,7 @@ export default function OnboardingScreen() {
               id="night"
               title="Night"
               subtitle="10 PM – 5 AM"
-              icon="🌙"
+              iconName="cloudy-night-outline"
               layout="pill"
               selected={activePeriods.includes('night')}
               onToggle={() => toggleActivePeriod('night')}
@@ -512,7 +513,7 @@ export default function OnboardingScreen() {
             <View style={styles.checkmarksList}>
               {checkmarkStep >= 1 && (
                 <View style={styles.checkItem}>
-                  <Text style={[styles.greenCheck, { color: theme.colors.success }]}>✓</Text>
+                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
                   <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
                     Preferences saved
                   </Text>
@@ -520,7 +521,7 @@ export default function OnboardingScreen() {
               )}
               {checkmarkStep >= 2 && (
                 <View style={styles.checkItem}>
-                  <Text style={[styles.greenCheck, { color: theme.colors.success }]}>✓</Text>
+                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
                   <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
                     Personalized experience ready
                   </Text>
@@ -528,7 +529,7 @@ export default function OnboardingScreen() {
               )}
               {checkmarkStep >= 3 && (
                 <View style={styles.checkItem}>
-                  <Text style={[styles.greenCheck, { color: theme.colors.success }]}>✓</Text>
+                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
                   <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
                     Let's make brighter days together
                   </Text>

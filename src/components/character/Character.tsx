@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, Pressable, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '../../design';
+import { hapticManager } from '../../services/haptics/hapticManager';
 
 export type CharacterState =
   | 'happy'
@@ -31,6 +32,10 @@ export interface CharacterProps {
   size?: 'sm' | 'md' | 'lg' | 'hero';
   style?: ViewStyle;
   animate?: boolean;
+  interactive?: boolean;
+  onPress?: () => void;
+  onPressIn?: () => void;
+  onPressOut?: () => void;
 }
 
 const CHARACTER_CONFIG: Record<
@@ -58,12 +63,21 @@ export const Character: React.FC<CharacterProps> = ({
   size = 'md',
   style,
   animate = true,
+  interactive,
+  onPress,
+  onPressIn,
+  onPressOut,
 }) => {
   const theme = useTheme();
   const config = CHARACTER_CONFIG[state] || CHARACTER_CONFIG.neutral;
 
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
+  const pressScale = useSharedValue(1);
+  const auraScale = useSharedValue(1);
+  const rotation = useSharedValue(0);
+
+  const isInteractive = interactive || !!onPress;
 
   useEffect(() => {
     if (!animate) return;
@@ -83,8 +97,38 @@ export const Character: React.FC<CharacterProps> = ({
     scale.value = withSpring(1, theme.motion.spring.bouncy);
   }, [state, animate]);
 
+  const handlePressIn = () => {
+    hapticManager.impact('light');
+    pressScale.value = withSpring(0.85, { damping: 14, stiffness: 320 });
+    auraScale.value = withSpring(1.28, { damping: 14, stiffness: 320 });
+    rotation.value = withTiming(-6, { duration: 60 });
+    onPressIn?.();
+  };
+
+  const handlePressOut = () => {
+    pressScale.value = withSequence(
+      withSpring(1.14, { damping: 8, stiffness: 350 }),
+      withSpring(1, { damping: 12, stiffness: 220 })
+    );
+    auraScale.value = withSpring(1, { damping: 12, stiffness: 220 });
+    rotation.value = withSequence(
+      withTiming(6, { duration: 80 }),
+      withSpring(0, { damping: 10, stiffness: 260 })
+    );
+    onPressOut?.();
+  };
+
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }, { scale: scale.value }],
+    transform: [
+      { translateY: translateY.value },
+      { scale: scale.value * pressScale.value },
+      { rotate: `${rotation.value}deg` },
+    ],
+  }));
+
+  const animatedAuraStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: auraScale.value }],
+    opacity: auraScale.value > 1 ? 0.95 : 0.8,
   }));
 
   const dimensions = {
@@ -94,7 +138,7 @@ export const Character: React.FC<CharacterProps> = ({
     hero: { container: 132, emoji: 72, badge: 26 },
   }[size];
 
-  return (
+  const content = (
     <Animated.View
       accessibilityRole="image"
       accessibilityLabel={`Mausam buddy status: ${config.label}`}
@@ -105,13 +149,14 @@ export const Character: React.FC<CharacterProps> = ({
         style,
       ]}
     >
-      <View
+      <Animated.View
         style={[
           styles.aura,
           {
             backgroundColor: config.auraColor,
             borderRadius: dimensions.container / 2,
           },
+          animatedAuraStyle,
         ]}
       />
       <View
@@ -125,13 +170,46 @@ export const Character: React.FC<CharacterProps> = ({
           },
         ]}
       >
-        <Text style={{ fontSize: dimensions.emoji }}>{config.badge || config.emoji}</Text>
+        <Text
+          style={[
+            { fontSize: dimensions.emoji },
+            Platform.select({ web: { userSelect: 'none' } as any, default: {} }),
+          ]}
+        >
+          {config.badge || config.emoji}
+        </Text>
       </View>
     </Animated.View>
   );
+
+  if (isInteractive) {
+    return (
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={`Mausam buddy: ${config.label}. Tap for cheerful tip`}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={[
+          styles.pressableContainer,
+          Platform.select({ web: { cursor: 'pointer' } as any, default: {} }),
+        ]}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return content;
 };
 
 const styles = StyleSheet.create({
+  pressableContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   wrapper: {
     justifyContent: 'center',
     alignItems: 'center',

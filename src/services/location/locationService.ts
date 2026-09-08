@@ -1,4 +1,5 @@
 import * as Location from 'expo-location';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LocationCoordinates, DEFAULT_INDIAN_LOCATIONS } from '../weather/openMeteoProvider';
 
@@ -27,80 +28,130 @@ export class LocationService {
    */
   public static async getPreciseLocation(): Promise<UserLocation> {
     try {
-      // 1. Request foreground permissions
-      const permission = await Location.requestForegroundPermissionsAsync();
+      let permissionGranted = false;
 
-      if (permission.status !== 'granted') {
-        console.warn('Location permission denied, attempting IP geolocation');
+      // 1. Request foreground permissions
+      try {
+        const permission = await Location.requestForegroundPermissionsAsync();
+        permissionGranted = permission.status === 'granted';
+      } catch (permErr) {
+        console.warn('Location permission check warning:', permErr);
+      }
+
+      // On Web, if Expo wrapper doesn't report granted, check if navigator.geolocation exists
+      if (!permissionGranted && Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+        permissionGranted = true;
+      }
+
+      if (!permissionGranted) {
+        console.warn('Location permission not granted, attempting IP geolocation');
         return await this.getIpLocation();
       }
 
-      // 2. Try fast cached OS position first
       let coords: { latitude: number; longitude: number } | null = null;
-      try {
-        const lastKnown = await Location.getLastKnownPositionAsync();
-        if (lastKnown?.coords) {
-          coords = {
-            latitude: lastKnown.coords.latitude,
-            longitude: lastKnown.coords.longitude,
-          };
+
+      // 2. On Web, standard navigator.geolocation with enableHighAccuracy is most direct
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+        try {
+          coords = await new Promise<{ latitude: number; longitude: number } | null>((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                resolve({
+                  latitude: pos.coords.latitude,
+                  longitude: pos.coords.longitude,
+                });
+              },
+              (err) => {
+                console.warn('navigator.geolocation query failed:', err);
+                resolve(null);
+              },
+              { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+            );
+          });
+        } catch (e) {
+          // continue to Expo method
         }
-      } catch (e) {
-        // Continue to active GPS lock
       }
 
-      // 3. Acquire live GPS coordinates with 7s timeout to prevent hanging
-      try {
-        const livePromise = Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-          mayShowUserSettingsDialog: true,
-        });
-        const timeoutPromise = new Promise<null>((resolve) =>
-          setTimeout(() => resolve(null), 7000)
-        );
-        const live = await Promise.race([livePromise, timeoutPromise]);
-        if (live && 'coords' in live) {
-          coords = {
-            latitude: live.coords.latitude,
-            longitude: live.coords.longitude,
-          };
+      // 3. If coords not obtained yet, query live GPS via Expo Location with High Accuracy & 12s timeout
+      if (!coords) {
+        try {
+          const livePromise = Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High,
+            mayShowUserSettingsDialog: true,
+          });
+          const timeoutPromise = new Promise<null>((resolve) =>
+            setTimeout(() => resolve(null), 12000)
+          );
+          const live = await Promise.race([livePromise, timeoutPromise]);
+          if (live && 'coords' in live) {
+            coords = {
+              latitude: live.coords.latitude,
+              longitude: live.coords.longitude,
+            };
+          }
+        } catch (err) {
+          console.warn('Live GPS query failed, checking last known position', err);
         }
-      } catch (err) {
-        console.warn('Live GPS query failed, using last known if available', err);
       }
 
-      // If no GPS coordinates obtained, fallback to IP
+      // 4. If live GPS query failed, try cached OS position as fallback
+      if (!coords) {
+        try {
+          const lastKnown = await Location.getLastKnownPositionAsync();
+          if (lastKnown?.coords) {
+            coords = {
+              latitude: lastKnown.coords.latitude,
+              longitude: lastKnown.coords.longitude,
+            };
+          }
+        } catch (e) {
+          // Continue to IP fallback
+        }
+      }
+
+      // If no GPS coordinates obtained at all, fallback to IP
       if (!coords) {
         return await this.getIpLocation();
       }
 
       const { latitude, longitude } = coords;
 
-      // 4. Reverse geocode coordinates to human-friendly city/town
-      let resolvedName = 'Local Weather';
+      // 5. Reverse geocode coordinates to human-friendly city/town
+      let resolvedName = '';
       let resolvedCity = '';
       let resolvedRegion = '';
 
-      try {
-        const reverse = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (reverse && reverse.length > 0) {
-          const place = reverse[0];
-          resolvedCity = place.city || place.subregion || place.district || place.name || '';
-          resolvedRegion = place.region || place.country || '';
-          resolvedName = resolvedCity
-            ? resolvedRegion
-              ? `${resolvedCity}, ${resolvedRegion}`
-              : resolvedCity
-            : 'Local Area';
+      if (Platform.OS !== 'web') {
+        try {
+          const reverse = await Location.reverseGeocodeAsync({ latitude, longitude });
+          if (reverse && reverse.length > 0) {
+            const place = reverse[0];
+            resolvedCity = place.city || place.subregion || place.district || place.name || '';
+            resolvedRegion = place.region || place.country || '';
+            if (resolvedCity) {
+              resolvedName = resolvedRegion && resolvedCity !== resolvedRegion
+                ? `${resolvedCity}, ${resolvedRegion}`
+                : resolvedCity;
+            }
+          }
+        } catch (err) {
+          // Continue to online reverse geocoder
         }
-      } catch (err) {
-        // Location.reverseGeocodeAsync is unsupported on web; use online reverse geocoder
+      }
+
+      // If reverse geocoding on-device didn't return a city name, use online reverse geocoder
+      if (!resolvedName || resolvedName === 'Local Area' || !resolvedCity) {
         const onlineName = await this.reverseGeocodeOnline(latitude, longitude);
         if (onlineName) {
           resolvedName = onlineName.name;
           resolvedCity = onlineName.city;
           resolvedRegion = onlineName.region;
         }
+      }
+
+      if (!resolvedName) {
+        resolvedName = 'My Location';
       }
 
       const userLoc: UserLocation = {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
+import { WeatherIcon } from '../icons/WeatherIcon';
 
 export interface WeatherHeroProps {
   greeting: string;
@@ -8,10 +10,16 @@ export interface WeatherHeroProps {
   temperature: number;
   feelsLike: number;
   conditionText: string;
-  conditionEmoji: string;
+  conditionEmoji?: string;
+  humidity?: number;
+  windSpeed?: number;
+  uvIndex?: number;
   style?: ViewStyle;
   isPrecise?: boolean;
   isLocating?: boolean;
+  isNight?: boolean;
+  sunrise?: string;
+  sunset?: string;
   onPressLocation?: () => void;
 }
 
@@ -21,13 +29,19 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   temperature,
   feelsLike,
   conditionText,
-  conditionEmoji,
+  humidity,
+  windSpeed,
+  uvIndex,
   style,
   isPrecise = false,
   isLocating = false,
+  isNight,
+  sunrise,
+  sunset,
   onPressLocation,
 }) => {
   const theme = useTheme();
+  const nightActive = isNight !== undefined ? isNight : theme.isNight;
 
   return (
     <View style={[styles.container, style]}>
@@ -53,7 +67,12 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
             accessibilityLabel={`Location: ${locationName}. Tap to change or refresh GPS`}
             style={styles.locationContainer}
           >
-            <Text style={styles.locationPin}>📍</Text>
+            <Ionicons
+              name="location-sharp"
+              size={16}
+              color={theme.colors.primary}
+              style={{ marginRight: 3 }}
+            />
             <Text
               numberOfLines={1}
               style={[
@@ -68,47 +87,25 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
             >
               {isLocating ? 'Locating...' : locationName}
             </Text>
-            <Text style={[styles.locationIndicator, { color: theme.colors.textMuted }]}>
-              {isPrecise ? ' 🎯' : ' ▾'}
-            </Text>
+            <Ionicons
+              name={isPrecise ? 'navigate-circle' : 'chevron-down'}
+              size={14}
+              color={isPrecise ? theme.colors.primary : theme.colors.textMuted}
+              style={{ marginLeft: 4 }}
+            />
           </Pressable>
-        </View>
-
-        <View
-          style={[
-            styles.conditionBadge,
-            {
-              backgroundColor: theme.colors.backgroundSky,
-              borderRadius: theme.radius.pill,
-              borderColor: theme.colors.border,
-            },
-          ]}
-        >
-          <Text style={styles.conditionEmoji}>{conditionEmoji}</Text>
-          <Text
-            style={[
-              styles.conditionText,
-              {
-                color: theme.colors.textSecondary,
-                fontSize: theme.typography.sizes.caption,
-                fontWeight: theme.typography.weights.semibold,
-              },
-            ]}
-          >
-            {conditionText}
-          </Text>
         </View>
       </View>
 
-      {/* Large Temperature Display */}
+      {/* Large Hero Temperature Display */}
       <View style={styles.tempRow}>
         <Text
           style={[
             styles.tempText,
             {
               color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.heroTemp,
-              lineHeight: theme.typography.lineHeights.heroTemp,
+              fontSize: 64,
+              lineHeight: 70,
               fontWeight: theme.typography.weights.heavy,
             },
           ]}
@@ -116,11 +113,33 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           {Math.round(temperature)}°
         </Text>
         <View style={styles.feelsLikeContainer}>
+          <View style={styles.conditionRow}>
+            <WeatherIcon
+              condition={conditionText}
+              isNight={nightActive}
+              sunrise={sunrise}
+              sunset={sunset}
+              size={18}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={[
+                styles.conditionSummary,
+                {
+                  color: theme.colors.textPrimary,
+                  fontSize: theme.typography.sizes.body,
+                  fontWeight: theme.typography.weights.semibold,
+                },
+              ]}
+            >
+              {conditionText}
+            </Text>
+          </View>
           <Text
             style={[
               styles.feelsLikeText,
               {
-                color: theme.colors.textMuted,
+                color: theme.colors.textSecondary,
                 fontSize: theme.typography.sizes.callout,
                 fontWeight: theme.typography.weights.medium,
               },
@@ -130,13 +149,34 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           </Text>
         </View>
       </View>
+
+      {/* Quiet Metric Row (Section 37: Humidity 62% • Wind 12 km/h • UV 3) */}
+      {humidity !== undefined && (
+        <View style={styles.metricsRow}>
+          <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
+            Humidity {Math.round(humidity)}%
+          </Text>
+          <Text style={[styles.metricDot, { color: theme.colors.textMuted }]}>•</Text>
+          <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
+            Wind {Math.round(windSpeed ?? 0)} km/h
+          </Text>
+          {uvIndex !== undefined && (
+            <>
+              <Text style={[styles.metricDot, { color: theme.colors.textMuted }]}>•</Text>
+              <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
+                UV {Math.round(uvIndex)}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   topRow: {
     flexDirection: 'row',
@@ -151,10 +191,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  locationPin: {
-    fontSize: 14,
-    marginRight: 4,
-  },
   locationText: {
     letterSpacing: -0.2,
   },
@@ -162,32 +198,41 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginLeft: 2,
   },
-  conditionBadge: {
+  conditionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-  },
-  conditionEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  conditionText: {
-    textTransform: 'capitalize',
+    marginBottom: 2,
   },
   tempRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 4,
+    alignItems: 'center',
+    marginTop: 6,
   },
   tempText: {
     letterSpacing: -2,
   },
   feelsLikeContainer: {
-    marginLeft: 12,
+    marginLeft: 16,
+  },
+  conditionSummary: {
+    textTransform: 'capitalize',
+    marginBottom: 2,
   },
   feelsLikeText: {
     letterSpacing: -0.2,
   },
+  metricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  metricItem: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  metricDot: {
+    marginHorizontal: 8,
+    fontSize: 12,
+  },
 });
+

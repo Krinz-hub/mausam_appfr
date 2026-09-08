@@ -8,6 +8,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/design';
 import { AppScreen, Character, PrimaryButton, SecondaryButton, LocationModal } from '../../src/components';
 import { useAuthStore } from '../../src/state/useAuthStore';
@@ -109,7 +110,9 @@ export default function ProfileScreen() {
               {user?.email || 'dev@mausam.in'}
             </Text>
             <View style={styles.googleBadge}>
-              <Text style={{ fontSize: 11 }}>🌐 Google Connected</Text>
+              <Text style={{ fontSize: 11, color: theme.colors.textSecondary }}>
+                Google Connected
+              </Text>
             </View>
           </View>
         </View>
@@ -131,53 +134,89 @@ export default function ProfileScreen() {
         </Text>
 
         <View style={styles.pillsRow}>
-          {activeInterests.map((item, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.pill,
-                {
-                  backgroundColor: theme.colors.primaryLight,
-                  borderColor: theme.colors.borderSelected,
-                  borderRadius: theme.radius.pill,
-                },
-              ]}
-            >
-              <Text style={[styles.pillText, { color: theme.colors.primaryDark }]}>
-                {item.type === 'commuter'
-                  ? '🚗 Commute'
-                  : item.type === 'fitness'
-                  ? '🏃 Exercise'
-                  : item.type === 'health'
-                  ? '❤️ Health'
-                  : '🏠 Daily life'}
-              </Text>
-            </View>
-          ))}
+          {activeInterests.map((item, idx) => {
+            const iconName: keyof typeof Ionicons.glyphMap =
+              item.type === 'commuter'
+                ? 'car-outline'
+                : item.type === 'fitness'
+                ? 'fitness-outline'
+                : item.type === 'health'
+                ? 'heart-outline'
+                : 'home-outline';
+            const label =
+              item.type === 'commuter'
+                ? 'Commute'
+                : item.type === 'fitness'
+                ? 'Exercise'
+                : item.type === 'health'
+                ? 'Health'
+                : 'Daily life';
 
-          {activeNeeds.map((need, idx) => (
-            <View
-              key={`n-${idx}`}
-              style={[
-                styles.pill,
-                {
-                  backgroundColor: theme.colors.backgroundCardMuted,
-                  borderColor: theme.colors.border,
-                  borderRadius: theme.radius.pill,
-                },
-              ]}
-            >
-              <Text style={[styles.pillText, { color: theme.colors.textPrimary }]}>
-                {need.factor === 'rain'
-                  ? '🌧️ Rain Alert'
-                  : need.factor === 'feels_like'
-                  ? '☀️ Heat Comfort'
-                  : need.factor === 'wind'
-                  ? '💨 Wind Watch'
-                  : '🌫️ Air Quality'}
-              </Text>
-            </View>
-          ))}
+            return (
+              <View
+                key={idx}
+                style={[
+                  styles.pill,
+                  {
+                    backgroundColor: theme.colors.primaryLight,
+                    borderRadius: theme.radius.pill,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={iconName}
+                  size={14}
+                  color={theme.colors.primaryDark}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.pillText, { color: theme.colors.primaryDark }]}>
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
+
+          {activeNeeds.map((need, idx) => {
+            const iconName: keyof typeof Ionicons.glyphMap =
+              need.factor === 'rain'
+                ? 'rainy-outline'
+                : need.factor === 'feels_like'
+                ? 'sunny-outline'
+                : need.factor === 'wind'
+                ? 'speedometer-outline'
+                : 'leaf-outline';
+            const label =
+              need.factor === 'rain'
+                ? 'Rain Alert'
+                : need.factor === 'feels_like'
+                ? 'Heat Comfort'
+                : need.factor === 'wind'
+                ? 'Wind Watch'
+                : 'Air Quality';
+
+            return (
+              <View
+                key={`n-${idx}`}
+                style={[
+                  styles.pill,
+                  {
+                    backgroundColor: theme.colors.backgroundCardMuted,
+                    borderRadius: theme.radius.pill,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={iconName}
+                  size={14}
+                  color={theme.colors.textSecondary}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.pillText, { color: theme.colors.textPrimary }]}>
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       </View>
 
@@ -220,12 +259,10 @@ export default function ProfileScreen() {
                 Active Location
               </Text>
               <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                {location.name} {location.isPrecise ? '• 🎯 GPS Locked' : '• 🌐 Network'}
+                {location.name} {location.isPrecise ? '• GPS Locked' : '• Network Area'}
               </Text>
             </View>
-            <Text style={[styles.unitToggleText, { color: theme.colors.primary, fontSize: 13 }]}>
-              Change →
-            </Text>
+            <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
           </Pressable>
 
           {/* Sound Feedback Toggle */}
@@ -343,7 +380,6 @@ const styles = StyleSheet.create({
   },
   accountCard: {
     marginVertical: 10,
-    borderWidth: 1,
   },
   accountRow: {
     flexDirection: 'row',
@@ -376,16 +412,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderWidth: 1,
   },
   pillText: {
     fontSize: 13,
     fontWeight: '600',
   },
   settingsList: {
-    borderWidth: 1,
     overflow: 'hidden',
   },
   settingRow: {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import { AppScreen, Character } from '../../src/components';
@@ -49,18 +50,18 @@ export default function DetailedMetricsScreen() {
           accessibilityLabel="Close detailed view"
           style={[styles.closeBtn, { backgroundColor: theme.colors.backgroundCardMuted }]}
         >
-          <Text style={[styles.closeBtnText, { color: theme.colors.textPrimary }]}>✕</Text>
+          <Ionicons name="close" size={20} color={theme.colors.textPrimary} />
         </Pressable>
       </View>
 
-      {/* Hero Mini Banner */}
+      {/* Hero Mini Banner with Character */}
       <View
         style={[
           styles.heroBanner,
           {
             backgroundColor: theme.colors.primaryLight,
             borderRadius: theme.radius.cardLarge,
-            borderColor: theme.colors.borderSelected,
+            ...theme.shadows.sm,
           },
         ]}
       >
@@ -75,20 +76,24 @@ export default function DetailedMetricsScreen() {
         </View>
       </View>
 
-      {/* Clean Spacious 2-Column Metric Grid */}
+      {/* Clean Spacious 2-Column Metric Grid with Vector Icons */}
       <View style={styles.metricGrid}>
         <View
           style={[
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>💧</Text>
+          <Ionicons
+            name="water-outline"
+            size={24}
+            color={theme.colors.weatherRain}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             Humidity
           </Text>
@@ -105,13 +110,17 @@ export default function DetailedMetricsScreen() {
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>💨</Text>
+          <Ionicons
+            name="speedometer-outline"
+            size={24}
+            color={theme.colors.weatherWind}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             Wind Speed
           </Text>
@@ -128,13 +137,17 @@ export default function DetailedMetricsScreen() {
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>☀️</Text>
+          <Ionicons
+            name="sunny-outline"
+            size={24}
+            color={theme.colors.weatherUV}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             UV Index
           </Text>
@@ -151,13 +164,17 @@ export default function DetailedMetricsScreen() {
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>🌫️</Text>
+          <Ionicons
+            name="leaf-outline"
+            size={24}
+            color={theme.colors.success}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             Air Quality (AQI)
           </Text>
@@ -174,13 +191,17 @@ export default function DetailedMetricsScreen() {
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>👁️</Text>
+          <Ionicons
+            name="eye-outline"
+            size={24}
+            color={theme.colors.primary}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             Visibility
           </Text>
@@ -197,13 +218,17 @@ export default function DetailedMetricsScreen() {
             styles.metricCard,
             {
               backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.borderLight,
               borderRadius: theme.radius.card,
               ...theme.shadows.sm,
             },
           ]}
         >
-          <Text style={styles.metricIcon}>⏲️</Text>
+          <Ionicons
+            name="compass-outline"
+            size={24}
+            color={theme.colors.textSecondary}
+            style={{ marginBottom: 8 }}
+          />
           <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
             Atmospheric Pressure
           </Text>
@@ -249,7 +274,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 18,
     marginVertical: 14,
-    borderWidth: 1.5,
   },
   heroTemp: {
     fontSize: 32,
@@ -268,7 +292,6 @@ const styles = StyleSheet.create({
   metricCard: {
     width: '48%',
     padding: 16,
-    borderWidth: 1,
   },
   metricIcon: {
     fontSize: 24,

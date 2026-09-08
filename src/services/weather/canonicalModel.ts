@@ -11,6 +11,7 @@ export interface WeatherSnapshot {
   precipitation?: number;
   sunrise?: string;
   sunset?: string;
+  isDay?: boolean;
   weatherCode: number;
   conditionText: string;
   conditionEmoji: string;
@@ -26,6 +27,8 @@ export interface HourlyForecastItem {
   uvIndex: number;
   icon: string;
   conditionText: string;
+  isNight?: boolean;
+  timestamp?: string;
 }
 
 export interface DailyForecastItem {

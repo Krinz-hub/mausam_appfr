@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import {
@@ -14,11 +15,16 @@ import {
   Character,
   LoadingState,
   ErrorState,
+  WeatherIcon,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { audioManager } from '../../src/services/audio/audioManager';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useLocationStore } from '../../src/state/useLocationStore';
+import {
+  findBestRunningWindow,
+  findOutdoorComfortWindow,
+} from '../../src/engine/decision/activityCalculators';
 
 type FactorTab = 'rain' | 'temp' | 'wind' | 'uv';
 
@@ -56,6 +62,11 @@ export default function ForecastScreen() {
     );
   }
 
+  const runningWindow = findBestRunningWindow(weather.hourly);
+  const comfortWindow = findOutdoorComfortWindow(weather.hourly);
+  const bestWindow = persona?.activities['fitness'] ? runningWindow : comfortWindow;
+
+
   const selectedHour = weather.hourly[selectedHourIndex] || weather.hourly[0];
 
   const handleSelectFactor = (factor: FactorTab) => {
@@ -89,15 +100,15 @@ export default function ForecastScreen() {
         </Text>
       </View>
 
-      {/* Factor Selector Pills */}
+      {/* Factor Selector Pills with Vector Icons */}
       <View style={styles.tabContainer}>
         {(
           [
-            { id: 'rain', label: 'Rain %', icon: '🌧️' },
-            { id: 'temp', label: 'Temp', icon: '🌡️' },
-            { id: 'wind', label: 'Wind', icon: '💨' },
-            { id: 'uv', label: 'UV Index', icon: '☀️' },
-          ] as { id: FactorTab; label: string; icon: string }[]
+            { id: 'rain', label: 'Rain %', icon: 'rainy-outline' },
+            { id: 'temp', label: 'Temp', icon: 'thermometer-outline' },
+            { id: 'wind', label: 'Wind', icon: 'speedometer-outline' },
+            { id: 'uv', label: 'UV Index', icon: 'sunny-outline' },
+          ] as { id: FactorTab; label: string; icon: keyof typeof Ionicons.glyphMap }[]
         ).map((tab) => {
           const isSelected = selectedFactor === tab.id;
           return (
@@ -115,13 +126,23 @@ export default function ForecastScreen() {
                     ? theme.colors.primaryLight
                     : theme.colors.backgroundCard,
                   borderColor: isSelected
-                    ? theme.colors.borderSelected
-                    : theme.colors.border,
+                    ? theme.colors.primary
+                    : 'transparent',
+                  borderWidth: isSelected ? 1.5 : 0,
                   borderRadius: theme.radius.pill,
                 },
               ]}
             >
-              <Text style={styles.factorTabIcon}>{tab.icon}</Text>
+              <Ionicons
+                name={tab.icon}
+                size={14}
+                color={
+                  isSelected
+                    ? theme.colors.primaryDark
+                    : theme.colors.textSecondary
+                }
+                style={{ marginRight: 6 }}
+              />
               <Text
                 style={[
                   styles.factorTabLabel,
@@ -141,6 +162,56 @@ export default function ForecastScreen() {
           );
         })}
       </View>
+
+      {/* Activity Window Calculator Banner (Section 31) with Vector Icon */}
+      {bestWindow && (
+        <View
+          style={[
+            styles.activityWindowCard,
+            {
+              backgroundColor: theme.colors.primaryLight,
+              borderRadius: theme.radius.card,
+              padding: 14,
+              marginVertical: 8,
+            },
+          ]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons
+              name={
+                persona?.activities['fitness']
+                  ? 'fitness-outline'
+                  : 'partly-sunny-outline'
+              }
+              size={22}
+              color={theme.colors.primaryDark}
+              style={{ marginRight: 10 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  color: theme.colors.primaryDark,
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                }}
+              >
+                {persona?.activities['fitness']
+                  ? 'Best Outdoor Workout Window'
+                  : 'Optimal Comfort Window'}
+              </Text>
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: 12,
+                  marginTop: 2,
+                }}
+              >
+                {bestWindow.summary}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* 1. Horizontal Hourly Timeline */}
       <View style={styles.sectionWrapper}>
@@ -179,9 +250,9 @@ export default function ForecastScreen() {
                       : theme.colors.backgroundCard,
                     borderColor: isSelected
                       ? theme.colors.borderSelected
-                      : theme.colors.border,
+                      : 'transparent',
                     borderRadius: theme.radius.md,
-                    borderWidth: isSelected ? 2 : 1,
+                    borderWidth: isSelected ? 2 : 0,
                     transform: [{ scale: isSelected ? 1.05 : 1 }],
                     ...(isSelected ? theme.shadows.cardSelected : theme.shadows.sm),
                   },
@@ -190,7 +261,16 @@ export default function ForecastScreen() {
                 <Text style={[styles.hourTime, { color: theme.colors.textSecondary }]}>
                   {item.time}
                 </Text>
-                <Text style={styles.hourIcon}>{item.icon}</Text>
+                <WeatherIcon
+                  condition={item.conditionText}
+                  hour={item.hour}
+                  time={item.timestamp || item.time}
+                  isNight={item.isNight}
+                  sunrise={weather.current.sunrise}
+                  sunset={weather.current.sunset}
+                  size={24}
+                  style={{ marginVertical: 6 }}
+                />
                 <Text style={[styles.hourTemp, { color: theme.colors.textPrimary }]}>
                   {Math.round(item.temp)}°
                 </Text>
@@ -211,7 +291,6 @@ export default function ForecastScreen() {
           styles.expandedHourCard,
           {
             backgroundColor: theme.colors.backgroundCard,
-            borderColor: theme.colors.border,
             borderRadius: theme.radius.card,
             padding: theme.spacing.cardPadding,
             ...theme.shadows.sm,
@@ -303,7 +382,6 @@ export default function ForecastScreen() {
                   styles.dailyRow,
                   {
                     backgroundColor: theme.colors.backgroundCard,
-                    borderColor: theme.colors.borderLight,
                     borderRadius: theme.radius.md,
                     ...theme.shadows.sm,
                   },
@@ -313,7 +391,10 @@ export default function ForecastScreen() {
                   <Text style={[styles.dailyDay, { color: theme.colors.textPrimary }]}>
                     {day.dayName}
                   </Text>
-                  <Text style={styles.dailyIcon}>{day.icon}</Text>
+                  <WeatherIcon
+                    condition={day.conditionText}
+                    size={20}
+                  />
                 </View>
 
                 <View style={styles.dailyMiddle}>
@@ -374,12 +455,15 @@ const styles = StyleSheet.create({
     gap: 8,
     marginVertical: 12,
   },
+  activityWindowCard: {
+    padding: 14,
+    marginVertical: 8,
+  },
   factorTab: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderWidth: 1.5,
   },
   factorTabIcon: {
     fontSize: 14,
@@ -423,7 +507,6 @@ const styles = StyleSheet.create({
   },
   expandedHourCard: {
     marginTop: 14,
-    borderWidth: 1.5,
   },
   expandedHeader: {
     marginBottom: 8,
@@ -439,7 +522,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderWidth: 1,
   },
   dailyLeft: {
     flexDirection: 'row',

@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { audioManager } from '../../services/audio/audioManager';
 
@@ -22,6 +23,7 @@ export interface SelectionCardProps {
   title: string;
   subtitle?: string;
   icon?: string;
+  iconName?: keyof typeof Ionicons.glyphMap;
   selected: boolean;
   onToggle: (id: string) => void;
   style?: ViewStyle;
@@ -34,6 +36,7 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
   title,
   subtitle,
   icon,
+  iconName,
   selected,
   onToggle,
   style,
@@ -84,9 +87,9 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
             ? theme.colors.cardSelectedBg
             : theme.colors.cardUnselectedBg,
           borderColor: selected
-            ? theme.colors.borderSelected
-            : theme.colors.border,
-          borderWidth: selected ? 2 : 1.5,
+            ? theme.colors.primary
+            : 'transparent',
+          borderWidth: selected ? 2 : 0,
           borderRadius: isPill ? theme.radius.pill : theme.radius.card,
           paddingHorizontal: isPill ? theme.spacing.lg : theme.spacing.cardPadding,
           paddingVertical: isPill ? theme.spacing.md : theme.spacing.cardPadding,
@@ -99,19 +102,27 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
       ]}
     >
       {/* Icon */}
-      {icon && (
+      {(iconName || icon) && (
         <View
           style={[
             styles.iconContainer,
             {
-              backgroundColor: selected ? '#DBEAFE' : theme.colors.backgroundSky,
+              backgroundColor: selected ? theme.colors.primaryLight : theme.colors.backgroundCardMuted,
               borderRadius: theme.radius.sm,
               marginRight: isRow || isPill ? theme.spacing.md : 0,
               marginBottom: isRow || isPill ? 0 : theme.spacing.sm,
             },
           ]}
         >
-          <Text style={styles.iconText}>{icon}</Text>
+          {iconName ? (
+            <Ionicons
+              name={iconName}
+              size={20}
+              color={selected ? theme.colors.primaryDark : theme.colors.primary}
+            />
+          ) : (
+            <Text style={styles.iconText}>{icon}</Text>
+          )}
         </View>
       )}
 

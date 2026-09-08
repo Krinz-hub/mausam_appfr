@@ -9,6 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { useLocationStore } from '../../state/useLocationStore';
 import { CitySearchResult } from '../../services/location/locationService';
@@ -127,7 +128,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                 Choose Location
               </Text>
               <Text style={[styles.sheetSubtitle, { color: theme.colors.textSecondary }]}>
-                Current: {location.name} {location.isPrecise ? '🎯 (GPS locked)' : '🌐 (Estimated)'}
+                Current: {location.name} {location.isPrecise ? '(GPS locked)' : '(Estimated)'}
               </Text>
             </View>
 
@@ -141,7 +142,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                 { backgroundColor: theme.colors.backgroundCardMuted },
               ]}
             >
-              <Text style={[styles.closeIcon, { color: theme.colors.textPrimary }]}>✕</Text>
+              <Ionicons name="close" size={18} color={theme.colors.textPrimary} />
             </Pressable>
           </View>
 
@@ -170,7 +171,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                   <ActivityIndicator color={theme.colors.textInverse} size="small" />
                 ) : (
                   <>
-                    <Text style={styles.detectButtonIcon}>🎯</Text>
+                    <Ionicons name="locate" size={16} color={theme.colors.textInverse} style={{ marginRight: 6 }} />
                     <Text
                       style={[
                         styles.detectButtonText,
@@ -193,12 +194,11 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                   styles.detectButtonSecondary,
                   {
                     backgroundColor: theme.colors.backgroundCardMuted,
-                    borderColor: theme.colors.border,
                     borderRadius: theme.radius.md,
                   },
                 ]}
               >
-                <Text style={styles.detectButtonIcon}>🌐</Text>
+                <Ionicons name="globe-outline" size={16} color={theme.colors.textPrimary} style={{ marginRight: 6 }} />
                 <Text
                   style={[
                     styles.detectButtonTextSecondary,
@@ -221,7 +221,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                 },
               ]}
             >
-              <Text style={styles.searchIcon}>🔍</Text>
+              <Ionicons name="search" size={16} color={theme.colors.textMuted} style={{ marginRight: 8 }} />
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -246,7 +246,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
               )}
               {searchQuery.length > 0 && !isSearching && (
                 <Pressable onPress={() => setSearchQuery('')} hitSlop={10}>
-                  <Text style={[styles.clearSearch, { color: theme.colors.textMuted }]}>✕</Text>
+                  <Ionicons name="close-circle" size={16} color={theme.colors.textMuted} />
                 </Pressable>
               )}
             </View>
@@ -281,7 +281,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                         },
                       ]}
                     >
-                      <Text style={styles.resultPin}>📍</Text>
+                      <Ionicons name="location-sharp" size={16} color={theme.colors.primary} style={{ marginRight: 10 }} />
                       <View style={{ flex: 1 }}>
                         <Text
                           style={[
@@ -334,13 +334,20 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                           backgroundColor: isCurrent
                             ? theme.colors.primaryLight
                             : theme.colors.backgroundCardMuted,
-                          borderColor: isCurrent
-                            ? theme.colors.borderSelected
-                            : theme.colors.border,
                           borderRadius: theme.radius.pill,
+                          flexDirection: 'row',
+                          alignItems: 'center',
                         },
                       ]}
                     >
+                      {isCurrent && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={14}
+                          color={theme.colors.primaryDark}
+                          style={{ marginRight: 4 }}
+                        />
+                      )}
                       <Text
                         style={[
                           styles.hubText,
@@ -354,7 +361,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                           },
                         ]}
                       >
-                        {isCurrent ? '✓ ' : ''}{hub.name}
+                        {hub.name}
                       </Text>
                     </Pressable>
                   );

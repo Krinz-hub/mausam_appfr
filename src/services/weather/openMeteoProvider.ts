@@ -1,5 +1,6 @@
 import { CanonicalWeatherData } from './canonicalModel';
 import { normalizeOpenMeteoResponse } from './normalizer';
+import { determineIsNight } from './weatherIconMapping';
 
 export interface LocationCoordinates {
   name: string;
@@ -25,15 +26,30 @@ export class WeatherProvider {
   public static async fetchWeather(
     coords: LocationCoordinates = DEFAULT_INDIAN_LOCATIONS.bengaluru
   ): Promise<CanonicalWeatherData> {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,uv_index,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,uv_index,visibility,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto`;
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.latitude}&longitude=${coords.longitude}&current=us_aqi,pm2_5,pm10`;
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Weather fetch failed: ${res.statusText}`);
+      const [weatherRes, aqiRes] = await Promise.allSettled([
+        fetch(weatherUrl),
+        fetch(aqiUrl),
+      ]);
+
+      if (weatherRes.status !== 'fulfilled' || !weatherRes.value.ok) {
+        throw new Error('Weather fetch failed');
       }
-      const data = await res.json();
-      return normalizeOpenMeteoResponse(data, coords.name);
+
+      const weatherData = await weatherRes.value.json();
+      let aqiData: any = null;
+      if (aqiRes.status === 'fulfilled' && aqiRes.value.ok) {
+        try {
+          aqiData = await aqiRes.value.json();
+        } catch {
+          // Ignore AQI parse error
+        }
+      }
+
+      return normalizeOpenMeteoResponse(weatherData, coords.name, aqiData);
     } catch (err) {
       console.warn('Network weather fetch failed, returning canonical mock fallback', err);
       return this.getFallbackData(coords.name, coords.latitude, coords.longitude);
@@ -48,11 +64,16 @@ export class WeatherProvider {
     const now = new Date();
     const currentHour = now.getHours();
 
+    const todayStr = now.toISOString().split('T')[0];
+    const sunriseStr = `${todayStr}T06:08`;
+    const sunsetStr = `${todayStr}T18:26`;
+
     const hourly = Array.from({ length: 24 }).map((_, i) => {
       const h = (currentHour + i) % 24;
       const ampm = h >= 12 ? 'PM' : 'AM';
       const displayHour = h % 12 === 0 ? 12 : h % 12;
       const rainProb = h >= 18 && h <= 21 ? 75 : h >= 12 && h <= 15 ? 20 : 5;
+      const isNight = determineIsNight(undefined, h, sunriseStr, sunsetStr);
       return {
         time: `${displayHour} ${ampm}`,
         hour: h,
@@ -61,8 +82,9 @@ export class WeatherProvider {
         rainProb,
         windSpeed: 12 + (h >= 8 && h <= 11 ? 6 : 0),
         uvIndex: h >= 10 && h <= 15 ? 7 : 1,
-        icon: rainProb > 50 ? '🌧️' : h >= 10 && h <= 16 ? '☀️' : '🌤️',
+        icon: rainProb > 50 ? '🌧️' : isNight ? '🌙' : h >= 10 && h <= 16 ? '☀️' : '🌤️',
         conditionText: rainProb > 50 ? 'Rain likely' : 'Clear skies',
+        isNight,
       };
     });
 
@@ -83,6 +105,8 @@ export class WeatherProvider {
       };
     });
 
+    const currentIsNight = determineIsNight(now, currentHour, sunriseStr, sunsetStr);
+
     return {
       locationName: name,
       latitude: lat,
@@ -97,9 +121,12 @@ export class WeatherProvider {
         uvIndex: 6,
         aqi: 45,
         visibility: 10,
+        sunrise: sunriseStr,
+        sunset: sunsetStr,
+        isDay: !currentIsNight,
         weatherCode: 1,
         conditionText: 'Mainly clear',
-        conditionEmoji: '🌤️',
+        conditionEmoji: currentIsNight ? '🌙' : '🌤️',
       },
       hourly,
       daily,

@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import {
@@ -19,6 +20,8 @@ import {
   LoadingState,
   ErrorState,
   LocationModal,
+  ThoughtBubble,
+  WeatherIcon,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useAuthStore } from '../../src/state/useAuthStore';
@@ -28,6 +31,7 @@ import { useLocationStore } from '../../src/state/useLocationStore';
 import { CharacterState } from '../../src/components/character/Character';
 import { FeedbackReason } from '../../src/components/insights/FeedbackModal';
 import { audioManager } from '../../src/services/audio/audioManager';
+import { hapticManager } from '../../src/services/haptics/hapticManager';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -41,7 +45,7 @@ export default function HomeScreen() {
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [activeDecisionId, setActiveDecisionId] = useState<string>('');
-  const [characterInteraction, setCharacterInteraction] = useState<string | null>(null);
+  const [suggestionIndex, setSuggestionIndex] = useState<number>(0);
 
   // Initialize precise GPS location on screen mount
   useEffect(() => {
@@ -81,15 +85,9 @@ export default function HomeScreen() {
   };
 
   const handleCharacterTap = () => {
+    hapticManager.impact('light');
     audioManager.play('selection');
-    const messages = [
-      "Everything looks tailored for your routine today! 🌤️",
-      "I'm keeping an eye on changes in rain and heat for you! ☀️",
-      "Have a wonderful and productive day ahead! ✨",
-    ];
-    const chosen = messages[Math.floor(Math.random() * messages.length)];
-    setCharacterInteraction(chosen);
-    setTimeout(() => setCharacterInteraction(null), 4000);
+    setSuggestionIndex((prev) => prev + 1);
   };
 
   if (isLoading) {
@@ -107,6 +105,28 @@ export default function HomeScreen() {
       </AppScreen>
     );
   }
+
+  const isNightTime = weather.current.isDay !== undefined ? !weather.current.isDay : theme.isNight;
+  const currentTemp = Math.round(weather.current.temperature);
+  const currentWind = Math.round(weather.current.windSpeed);
+  const currentHumidity = Math.round(weather.current.humidity);
+  const currentCondition = weather.current.conditionText.toLowerCase();
+  const tomorrowForecast = weather.daily[1] || weather.daily[0];
+
+  const suggestions = isNightTime
+    ? [
+        `Rest well tonight (${currentTemp}°C, ${currentCondition}). Tomorrow starts around ${tomorrowForecast?.minTemp ?? currentTemp}°C! 🌙`,
+        `Wind is gentle at ${currentWind} km/h with ${currentHumidity}% humidity across ${weather.locationName}! ✨`,
+        `Tomorrow reaches ${tomorrowForecast?.maxTemp ?? (currentTemp + 4)}°C with ${tomorrowForecast?.rainProb ?? 10}% rain chance. 🚶`,
+        `All clear overnight. Sleep well and stay refreshed for tomorrow! 💤`,
+      ]
+    : [
+        `Currently ${currentTemp}°C and ${currentCondition} in ${weather.locationName}. Great day ahead! 🌤️`,
+        `Rain chance is ${weather.current.rainProbability}% with a ${currentWind} km/h breeze right now. ☀️`,
+        `High today expected around ${weather.daily[0]?.maxTemp ?? currentTemp}°C. Tailored for your routine! ✨`,
+        `UV index is ${weather.current.uvIndex ?? 2}. Great conditions for outdoor tasks! 🌿`,
+      ];
+  const currentThought = suggestions[suggestionIndex % suggestions.length];
 
   const greeting = `${experience?.greeting || 'Good day'}, ${user?.displayName || 'Friend'}`;
   const charState = (experience?.characterState || 'happy') as CharacterState;
@@ -129,7 +149,7 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* 1. Hero Weather (Greeting, Location, Large Temp, Feels Like) */}
+        {/* 1. Hero Weather (Greeting, Location, Large Temp, Feels Like, Minimal Metrics) */}
         <WeatherHero
           greeting={greeting}
           locationName={location.name || weather.locationName}
@@ -137,39 +157,32 @@ export default function HomeScreen() {
           feelsLike={weather.current.feelsLike}
           conditionText={weather.current.conditionText}
           conditionEmoji={weather.current.conditionEmoji}
+          humidity={weather.current.humidity}
+          windSpeed={weather.current.windSpeed}
+          uvIndex={weather.current.uvIndex}
           isPrecise={location.isPrecise}
           isLocating={isLocating}
+          isNight={weather.current.isDay !== undefined ? !weather.current.isDay : undefined}
+          sunrise={weather.current.sunrise}
+          sunset={weather.current.sunset}
           onPressLocation={() => setLocationModalVisible(true)}
         />
 
-        {/* 2. Character Anchor with Interactive Speech Response */}
-        <View style={styles.characterSection}>
-          <Pressable
-            onPress={handleCharacterTap}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Tap buddy for cheerful tip"
-          >
-            <Character state={charState} size="lg" />
-          </Pressable>
 
-          {characterInteraction && (
-            <View
-              style={[
-                styles.interactionBubble,
-                {
-                  backgroundColor: theme.colors.backgroundCard,
-                  borderColor: theme.colors.border,
-                  borderRadius: theme.radius.bubble,
-                  ...theme.shadows.sm,
-                },
-              ]}
-            >
-              <Text style={[styles.interactionText, { color: theme.colors.textPrimary }]}>
-                {characterInteraction}
-              </Text>
-            </View>
-          )}
+        {/* 2. Character Anchor with Permanent Thought Bubble */}
+        <View style={styles.characterSection}>
+          <Character
+            state={charState}
+            size="lg"
+            onPress={handleCharacterTap}
+          />
+
+          <ThoughtBubble
+            text={currentThought}
+            onPress={handleCharacterTap}
+            pointerPosition="above"
+            style={{ marginTop: 8 }}
+          />
         </View>
 
         {/* 3. ONE Primary Personalized Insight Card */}
@@ -177,27 +190,21 @@ export default function HomeScreen() {
           <View style={styles.primaryInsightContainer}>
             <InsightCard
               isPrimary={true}
-              decisionId={decisionId}
               type={primaryInsight.type}
               title={primaryInsight.title}
               shortMessage={primaryInsight.shortMessage}
-              reasonCodes={primaryInsight.reasonCodes}
-              priority={primaryInsight.priority}
-              icon={primaryInsight.icon}
-              feedbackGiven={feedbackStatus}
-              onFeedback={handleFeedback}
             />
           </View>
         )}
 
-        {/* 4. Small Supporting Information (Hourly forecast preview) */}
+        {/* 4. Small Supporting Information (Today's Flow) */}
         <View style={styles.supportingSection}>
           <View style={styles.sectionHeaderRow}>
             <Text
               style={[
                 styles.sectionTitle,
                 {
-                  color: theme.colors.textPrimary,
+                  color: theme.isNight ? '#F3FAFF' : theme.colors.textPrimary,
                   fontSize: theme.typography.sizes.headline,
                   fontWeight: theme.typography.weights.bold,
                 },
@@ -205,12 +212,18 @@ export default function HomeScreen() {
             >
               Today's Flow
             </Text>
-            <Pressable onPress={() => router.push('/(tabs)/forecast')}>
+            <Pressable
+              onPress={() => router.push('/(tabs)/forecast')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="View detailed hourly timeline"
+            >
               <Text
                 style={[
                   styles.viewMoreText,
                   {
-                    color: theme.colors.primary,
+                    color: theme.isNight ? '#35B7F2' : theme.colors.primary,
                     fontSize: theme.typography.sizes.callout,
                     fontWeight: theme.typography.weights.semibold,
                   },
@@ -224,35 +237,70 @@ export default function HomeScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
             contentContainerStyle={styles.miniHourlyRow}
           >
-            {weather.hourly.slice(0, 6).map((h, idx) => (
-              <View
-                key={idx}
-                style={[
-                  styles.miniHourlyCard,
-                  {
-                    backgroundColor: theme.colors.backgroundCard,
-                    borderColor: theme.colors.borderLight,
-                    borderRadius: theme.radius.md,
-                    ...theme.shadows.sm,
-                  },
-                ]}
-              >
-                <Text style={[styles.miniHourText, { color: theme.colors.textSecondary }]}>
-                  {h.time}
-                </Text>
-                <Text style={styles.miniIcon}>{h.icon}</Text>
-                <Text style={[styles.miniTemp, { color: theme.colors.textPrimary }]}>
-                  {Math.round(h.temp)}°
-                </Text>
-                {h.rainProb > 20 && (
-                  <Text style={[styles.miniRain, { color: theme.colors.weatherRain }]}>
-                    {h.rainProb}%
+            {weather.hourly.map((h, idx) => {
+              const isCurrentHour = idx === 0;
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.miniHourlyCard,
+                    {
+                      backgroundColor: theme.isNight
+                        ? isCurrentHour
+                          ? '#153449'
+                          : '#102A3B'
+                        : isCurrentHour
+                        ? theme.colors.surfaceSecondary
+                        : theme.colors.backgroundCard,
+                      borderRadius: 16,
+                      borderWidth: 0,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.miniHourText,
+                      {
+                        color: theme.isNight
+                          ? isCurrentHour
+                            ? '#F3FAFF'
+                            : '#B9CEDA'
+                          : theme.colors.textSecondary,
+                      },
+                    ]}
+                  >
+                    {h.time}
                   </Text>
-                )}
-              </View>
-            ))}
+                  <WeatherIcon
+                    condition={h.conditionText}
+                    hour={h.hour}
+                    time={h.timestamp || h.time}
+                    isNight={h.isNight}
+                    sunrise={weather.current.sunrise}
+                    sunset={weather.current.sunset}
+                    size={22}
+                    style={{ marginVertical: 8 }}
+                  />
+                  <Text
+                    style={[
+                      styles.miniTemp,
+                      {
+                        color: theme.isNight
+                          ? isCurrentHour
+                            ? '#35B7F2'
+                            : '#F3FAFF'
+                          : theme.colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {Math.round(h.temp)}°
+                  </Text>
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -297,7 +345,7 @@ export default function HomeScreen() {
                 Humidity, UV, AQI, pressure & visibility metrics
               </Text>
             </View>
-            <Text style={[styles.arrowIcon, { color: theme.colors.textMuted }]}>➔</Text>
+            <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
           </Pressable>
         </View>
       </ScrollView>
@@ -324,23 +372,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 12,
   },
-  interactionBubble: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginTop: 10,
-    maxWidth: 280,
-    borderWidth: 1,
-  },
-  interactionText: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
   primaryInsightContainer: {
     width: '100%',
+    marginVertical: 12,
   },
   supportingSection: {
-    marginTop: 16,
+    marginTop: 24,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -355,41 +392,37 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   miniHourlyRow: {
-    paddingVertical: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+    paddingRight: 20,
     gap: 10,
   },
   miniHourlyCard: {
-    width: 68,
-    paddingVertical: 10,
+    width: 72,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    borderWidth: 1,
+    justifyContent: 'center',
   },
   miniHourText: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  miniIcon: {
-    fontSize: 22,
-    marginVertical: 4,
+    marginBottom: 2,
   },
   miniTemp: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  miniRain: {
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: '700',
     marginTop: 2,
   },
   detailLinkContainer: {
-    marginTop: 24,
+    marginTop: 28,
   },
   detailLinkCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderWidth: 1,
+    padding: 16,
   },
+
   detailTitle: {
     marginBottom: 2,
   },

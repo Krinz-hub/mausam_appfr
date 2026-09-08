@@ -23,7 +23,53 @@ export function generateCandidateInsights(
   const candidates: CandidateInsight[] = [];
   const current = weather.current;
   const isMorning = currentHour >= 5 && currentHour < 12;
-  const isEvening = currentHour >= 17 && currentHour < 22;
+  const isEvening = currentHour >= 17 && currentHour < 21;
+  const isNight = currentHour >= 21 || currentHour < 5;
+
+  // 0. Night-Time Tomorrow-Focused Insight (Section 17: Tomorrow-focused recommendations at night)
+  if (isNight) {
+    const tomorrow = weather.daily[1] || weather.daily[0];
+    if (tomorrow && tomorrow.rainProb >= 55) {
+      candidates.push({
+        type: 'tomorrow_rain',
+        title: 'Rain in store tomorrow',
+        shortMessage: `Showers expected tomorrow with ${tomorrow.rainProb}% rain chance. Plan your morning trip accordingly.`,
+        factor: 'rain',
+        baseSeverity: 0.85,
+        contextRelevance: 0.9,
+        temporalRelevance: 1.0,
+        reasonCodes: ['TOMORROW_FORECAST', 'RAIN_EXPECTED'],
+        icon: '🌧️',
+        characterState: 'sleeping',
+      });
+    } else if (tomorrow && tomorrow.maxTemp >= 34) {
+      candidates.push({
+        type: 'tomorrow_heat',
+        title: 'Warm afternoon tomorrow',
+        shortMessage: `Peak heat reaching ${tomorrow.maxTemp}°C tomorrow. Best outdoor workout window: 6:00–7:30 AM.`,
+        factor: 'feels_like',
+        baseSeverity: 0.8,
+        contextRelevance: 0.85,
+        temporalRelevance: 1.0,
+        reasonCodes: ['TOMORROW_HEAT_INDEX', 'OPTIMAL_MORNING_WINDOW'],
+        icon: '🌤️',
+        characterState: 'sleeping',
+      });
+    } else {
+      candidates.push({
+        type: 'night_rest',
+        title: 'Calm night ahead',
+        shortMessage: `Rest well tonight. Tomorrow begins around ${tomorrow?.minTemp ?? Math.round(current.temperature)}°C with ${tomorrow?.conditionText?.toLowerCase() || 'pleasant skies'}.`,
+        factor: 'temperature',
+        baseSeverity: 0.65,
+        contextRelevance: 0.8,
+        temporalRelevance: 1.0,
+        reasonCodes: ['OVERNIGHT_CALM', 'FAVORABLE_TOMORROW'],
+        icon: '🌙',
+        characterState: 'sleeping',
+      });
+    }
+  }
 
   // 1. Storm / Severe Weather Alert (Top severity if present)
   if (current.weatherCode >= 95 || current.windSpeed > 45) {
@@ -113,8 +159,8 @@ export function generateCandidateInsights(
     }
   }
 
-  // 4. Heat & Feels-Like Warning
-  if (current.feelsLike >= 33 || current.temperature >= 32) {
+  // 4. Heat & Feels-Like Warning (Daytime only)
+  if (!isNight && (current.feelsLike >= 33 || current.temperature >= 32)) {
     candidates.push({
       type: 'heat_advisory',
       title: "It'll feel warmer today",
@@ -176,8 +222,8 @@ export function generateCandidateInsights(
     });
   }
 
-  // 7. UV Index
-  if (current.uvIndex && current.uvIndex >= 6) {
+  // 7. UV Index (Daylight hours only)
+  if (!isNight && current.uvIndex && current.uvIndex >= 6 && currentHour >= 9 && currentHour <= 17) {
     candidates.push({
       type: 'uv_peak',
       title: 'High UV exposure today',

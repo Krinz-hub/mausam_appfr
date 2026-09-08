@@ -103,8 +103,9 @@ export class DecisionEngine {
     // Greeting based on time
     let greeting = 'Good morning';
     if (currentHour >= 12 && currentHour < 17) greeting = 'Good afternoon';
-    else if (currentHour >= 17 && currentHour < 22) greeting = 'Good evening';
-    else if (currentHour >= 22 || currentHour < 5) greeting = 'Good night';
+    else if (currentHour >= 17 && currentHour < 21) greeting = 'Good evening';
+    else if (currentHour >= 21 || currentHour < 5) greeting = 'Good night';
+
 
     const visibleFeatures: WeatherFactor[] = [
       'rain',

@@ -212,7 +212,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     marginVertical: 12,
-    borderWidth: 1,
   },
   bannerTitle: {
     letterSpacing: -0.2,
