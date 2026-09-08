@@ -5,14 +5,17 @@ import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import { AppScreen, Character } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
+import { useLocationStore } from '../../src/state/useLocationStore';
 
 export default function DetailedMetricsScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const location = useLocationStore((s) => s.location);
 
   const { data: weather } = useQuery({
-    queryKey: ['weather', 'current'],
-    queryFn: () => WeatherProvider.fetchWeather(),
+    queryKey: ['weather', location.latitude, location.longitude],
+    queryFn: () => WeatherProvider.fetchWeather(location),
+    enabled: !!location.latitude && !!location.longitude,
   });
 
   const current = weather?.current;
@@ -35,7 +38,7 @@ export default function DetailedMetricsScreen() {
             Atmospheric Diagnostics
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            {weather?.locationName || 'Bengaluru'} • Complete Telemetry
+            {weather?.locationName || location.name} • Complete Telemetry
           </Text>
         </View>
 

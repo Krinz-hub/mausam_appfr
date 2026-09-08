@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { LocationService, UserLocation } from '../services/location/locationService';
+import {
+  LocationService,
+  UserLocation,
+  CitySearchResult,
+} from '../services/location/locationService';
 import { DEFAULT_INDIAN_LOCATIONS, LocationCoordinates } from '../services/weather/openMeteoProvider';
 
 interface LocationState {
@@ -9,12 +13,14 @@ interface LocationState {
 
   initLocation: () => Promise<UserLocation>;
   detectLocation: () => Promise<UserLocation>;
-  setLocation: (coords: LocationCoordinates) => Promise<void>;
+  detectIpLocation: () => Promise<UserLocation>;
+  setLocation: (coords: LocationCoordinates, isPrecise?: boolean) => Promise<void>;
+  searchCities: (query: string) => Promise<CitySearchResult[]>;
 }
 
 export const useLocationStore = create<LocationState>((set, get) => ({
   location: {
-    ...DEFAULT_INDIAN_LOCATIONS.bengaluru,
+    ...DEFAULT_INDIAN_LOCATIONS.delhi,
     isPrecise: false,
   },
   isLocating: false,
@@ -44,9 +50,29 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     }
   },
 
-  setLocation: async (coords: LocationCoordinates) => {
+  detectIpLocation: async () => {
+    set({ isLocating: true, error: null });
+    try {
+      const loc = await LocationService.getIpLocation();
+      set({ location: loc, isLocating: false });
+      return loc;
+    } catch (err: any) {
+      set({
+        isLocating: false,
+        error: err.message || 'Could not acquire IP location',
+      });
+      return get().location;
+    }
+  },
+
+  setLocation: async (coords: LocationCoordinates, isPrecise: boolean = false) => {
     set({ isLocating: true });
-    const saved = await LocationService.saveCustomLocation(coords);
+    const saved = await LocationService.saveCustomLocation(coords, isPrecise);
     set({ location: saved, isLocating: false });
   },
+
+  searchCities: async (query: string) => {
+    return await LocationService.searchCities(query);
+  },
 }));
+

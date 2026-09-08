@@ -9,10 +9,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/design';
-import { AppScreen, Character, PrimaryButton, SecondaryButton } from '../../src/components';
+import { AppScreen, Character, PrimaryButton, SecondaryButton, LocationModal } from '../../src/components';
 import { useAuthStore } from '../../src/state/useAuthStore';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useSettingsStore } from '../../src/state/useSettingsStore';
+import { useLocationStore } from '../../src/state/useLocationStore';
 import { audioManager } from '../../src/services/audio/audioManager';
 
 export default function ProfileScreen() {
@@ -20,6 +21,8 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const { user, signOut } = useAuthStore();
   const { needProfile, personaProfile, resetOnboarding } = useOnboardingStore();
+  const { location } = useLocationStore();
+  const [locationModalVisible, setLocationModalVisible] = React.useState(false);
   const {
     soundEnabled,
     temperatureUnit,
@@ -204,6 +207,27 @@ export default function ProfileScreen() {
             },
           ]}
         >
+          {/* Active Location Row */}
+          <Pressable
+            onPress={() => setLocationModalVisible(true)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={`Active Location: ${location.name}. Tap to change.`}
+            style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
+                Active Location
+              </Text>
+              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
+                {location.name} {location.isPrecise ? '• 🎯 GPS Locked' : '• 🌐 Network'}
+              </Text>
+            </View>
+            <Text style={[styles.unitToggleText, { color: theme.colors.primary, fontSize: 13 }]}>
+              Change →
+            </Text>
+          </Pressable>
+
           {/* Sound Feedback Toggle */}
           <View style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}>
             <View style={{ flex: 1 }}>
@@ -297,6 +321,11 @@ export default function ProfileScreen() {
           onPress={handleSignOut}
         />
       </View>
+
+      <LocationModal
+        visible={locationModalVisible}
+        onClose={() => setLocationModalVisible(false)}
+      />
     </AppScreen>
   );
 }

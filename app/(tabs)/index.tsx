@@ -18,11 +18,13 @@ import {
   FeedbackModal,
   LoadingState,
   ErrorState,
+  LocationModal,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useAuthStore } from '../../src/state/useAuthStore';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useDecisionStore } from '../../src/state/useDecisionStore';
+import { useLocationStore } from '../../src/state/useLocationStore';
 import { CharacterState } from '../../src/components/character/Character';
 import { FeedbackReason } from '../../src/components/insights/FeedbackModal';
 import { audioManager } from '../../src/services/audio/audioManager';
@@ -34,12 +36,19 @@ export default function HomeScreen() {
   const persona = useOnboardingStore((s) => s.personaProfile);
   const { experience, currentDecision, computeDecision, submitFeedback, feedbackHistory } =
     useDecisionStore();
+  const { location, isLocating, initLocation } = useLocationStore();
 
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [activeDecisionId, setActiveDecisionId] = useState<string>('');
   const [characterInteraction, setCharacterInteraction] = useState<string | null>(null);
 
-  // Weather Query
+  // Initialize precise GPS location on screen mount
+  useEffect(() => {
+    initLocation();
+  }, []);
+
+  // Weather Query keyed by exact coordinates
   const {
     data: weather,
     isLoading,
@@ -47,8 +56,9 @@ export default function HomeScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['weather', 'current'],
-    queryFn: () => WeatherProvider.fetchWeather(),
+    queryKey: ['weather', location.latitude, location.longitude],
+    queryFn: () => WeatherProvider.fetchWeather(location),
+    enabled: !!location.latitude && !!location.longitude,
   });
 
   useEffect(() => {
@@ -122,11 +132,14 @@ export default function HomeScreen() {
         {/* 1. Hero Weather (Greeting, Location, Large Temp, Feels Like) */}
         <WeatherHero
           greeting={greeting}
-          locationName={weather.locationName}
+          locationName={location.name || weather.locationName}
           temperature={weather.current.temperature}
           feelsLike={weather.current.feelsLike}
           conditionText={weather.current.conditionText}
           conditionEmoji={weather.current.conditionEmoji}
+          isPrecise={location.isPrecise}
+          isLocating={isLocating}
+          onPressLocation={() => setLocationModalVisible(true)}
         />
 
         {/* 2. Character Anchor with Interactive Speech Response */}
@@ -295,6 +308,12 @@ export default function HomeScreen() {
         decisionId={activeDecisionId}
         onClose={() => setFeedbackModalVisible(false)}
         onSubmitReason={handleReasonSubmit}
+      />
+
+      {/* Location Picker & GPS Modal */}
+      <LocationModal
+        visible={locationModalVisible}
+        onClose={() => setLocationModalVisible(false)}
       />
     </AppScreen>
   );

@@ -50,23 +50,27 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
             onPress={onPressLocation}
             accessible={true}
             accessibilityRole="button"
-            accessibilityLabel={`Location: ${locationName}. Tap to refresh GPS`}
+            accessibilityLabel={`Location: ${locationName}. Tap to change or refresh GPS`}
             style={styles.locationContainer}
           >
             <Text style={styles.locationPin}>📍</Text>
             <Text
+              numberOfLines={1}
               style={[
                 styles.locationText,
                 {
                   color: theme.colors.textPrimary,
                   fontSize: theme.typography.sizes.headline,
                   fontWeight: theme.typography.weights.bold,
+                  maxWidth: 210,
                 },
               ]}
             >
-              {isLocating ? 'Acquiring GPS...' : locationName}
+              {isLocating ? 'Locating...' : locationName}
             </Text>
-            {isPrecise && <Text style={styles.gpsBadge}> 🎯</Text>}
+            <Text style={[styles.locationIndicator, { color: theme.colors.textMuted }]}>
+              {isPrecise ? ' 🎯' : ' ▾'}
+            </Text>
           </Pressable>
         </View>
 
@@ -153,6 +157,10 @@ const styles = StyleSheet.create({
   },
   locationText: {
     letterSpacing: -0.2,
+  },
+  locationIndicator: {
+    fontSize: 13,
+    marginLeft: 2,
   },
   conditionBadge: {
     flexDirection: 'row',

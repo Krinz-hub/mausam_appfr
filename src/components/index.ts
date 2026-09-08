@@ -9,5 +9,6 @@ export * from './weather/WeatherHero';
 export * from './weather/AnimatedBar';
 export * from './insights/InsightCard';
 export * from './insights/FeedbackModal';
+export * from './location/LocationModal';
 export * from './states/LoadingState';
 export * from './states/ErrorState';

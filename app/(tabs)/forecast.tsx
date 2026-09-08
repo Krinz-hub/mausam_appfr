@@ -18,12 +18,14 @@ import {
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { audioManager } from '../../src/services/audio/audioManager';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
+import { useLocationStore } from '../../src/state/useLocationStore';
 
 type FactorTab = 'rain' | 'temp' | 'wind' | 'uv';
 
 export default function ForecastScreen() {
   const theme = useTheme();
   const persona = useOnboardingStore((s) => s.personaProfile);
+  const location = useLocationStore((s) => s.location);
   const [selectedFactor, setSelectedFactor] = useState<FactorTab>('rain');
   const [selectedHourIndex, setSelectedHourIndex] = useState<number>(0);
 
@@ -33,8 +35,9 @@ export default function ForecastScreen() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['weather', 'forecast'],
-    queryFn: () => WeatherProvider.fetchWeather(),
+    queryKey: ['weather', 'forecast', location.latitude, location.longitude],
+    queryFn: () => WeatherProvider.fetchWeather(location),
+    enabled: !!location.latitude && !!location.longitude,
   });
 
   if (isLoading) {
@@ -82,7 +85,7 @@ export default function ForecastScreen() {
           Forecast
         </Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          Hourly timeline & personalized week ahead
+          Hourly timeline & personalized week ahead • {weather.locationName}
         </Text>
       </View>
 

@@ -19,11 +19,13 @@ import {
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useDecisionStore } from '../../src/state/useDecisionStore';
+import { useLocationStore } from '../../src/state/useLocationStore';
 import { FeedbackReason } from '../../src/components/insights/FeedbackModal';
 
 export default function TipsScreen() {
   const theme = useTheme();
   const persona = useOnboardingStore((s) => s.personaProfile);
+  const location = useLocationStore((s) => s.location);
   const {
     experience,
     currentDecision,
@@ -42,8 +44,9 @@ export default function TipsScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['weather', 'tips'],
-    queryFn: () => WeatherProvider.fetchWeather(),
+    queryKey: ['weather', location.latitude, location.longitude],
+    queryFn: () => WeatherProvider.fetchWeather(location),
+    enabled: !!location.latitude && !!location.longitude,
   });
 
   React.useEffect(() => {
