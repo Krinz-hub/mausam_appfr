@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle } from 'react-native';
+import { AppText as Text } from '../common/AppText';
 import { useTheme } from '../../design';
 
 export interface SpeechBubbleProps {

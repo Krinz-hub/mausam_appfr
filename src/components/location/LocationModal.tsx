@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
-  Text,
   StyleSheet,
   Pressable,
-  TextInput,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { AppText as Text, AppTextInput as TextInput } from '../common/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { useLocationStore } from '../../state/useLocationStore';

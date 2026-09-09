@@ -1,6 +1,14 @@
 import { TextStyle } from 'react-native';
 
 export const typography = {
+  fontFamily: 'Comfortaa',
+  fontFamilies: {
+    light: 'Comfortaa_300Light',
+    regular: 'Comfortaa_400Regular',
+    medium: 'Comfortaa_500Medium',
+    semibold: 'Comfortaa_600SemiBold',
+    bold: 'Comfortaa_700Bold',
+  },
   sizes: {
     heroTemp: 76,
     display: 40,
@@ -36,4 +44,21 @@ export const typography = {
   },
 };
 
+export function getComfortaaFontFamily(weight?: string): string {
+  if (weight === '700' || weight === '800' || weight === '900' || weight === 'bold' || weight === 'heavy') {
+    return 'Comfortaa_700Bold';
+  }
+  if (weight === '600' || weight === 'semibold') {
+    return 'Comfortaa_600SemiBold';
+  }
+  if (weight === '500' || weight === 'medium') {
+    return 'Comfortaa_500Medium';
+  }
+  if (weight === '300' || weight === '100' || weight === '200' || weight === 'light') {
+    return 'Comfortaa_300Light';
+  }
+  return 'Comfortaa_400Regular';
+}
+
 export type Typography = typeof typography;
+

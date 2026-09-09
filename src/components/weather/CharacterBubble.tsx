@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, ViewStyle, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, ViewStyle, Platform } from 'react-native';
+import { AppText as Text } from '../common/AppText';
 import { useTheme } from '../../design';
 import { hapticManager } from '../../services/haptics/hapticManager';
 
@@ -10,6 +11,7 @@ export interface CharacterBubbleProps {
   style?: ViewStyle;
   pointerPosition?: 'below' | 'above' | 'none';
   testID?: string;
+  isTired?: boolean;
 }
 
 export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
@@ -19,15 +21,18 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   style,
   pointerPosition = 'above',
   testID = 'character-bubble',
+  isTired = false,
 }) => {
   const theme = useTheme();
 
-  const bubbleBg = theme.isNight ? '#102A3B' : theme.colors.backgroundCard;
+  const bubbleBg = theme.isNight
+    ? (isTired ? '#1A2836' : '#102A3B')
+    : (isTired ? '#FFFBEB' : theme.colors.backgroundCard);
   const textColor = theme.isNight ? '#F3FAFF' : theme.colors.textPrimary;
   const tipColor = theme.isNight ? '#B9CEDA' : theme.colors.textSecondary;
-  const borderColor = theme.isNight
-    ? 'rgba(255, 255, 255, 0.14)'
-    : 'rgba(0, 0, 0, 0.08)';
+  const borderColor = isTired
+    ? (theme.isNight ? 'rgba(245, 158, 11, 0.45)' : 'rgba(217, 119, 6, 0.35)')
+    : (theme.isNight ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)');
 
   const handlePress = () => {
     hapticManager.selection();

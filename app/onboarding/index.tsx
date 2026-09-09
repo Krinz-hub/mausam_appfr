@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TextInput,
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -17,6 +15,8 @@ import {
   ProgressIndicator,
   Character,
   SpeechBubble,
+  Text,
+  TextInput,
 } from '../../src/components';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { audioManager } from '../../src/services/audio/audioManager';

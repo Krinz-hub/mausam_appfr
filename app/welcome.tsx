@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/design';
-import { AppScreen, PrimaryButton, Character } from '../src/components';
+import { AppScreen, PrimaryButton, Character, Text } from '../src/components';
 import { useAuthStore } from '../src/state/useAuthStore';
 import { audioManager } from '../src/services/audio/audioManager';
 

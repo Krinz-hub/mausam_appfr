@@ -1,5 +1,6 @@
 export * from './colors';
 export * from './typography';
+export * from './fontSetup';
 export * from './spacing';
 export * from './radius';
 export * from './shadows';
@@ -8,3 +9,4 @@ export * from './audio';
 export * from './tokens';
 export * from './dayCycle';
 export * from './theme';
+

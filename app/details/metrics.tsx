@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
-import { AppScreen, Character } from '../../src/components';
+import { AppScreen, Character, Text } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useLocationStore } from '../../src/state/useLocationStore';
 

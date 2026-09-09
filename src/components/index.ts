@@ -1,3 +1,4 @@
+export * from './common/AppText';
 export * from './screen/AppScreen';
 export * from './buttons/PrimaryButton';
 export * from './buttons/SecondaryButton';
@@ -18,3 +19,4 @@ export * from './location/LocationModal';
 export * from './states/LoadingState';
 export * from './states/ErrorState';
 export * from './icons/WeatherIcon';
+

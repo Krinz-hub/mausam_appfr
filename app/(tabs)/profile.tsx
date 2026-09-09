@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Switch,
@@ -10,7 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/design';
-import { AppScreen, Character, PrimaryButton, SecondaryButton, LocationModal } from '../../src/components';
+import { AppScreen, Character, PrimaryButton, SecondaryButton, LocationModal, Text } from '../../src/components';
 import { useAuthStore } from '../../src/state/useAuthStore';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useSettingsStore } from '../../src/state/useSettingsStore';

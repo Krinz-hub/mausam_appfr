@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-  Text,
   Pressable,
   StyleSheet,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { AppText as Text } from '../common/AppText';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,

@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import {
   Modal,
   View,
-  Text,
   StyleSheet,
   Pressable,
   ScrollView,
 } from 'react-native';
+import { AppText as Text } from '../common/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { PrimaryButton } from '../buttons/PrimaryButton';

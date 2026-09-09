@@ -28,14 +28,20 @@ export type LegacyCharacterState =
 
 export type CharacterState = LegacyCharacterState | EngineCharacterState;
 
+import { getCharacterStateForMessage } from '../../engines/weather/characterMessageMatcher';
+
 export interface CharacterProps {
   state?: CharacterState;
+  message?: string;
+  tip?: string;
   context?: WeatherContext;
   size?: StageSize;
   style?: ViewStyle;
   imageStyle?: ImageStyle;
   animate?: boolean;
   interactive?: boolean;
+  hover?: boolean;
+  isTired?: boolean;
   onPress?: () => void;
   onPressIn?: () => void;
   onPressOut?: () => void;
@@ -46,7 +52,7 @@ const LEGACY_STATE_MAPPING: Record<LegacyCharacterState, EngineCharacterState> =
   happy: 'sunny',
   concerned: 'heavy_rain',
   energetic: 'windy',
-  tired: 'extreme_heat',
+  tired: 'fog',
   bundled: 'extreme_cold',
   sleeping: 'fog',
   thinking: 'cloudy',
@@ -60,20 +66,34 @@ const LEGACY_STATE_MAPPING: Record<LegacyCharacterState, EngineCharacterState> =
 };
 
 export const Character: React.FC<CharacterProps> = ({
-  state = 'happy',
+  state,
+  message,
+  tip,
   context,
   size = 'md',
   style,
   imageStyle,
   interactive,
+  hover = true,
+  isTired = false,
   onPress,
   testID = 'companion-character',
 }) => {
+  // Determine state from explicit state, message matching, or fallback to happy
+  let resolvedStateName: CharacterState;
+  if (state) {
+    resolvedStateName = state;
+  } else if (message) {
+    resolvedStateName = getCharacterStateForMessage(message, tip, 'sunny');
+  } else {
+    resolvedStateName = 'happy';
+  }
+
   // Map legacy string state or use engine state
   const mappedState: EngineCharacterState =
-    state in LEGACY_STATE_MAPPING
-      ? LEGACY_STATE_MAPPING[state as LegacyCharacterState]
-      : (state as EngineCharacterState);
+    resolvedStateName in LEGACY_STATE_MAPPING
+      ? LEGACY_STATE_MAPPING[resolvedStateName as LegacyCharacterState]
+      : (resolvedStateName as EngineCharacterState);
 
   return (
     <WeatherCharacter
@@ -81,6 +101,8 @@ export const Character: React.FC<CharacterProps> = ({
       state={mappedState}
       size={size}
       interactive={interactive ?? !!onPress}
+      hover={hover}
+      isTired={isTired}
       onPress={onPress}
       style={style}
       imageStyle={imageStyle}

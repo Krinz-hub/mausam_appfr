@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -15,6 +14,7 @@ import {
   Character,
   LoadingState,
   ErrorState,
+  Text,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';

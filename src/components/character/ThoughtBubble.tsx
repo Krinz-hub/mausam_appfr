@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { View, StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { AppText as Text } from '../common/AppText';
 import { useTheme } from '../../design';
 import { hapticManager } from '../../services/haptics/hapticManager';
 

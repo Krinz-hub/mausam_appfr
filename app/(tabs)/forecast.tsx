@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Pressable,
@@ -16,6 +15,7 @@ import {
   LoadingState,
   ErrorState,
   WeatherIcon,
+  Text,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { audioManager } from '../../src/services/audio/audioManager';

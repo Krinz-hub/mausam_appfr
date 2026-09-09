@@ -178,6 +178,7 @@ export function generateCandidateInsights(
   // 5. Carry an Umbrella
   const eveningRain = weather.hourly.slice(2, 8).find((h) => h.rainProb >= 60);
   if (eveningRain) {
+    const isCommuter = (persona.activities['commuter'] || 0) > 0.4;
     candidates.push({
       type: 'carry_umbrella',
       title: 'Carry an umbrella',
@@ -186,7 +187,9 @@ export function generateCandidateInsights(
       baseSeverity: 0.75,
       contextRelevance: persona.traits.rain_sensitive,
       temporalRelevance: 0.9,
-      reasonCodes: ['AFTERNOON_RAIN_SURGE'],
+      reasonCodes: isCommuter
+        ? ['AFTERNOON_RAIN_SURGE', 'COMMUTE_RAIN_PREP']
+        : ['AFTERNOON_RAIN_SURGE'],
       icon: '☂️',
       characterState: 'rain',
     });
