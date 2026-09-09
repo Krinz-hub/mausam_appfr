@@ -16,6 +16,8 @@ import {
   WeatherHero,
   InsightCard,
   Character,
+  WeatherCharacter,
+  CharacterBubble,
   FeedbackModal,
   LoadingState,
   ErrorState,
@@ -24,6 +26,8 @@ import {
   WeatherIcon,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
+import { normalizeToWeatherContext } from '../../src/services/weather/normalizer';
+import { WeatherCharacterEngine } from '../../src/engines/weather/WeatherCharacterEngine';
 import { useAuthStore } from '../../src/state/useAuthStore';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useDecisionStore } from '../../src/state/useDecisionStore';
@@ -84,8 +88,22 @@ export default function HomeScreen() {
     submitFeedback(decisionId, 'negative', reason);
   };
 
+  const weatherContext = React.useMemo(() => {
+    if (!weather) return null;
+    return normalizeToWeatherContext(weather);
+  }, [weather]);
+
+  const characterResolution = React.useMemo(() => {
+    if (!weatherContext) return null;
+    return WeatherCharacterEngine.resolve(weatherContext);
+  }, [weatherContext]);
+
   const handleCharacterTap = () => {
-    hapticManager.impact('light');
+    if (characterResolution) {
+      hapticManager.impact(characterResolution.haptic);
+    } else {
+      hapticManager.impact('light');
+    }
     audioManager.play('selection');
     setSuggestionIndex((prev) => prev + 1);
   };
@@ -106,30 +124,7 @@ export default function HomeScreen() {
     );
   }
 
-  const isNightTime = weather.current.isDay !== undefined ? !weather.current.isDay : theme.isNight;
-  const currentTemp = Math.round(weather.current.temperature);
-  const currentWind = Math.round(weather.current.windSpeed);
-  const currentHumidity = Math.round(weather.current.humidity);
-  const currentCondition = weather.current.conditionText.toLowerCase();
-  const tomorrowForecast = weather.daily[1] || weather.daily[0];
-
-  const suggestions = isNightTime
-    ? [
-        `Rest well tonight (${currentTemp}°C, ${currentCondition}). Tomorrow starts around ${tomorrowForecast?.minTemp ?? currentTemp}°C! 🌙`,
-        `Wind is gentle at ${currentWind} km/h with ${currentHumidity}% humidity across ${weather.locationName}! ✨`,
-        `Tomorrow reaches ${tomorrowForecast?.maxTemp ?? (currentTemp + 4)}°C with ${tomorrowForecast?.rainProb ?? 10}% rain chance. 🚶`,
-        `All clear overnight. Sleep well and stay refreshed for tomorrow! 💤`,
-      ]
-    : [
-        `Currently ${currentTemp}°C and ${currentCondition} in ${weather.locationName}. Great day ahead! 🌤️`,
-        `Rain chance is ${weather.current.rainProbability}% with a ${currentWind} km/h breeze right now. ☀️`,
-        `High today expected around ${weather.daily[0]?.maxTemp ?? currentTemp}°C. Tailored for your routine! ✨`,
-        `UV index is ${weather.current.uvIndex ?? 2}. Great conditions for outdoor tasks! 🌿`,
-      ];
-  const currentThought = suggestions[suggestionIndex % suggestions.length];
-
   const greeting = `${experience?.greeting || 'Good day'}, ${user?.displayName || 'Friend'}`;
-  const charState = (experience?.characterState || 'happy') as CharacterState;
   const primaryInsight = experience?.primaryInsight;
   const decisionId = experience?.decisionId || 'dec_live';
   const feedbackStatus = feedbackHistory[decisionId]?.type;
@@ -168,22 +163,23 @@ export default function HomeScreen() {
           onPressLocation={() => setLocationModalVisible(true)}
         />
 
+        {/* 2. Character Anchor with Centralized Weather Reaction Engine */}
+        {characterResolution && (
+          <View style={styles.characterSection}>
+            <WeatherCharacter
+              resolved={characterResolution}
+              onPress={handleCharacterTap}
+            />
 
-        {/* 2. Character Anchor with Permanent Thought Bubble */}
-        <View style={styles.characterSection}>
-          <Character
-            state={charState}
-            size="lg"
-            onPress={handleCharacterTap}
-          />
-
-          <ThoughtBubble
-            text={currentThought}
-            onPress={handleCharacterTap}
-            pointerPosition="above"
-            style={{ marginTop: 8 }}
-          />
-        </View>
+            <CharacterBubble
+              message={characterResolution.message}
+              tip={characterResolution.tip}
+              onPress={handleCharacterTap}
+              pointerPosition="above"
+              style={{ marginTop: 8 }}
+            />
+          </View>
+        )}
 
         {/* 3. ONE Primary Personalized Insight Card */}
         {primaryInsight && (

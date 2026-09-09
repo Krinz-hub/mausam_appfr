@@ -5,6 +5,7 @@ import {
   CanonicalWeatherData,
 } from './canonicalModel';
 import { determineIsNight } from './weatherIconMapping';
+import { WeatherContext } from '../../engines/weather/weatherCharacterTypes';
 
 export function getWmoCondition(code: number): { text: string; emoji: string } {
   switch (code) {
@@ -199,3 +200,29 @@ export function normalizeOpenMeteoResponse(
     lastUpdated: new Date().toISOString(),
   };
 }
+
+export function normalizeToWeatherContext(
+  weather: CanonicalWeatherData,
+  currentTime: Date = new Date(),
+  recentRain?: boolean
+): WeatherContext {
+  const cur = weather.current;
+  return {
+    condition: cur.conditionText,
+    temperature: cur.temperature,
+    feelsLike: cur.feelsLike,
+    precipitationProbability: cur.rainProbability ?? 0,
+    precipitationAmount: cur.precipitation ?? 0,
+    windSpeed: cur.windSpeed ?? 0,
+    visibility: cur.visibility,
+    humidity: cur.humidity,
+    aqi: cur.aqi,
+    uvIndex: cur.uvIndex,
+    sunrise: cur.sunrise,
+    sunset: cur.sunset,
+    currentTime,
+    recentRain,
+    weatherCode: cur.weatherCode,
+  };
+}
+
