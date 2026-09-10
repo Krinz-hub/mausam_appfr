@@ -1,0 +1,26 @@
+{
+  "name": "personalized-mausam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personalized Mausam Monorepo - Separated Frontend (Expo) & Backend (Express)",
+  "scripts": {
+    "dev": "npx concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run backend\" \"npm run frontend\"",
+    "start": "npm --prefix frontend start",
+    "frontend": "npm --prefix frontend start",
+    "backend": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend run start",
+    "android": "npm --prefix frontend run android",
+    "ios": "npm --prefix frontend run ios",
+    "web": "npm --prefix frontend run web",
+    "test": "npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:all": "npm test && npm run test:backend",
+    "typecheck": "npm run typecheck:frontend && npm run typecheck:backend",
+    "typecheck:frontend": "npm --prefix frontend run typecheck",
+    "typecheck:backend": "npm --prefix backend run typecheck",
+    "db:clean": "npm --prefix backend run db:clean"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

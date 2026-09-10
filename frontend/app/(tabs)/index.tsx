@@ -72,7 +72,7 @@ export default function HomeScreen() {
   const [tiredIndex, setTiredIndex] = useState<number>(0);
 
   const tapTimestampsRef = useRef<number[]>([]);
-  const resetTiredTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const resetTiredTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize precise GPS location on screen mount
   useEffect(() => {

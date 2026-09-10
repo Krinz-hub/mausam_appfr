@@ -103,11 +103,13 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              {user?.displayName || 'Dev'}
+              {user?.displayName || 'Weather Explorer'}
             </Text>
-            <Text style={[styles.accountEmail, { color: theme.colors.textSecondary }]}>
-              {user?.email || 'dev@mausam.in'}
-            </Text>
+            {user?.email ? (
+              <Text style={[styles.accountEmail, { color: theme.colors.textSecondary }]}>
+                {user.email}
+              </Text>
+            ) : null}
             <View style={styles.googleBadge}>
               <Text style={{ fontSize: 11, color: theme.colors.textSecondary }}>
                 Google Connected

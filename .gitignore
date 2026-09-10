@@ -1,1 +1,64 @@
-node_modules
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Logs
+*.log
+logs/
+
+# Build
+dist/
+build/
+.expo/
+.expo-shared/
+frontend/dist/
+frontend/.expo/
+frontend/.expo-shared/
+backend/dist/
+
+# React Native
+android/.gradle/
+android/app/build/
+android/build/
+ios/build/
+ios/Pods/
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/ios/build/
+frontend/ios/Pods/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Temporary
+tmp/
+temp/
+
+# Coverage
+coverage/
+
+# Secrets
+*.pem
+*.key
+service-account*.json
+firebase-adminsdk*.json

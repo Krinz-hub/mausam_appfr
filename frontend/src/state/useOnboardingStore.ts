@@ -5,6 +5,7 @@ import { NeedEngine } from '../engine/need/needEngine';
 import { ExplanationParser } from '../engine/ai/explanationParser';
 import { PersonaEngine } from '../engine/persona/personaEngine';
 import { useAuthStore } from './useAuthStore';
+import { ApiClient } from '../services/api/apiClient';
 
 interface OnboardingState {
   currentStep: number;
@@ -81,21 +82,38 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     const { userTypeKeys, explanation, weatherFactorKeys, activePeriods } = get();
     const userId = useAuthStore.getState().user?.id || 'usr_default';
 
-    // 1. Parse optional explanation with AI/NLP
+    // 1. Compute local structured NeedProfile & PersonaProfile for instant response
     const aiExtracted = explanation ? ExplanationParser.parse(explanation) : undefined;
-
-    // 2. Compute structured NeedProfile via Need Engine
-    const needProfile = NeedEngine.computeProfile({
+    let needProfile = NeedEngine.computeProfile({
       userTypeKeys,
       weatherFactorKeys,
       activePeriods,
       aiExtractedNeeds: aiExtracted,
     });
+    let personaProfile = PersonaEngine.initializeFromNeedProfile(needProfile, userId);
 
-    // 3. Initialize baseline PersonaProfile via Persona Engine
-    const personaProfile = PersonaEngine.initializeFromNeedProfile(needProfile, userId);
+    // 2. Submit to trusted backend to validate & persist in MongoDB
+    try {
+      const backendRes = await ApiClient.submitOnboarding({
+        userTypeKeys,
+        weatherFactorKeys,
+        activePeriods,
+        explanation,
+      });
 
-    // 4. Persist to storage
+      if (backendRes && backendRes.user?.personalization) {
+        if (backendRes.user.personalization.needProfile) {
+          needProfile = backendRes.user.personalization.needProfile;
+        }
+        if (backendRes.user.personalization.personaProfile) {
+          personaProfile = backendRes.user.personalization.personaProfile;
+        }
+      }
+    } catch (backendErr: any) {
+      console.warn('Backend onboarding sync failed (offline/fallback mode):', backendErr.message);
+    }
+
+    // 3. Persist to local storage
     await AsyncStorage.setItem(NEED_PROFILE_KEY, JSON.stringify(needProfile));
     await AsyncStorage.setItem(PERSONA_PROFILE_KEY, JSON.stringify(personaProfile));
     await useAuthStore.getState().setOnboardingCompleted(true);
@@ -106,6 +124,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
 
   loadPersistedPersonalization: async () => {
     try {
+      // 1. Instant local restore
       const [needRaw, personaRaw] = await Promise.all([
         AsyncStorage.getItem(NEED_PROFILE_KEY),
         AsyncStorage.getItem(PERSONA_PROFILE_KEY),
@@ -116,6 +135,23 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
           needProfile: JSON.parse(needRaw),
           personaProfile: JSON.parse(personaRaw),
         });
+      }
+
+      // 2. Background sync from MongoDB if user is authenticated
+      if (useAuthStore.getState().isAuthenticated) {
+        try {
+          const res = await ApiClient.getPersonalization();
+          if (res && res.personalization) {
+            const { needProfile, personaProfile } = res.personalization;
+            if (needProfile && personaProfile) {
+              await AsyncStorage.setItem(NEED_PROFILE_KEY, JSON.stringify(needProfile));
+              await AsyncStorage.setItem(PERSONA_PROFILE_KEY, JSON.stringify(personaProfile));
+              set({ needProfile, personaProfile });
+            }
+          }
+        } catch {
+          // Continue with local data if offline
+        }
       }
     } catch (e) {
       console.warn('Failed to load persisted personalization', e);
