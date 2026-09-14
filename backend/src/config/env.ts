@@ -19,15 +19,10 @@ export const ENV = {
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/personalized_mausam',
   MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'personalized_mausam',
 
-  // Firebase Admin SDK config
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
-  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
-  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : '',
-
-  // Fallback flag for seamless local dev without credentials
-  ALLOW_DEV_MOCK_AUTH:
-    process.env.ALLOW_DEV_MOCK_AUTH !== 'false' &&
-    (process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEV_MOCK_AUTH === 'true'),
+  // JWT Authentication config
+  JWT_SECRET: process.env.JWT_SECRET || 'mausam_production_secure_jwt_secret_key_2026',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:8081',
 
   // Future IMD Gateway
   IMD_API_BASE_URL: process.env.IMD_API_BASE_URL || '',

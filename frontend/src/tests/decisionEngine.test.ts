@@ -87,5 +87,5 @@ test('DecisionEngine - Severe storm overrides standard lifestyle routines', () =
 
   const { experience } = DecisionEngine.decide(stormWeather, normalPersona, 8);
   assert.equal(experience.primaryInsight.type, 'severe_storm');
-  assert.equal(experience.characterState, 'storm');
+  assert.equal(experience.characterState, 'thunderstorm');
 });

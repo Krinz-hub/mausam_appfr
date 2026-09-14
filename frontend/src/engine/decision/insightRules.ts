@@ -40,7 +40,7 @@ export function generateCandidateInsights(
         temporalRelevance: 1.0,
         reasonCodes: ['TOMORROW_FORECAST', 'RAIN_EXPECTED'],
         icon: '🌧️',
-        characterState: 'sleeping',
+        characterState: 'rain',
       });
     } else if (tomorrow && tomorrow.maxTemp >= 34) {
       candidates.push({
@@ -53,7 +53,7 @@ export function generateCandidateInsights(
         temporalRelevance: 1.0,
         reasonCodes: ['TOMORROW_HEAT_INDEX', 'OPTIMAL_MORNING_WINDOW'],
         icon: '🌤️',
-        characterState: 'sleeping',
+        characterState: 'extreme_heat',
       });
     } else {
       candidates.push({
@@ -66,7 +66,7 @@ export function generateCandidateInsights(
         temporalRelevance: 1.0,
         reasonCodes: ['OVERNIGHT_CALM', 'FAVORABLE_TOMORROW'],
         icon: '🌙',
-        characterState: 'sleeping',
+        characterState: 'fog',
       });
     }
   }
@@ -83,7 +83,7 @@ export function generateCandidateInsights(
       temporalRelevance: 1.0,
       reasonCodes: ['SEVERE_CONVECTIVE_ALERT', 'HIGH_WIND_RISK'],
       icon: '⛈️',
-      characterState: 'storm',
+      characterState: 'thunderstorm',
     });
   }
 
@@ -105,7 +105,7 @@ export function generateCandidateInsights(
         temporalRelevance: isMorning || isEvening ? 0.95 : 0.6,
         reasonCodes: ['OUTDOOR_COMMUTE', 'RAIN_INCOMING'],
         icon: '🚗',
-        characterState: 'concerned',
+        characterState: 'rain',
       });
     } else {
       candidates.push({
@@ -118,7 +118,7 @@ export function generateCandidateInsights(
         temporalRelevance: isMorning || isEvening ? 0.9 : 0.5,
         reasonCodes: ['CLEAR_TRANSIT_WINDOW'],
         icon: '🚗',
-        characterState: 'happy',
+        characterState: 'sunny',
       });
     }
   }
@@ -141,7 +141,7 @@ export function generateCandidateInsights(
         temporalRelevance: 0.95,
         reasonCodes: ['OPTIMAL_TEMP_WINDOW', 'LOW_PRECIPITATION'],
         icon: '🏃',
-        characterState: 'energetic',
+        characterState: 'sunny',
       });
     } else if (current.rainProbability > 50) {
       candidates.push({
@@ -154,7 +154,7 @@ export function generateCandidateInsights(
         temporalRelevance: 0.85,
         reasonCodes: ['SLIPPERY_ROADS', 'RAIN_ACTIVE'],
         icon: '🚴',
-        characterState: 'concerned',
+        characterState: 'rain',
       });
     }
   }
@@ -171,7 +171,7 @@ export function generateCandidateInsights(
       temporalRelevance: currentHour >= 11 && currentHour <= 16 ? 0.95 : 0.7,
       reasonCodes: ['HIGH_HEAT_INDEX', 'HUMIDITY_DISCOMFORT'],
       icon: '☀️',
-      characterState: 'heat',
+      characterState: 'extreme_heat',
     });
   }
 
@@ -208,7 +208,7 @@ export function generateCandidateInsights(
       temporalRelevance: 0.9,
       reasonCodes: ['RESPIRATORY_CONCERN', 'HIGH_AQI'],
       icon: '🌫️',
-      characterState: 'concerned',
+      characterState: 'bad_air_quality',
     });
   } else {
     candidates.push({
@@ -221,7 +221,7 @@ export function generateCandidateInsights(
       temporalRelevance: 0.7,
       reasonCodes: ['GOOD_AQI'],
       icon: '🌱',
-      characterState: 'happy',
+      characterState: 'rainbow',
     });
   }
 
@@ -237,7 +237,7 @@ export function generateCandidateInsights(
       temporalRelevance: currentHour >= 10 && currentHour <= 15 ? 0.95 : 0.5,
       reasonCodes: ['HIGH_SOLAR_RADIATION'],
       icon: '☀️',
-      characterState: 'heat',
+      characterState: 'bright_sun',
     });
   }
 

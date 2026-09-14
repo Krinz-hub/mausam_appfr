@@ -11,11 +11,18 @@ export function getCharacterStateForMessage(
 ): CharacterState {
   const combined = `${message} ${tip || ''}`.toLowerCase();
 
-  // 1. Tired / Exhausted / Resting / Yawning (Rapid tap tired responses, rest reminders)
+  // 1. Tired / Exhausted / Resting / Yawning / Night sleep
   if (
     combined.includes('tired') ||
     combined.includes('give me some rest') ||
+    combined.includes('rest well') ||
+    combined.includes('take a rest') ||
+    combined.includes('need rest') ||
+    combined.includes('get some rest') ||
     combined.includes('resting') ||
+    combined.includes('calm night') ||
+    combined.includes('goodnight') ||
+    combined.includes('bedtime') ||
     combined.includes('catch my breath') ||
     combined.includes('recharge') ||
     combined.includes('sleep') ||
@@ -46,9 +53,32 @@ export function getCharacterStateForMessage(
     return 'lightning'; // Surprised / dizzy lightning character
   }
 
-  // 3. Extreme Heat / Dehydration / High Temperature / Boiling
+  // 3. Bad Air Quality / AQI / Smog / Pollution / Mask (Check before general heat/sun)
+  if (
+    combined.includes('air quality is poor') ||
+    combined.includes('air quality check') ||
+    combined.includes('poor air') ||
+    combined.includes('unhealthy air') ||
+    combined.includes('aqi') ||
+    combined.includes('smog') ||
+    combined.includes('pollution') ||
+    combined.includes('mask') ||
+    combined.includes('smoke') ||
+    combined.includes('haze') ||
+    combined.includes('dust') ||
+    combined.includes('respiratory') ||
+    combined.includes('🌫️') ||
+    combined.includes('😷')
+  ) {
+    return 'bad_air_quality'; // Character wearing protective mask
+  }
+
+  // 4. Extreme Heat / Dehydration / High Temperature / Boiling
   if (
     combined.includes('beat the heat') ||
+    combined.includes('warm afternoon') ||
+    combined.includes('warm day') ||
+    combined.includes('warmer') ||
     combined.includes('heat') ||
     combined.includes('hydrate') ||
     combined.includes('hydration') ||
@@ -59,13 +89,14 @@ export function getCharacterStateForMessage(
     combined.includes('sweltering') ||
     combined.includes('hot') ||
     combined.includes('overheat') ||
+    combined.includes('feels like') ||
     combined.includes('🔥') ||
     combined.includes('💧')
   ) {
     return 'extreme_heat'; // Overheated/panting character with water drops
   }
 
-  // 4. UV / Sun Glare / Sunglasses / Sunscreen
+  // 5. UV / Sun Glare / Sunglasses / Sunscreen
   if (
     combined.includes('uv') ||
     combined.includes('sunglasses') ||
@@ -74,6 +105,7 @@ export function getCharacterStateForMessage(
     combined.includes('glare') ||
     combined.includes('bright sun') ||
     combined.includes('shade') ||
+    combined.includes('stay shaded') ||
     combined.includes('protect from uv') ||
     combined.includes('high uv') ||
     combined.includes('🕶️')
@@ -81,7 +113,7 @@ export function getCharacterStateForMessage(
     return 'bright_sun'; // Cool character with dark sunglasses
   }
 
-  // 5. Thunderstorm / Storm / Angry Lightning
+  // 6. Thunderstorm / Storm / Angry Lightning
   if (
     combined.includes('thunderstorm') ||
     combined.includes('thunder') ||
@@ -96,7 +128,7 @@ export function getCharacterStateForMessage(
     return 'thunderstorm';
   }
 
-  // 6. Heavy Rain / Pouring / Monsoon / Downpour
+  // 7. Heavy Rain / Pouring / Monsoon / Downpour
   if (
     combined.includes('heavy rain') ||
     combined.includes('downpour') ||
@@ -108,10 +140,12 @@ export function getCharacterStateForMessage(
     return 'heavy_rain';
   }
 
-  // 7. Rain / Umbrella / Showers / Drizzle / Puddles
+  // 8. Rain / Umbrella / Showers / Drizzle / Puddles / Wet Commute
   if (
     combined.includes('rain on the horizon') ||
     combined.includes('rain likely') ||
+    combined.includes('rain expected') ||
+    combined.includes('wet commute') ||
     combined.includes('rain') ||
     combined.includes('shower') ||
     combined.includes('umbrella') ||
@@ -124,7 +158,7 @@ export function getCharacterStateForMessage(
     return 'rain'; // Character holding umbrella
   }
 
-  // 8. Freezing / Extreme Cold / Shivering / Warm Layers / Scarf
+  // 9. Freezing / Extreme Cold / Shivering / Warm Layers / Scarf
   if (
     combined.includes('crisp weather') ||
     combined.includes('cold') ||
@@ -135,6 +169,7 @@ export function getCharacterStateForMessage(
     combined.includes('jacket') ||
     combined.includes('sweater') ||
     combined.includes('layers') ||
+    combined.includes('layer up') ||
     combined.includes('dress warmly') ||
     combined.includes('frost') ||
     combined.includes('🧤') ||
@@ -144,7 +179,7 @@ export function getCharacterStateForMessage(
     return 'extreme_cold'; // Character with warm winter earmuffs and scarf
   }
 
-  // 9. Snow / Sleet / Blizzard / Ice / Snowman
+  // 10. Snow / Sleet / Blizzard / Ice / Snowman
   if (
     combined.includes('snow') ||
     combined.includes('blizzard') ||
@@ -158,7 +193,7 @@ export function getCharacterStateForMessage(
     return 'snow';
   }
 
-  // 10. Strong Wind / Gale
+  // 11. Strong Wind / Gale
   if (
     combined.includes('strong wind') ||
     combined.includes('gale') ||
@@ -168,7 +203,7 @@ export function getCharacterStateForMessage(
     return 'strong_wind';
   }
 
-  // 11. Breezy / Windy / Wind / Gusts
+  // 12. Breezy / Windy / Wind / Gusts
   if (
     combined.includes('breezy') ||
     combined.includes('windy') ||
@@ -181,43 +216,19 @@ export function getCharacterStateForMessage(
     return 'windy';
   }
 
-  // 12. Bad Air Quality / AQI / Smog / Pollution / Mask
-  if (
-    combined.includes('air quality') ||
-    combined.includes('aqi') ||
-    combined.includes('smog') ||
-    combined.includes('pollution') ||
-    combined.includes('mask') ||
-    combined.includes('smoke') ||
-    combined.includes('haze') ||
-    combined.includes('dust') ||
-    combined.includes('poor air') ||
-    combined.includes('unhealthy air') ||
-    combined.includes('🌫️') ||
-    combined.includes('😷')
-  ) {
-    return 'bad_air_quality'; // Character wearing protective mask
-  }
-
-  // 13. Rainbow / Fresh / Clean Air / Outdoor Workout / Fitness
+  // 13. Rainbow / Fresh / Clean Air
   if (
     combined.includes('crisp & clean air') ||
     combined.includes('clean air') ||
+    combined.includes('air quality is crisp') ||
     combined.includes('rainbow') ||
-    combined.includes('workout') ||
-    combined.includes('running') ||
-    combined.includes('fitness') ||
-    combined.includes('jog') ||
     combined.includes('clarity') ||
     combined.includes('delight') ||
-    combined.includes('celebrate') ||
-    combined.includes('joy') ||
     combined.includes('fresh') ||
     combined.includes('post-rain') ||
     combined.includes('🌿') ||
     combined.includes('🌈') ||
-    combined.includes('✨') ||
-    combined.includes('🏃')
+    combined.includes('✨')
   ) {
     return 'rainbow';
   }
@@ -246,19 +257,34 @@ export function getCharacterStateForMessage(
     return 'cloudy';
   }
 
-  // 16. Sunny / Clear Skies / Bright / Cheerful / Companion Greeting
+  // 16. Workout / Active Fitness
+  if (
+    combined.includes('workout') ||
+    combined.includes('running') ||
+    combined.includes('fitness') ||
+    combined.includes('cycling') ||
+    combined.includes('riding') ||
+    combined.includes('jog')
+  ) {
+    return 'sunny'; // Healthy bright cheerful cloud for outdoor workout
+  }
+
+  // 17. Sunny / Clear Skies / Bright / Cheerful / Companion Greeting
   if (
     combined.includes('sunny vibes') ||
     combined.includes('sunny') ||
     combined.includes('sun') ||
     combined.includes('clear skies') ||
     combined.includes('clear sky') ||
+    combined.includes('smooth commute') ||
+    combined.includes('clear roads') ||
     combined.includes('bright') ||
     combined.includes('good day') ||
     combined.includes('looking good') ||
     combined.includes('smile') ||
     combined.includes('keeping watch') ||
     combined.includes('happy') ||
+    combined.includes('comfortable') ||
     combined.includes('☀️') ||
     combined.includes('😊') ||
     combined.includes('👋')

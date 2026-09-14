@@ -32,6 +32,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => clearInterval(timer);
   }, []);
 
+  // Synchronize web document and body background to avoid white canvas flash
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.backgroundColor = dayCycle.colors.background;
+      if (document.documentElement) {
+        document.documentElement.style.backgroundColor = dayCycle.colors.background;
+      }
+    }
+  }, [dayCycle.colors.background]);
+
   const activeTheme: Theme = useMemo(
     () => ({
       ...tokens,

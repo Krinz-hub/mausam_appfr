@@ -1,7 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import bcrypt from 'bcryptjs';
 import { IUserDocument } from './types.js';
 
-export interface IUserModel extends Omit<IUserDocument, '_id'>, Document {}
+export interface IUserModel extends Omit<IUserDocument, '_id'>, Document {
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
 const UserTypeScoreSchema = new Schema(
   {
@@ -26,20 +29,31 @@ const SavedLocationSchema = new Schema(
 
 const UserSchema = new Schema<IUserModel>(
   {
-    firebaseUid: {
+    name: {
       type: String,
-      required: true,
-      unique: true,
-      index: true,
+      required: [true, 'Name is required'],
+      trim: true,
     },
     email: {
       type: String,
-      required: true,
+      required: [true, 'Email is required'],
+      unique: true,
       trim: true,
       lowercase: true,
       index: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters'],
+      select: false, // Never return password hash in API responses
     },
     displayName: {
+      type: String,
+      default: '',
+    },
+    avatar: {
       type: String,
       default: '',
     },
@@ -85,11 +99,36 @@ const UserSchema = new Schema<IUserModel>(
     timestamps: true,
     toJSON: {
       transform(_doc, ret: any) {
+        delete ret.password;
         delete ret.__v;
+        ret.id = ret._id;
         return ret;
       },
     },
   }
 );
+
+// Pre-save hook to hash password before saving to MongoDB
+UserSchema.pre('save', async function () {
+  if (!this.displayName) {
+    this.displayName = this.name;
+  }
+  if (!this.photoURL && this.avatar) {
+    this.photoURL = this.avatar;
+  }
+
+  if (this.isModified('password') && this.password) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+});
+
+// Method to verify password on login
+UserSchema.methods.comparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
+  if (!this.password) return false;
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 export const User = mongoose.model<IUserModel>('User', UserSchema);

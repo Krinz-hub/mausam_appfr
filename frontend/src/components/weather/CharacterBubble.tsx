@@ -8,6 +8,8 @@ export interface CharacterBubbleProps {
   message: string;
   tip?: string;
   onPress?: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
   style?: ViewStyle;
   pointerPosition?: 'below' | 'above' | 'none';
   testID?: string;
@@ -18,12 +20,16 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   message,
   tip,
   onPress,
+  onSwipeLeft,
+  onSwipeRight,
   style,
   pointerPosition = 'above',
   testID = 'character-bubble',
   isTired = false,
 }) => {
   const theme = useTheme();
+  const touchStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
+  const isSwipeHandledRef = React.useRef<boolean>(false);
 
   const bubbleBg = theme.isNight
     ? (isTired ? '#1A2836' : '#102A3B')
@@ -34,7 +40,37 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
     ? (theme.isNight ? 'rgba(245, 158, 11, 0.45)' : 'rgba(217, 119, 6, 0.35)')
     : (theme.isNight ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)');
 
+  const handleTouchStart = (e: any) => {
+    isSwipeHandledRef.current = false;
+    touchStartRef.current = {
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+      time: Date.now(),
+    };
+  };
+
+  const handleTouchEnd = (e: any) => {
+    if (!touchStartRef.current) return;
+    const dx = e.nativeEvent.pageX - touchStartRef.current.x;
+    const dy = e.nativeEvent.pageY - touchStartRef.current.y;
+    const dt = Date.now() - touchStartRef.current.time;
+    touchStartRef.current = null;
+
+    if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 800) {
+      isSwipeHandledRef.current = true;
+      if (dx < 0) {
+        onSwipeLeft?.();
+      } else {
+        onSwipeRight?.();
+      }
+    }
+  };
+
   const handlePress = () => {
+    if (isSwipeHandledRef.current) {
+      isSwipeHandledRef.current = false;
+      return;
+    }
     hapticManager.selection();
     onPress?.();
   };
@@ -43,9 +79,11 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
     <Pressable
       testID={testID}
       onPress={handlePress}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       accessible={true}
       accessibilityRole="button"
-      accessibilityLabel={`Companion reaction: ${message}${tip ? `. Tip: ${tip}` : ''}. Tap for next insight.`}
+      accessibilityLabel={`Companion reaction: ${message}${tip ? `. Tip: ${tip}` : ''}. Swipe left or right to shuffle suggestions.`}
       style={({ pressed }) => [
         styles.container,
         style,

@@ -1,9 +1,10 @@
 export interface User {
   id: string;
-  googleSubjectId: string;
+  name: string;
+  displayName?: string;
   email: string;
-  displayName: string;
   avatarUrl?: string;
+  photoURL?: string;
   onboardingCompleted: boolean;
   createdAt: string;
 }

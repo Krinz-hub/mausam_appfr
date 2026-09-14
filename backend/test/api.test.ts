@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { Engine1Service } from '../src/services/engine1Service.js';
-import { verifyToken } from '../src/config/firebase.js';
+import { generateToken, verifyJwt } from '../src/utils/jwt.js';
 
 test('Engine1Service - Computes NeedProfile and PersonaProfile correctly from onboarding input', () => {
   const input = {
@@ -29,11 +29,24 @@ test('Engine1Service - Computes NeedProfile and PersonaProfile correctly from on
   assert.equal(result.personaProfile.activities['fitness'], true);
 });
 
-test('Firebase Config - verifyToken works in dev mode with mock tokens', async () => {
-  const token = 'mock_user_abc_123';
-  const verified = await verifyToken(token);
+test('JWT Utilities - Signs and verifies tokens accurately', () => {
+  const userId = 'usr_mongodb_abc123';
+  const token = generateToken(userId);
 
-  assert.ok(verified.uid, 'uid should be present');
-  assert.equal(verified.uid, 'firebase_user_abc_123');
-  assert.ok(verified.email?.includes('user_abc_123'));
+  assert.ok(token, 'Token string should be generated');
+  assert(token.length > 20, 'Token should be a standard JWT');
+
+  const payload = verifyJwt(token);
+  assert.equal(payload.userId, userId, 'Payload userId should match original userId');
+});
+
+test('JWT Utilities - Rejects malformed or tampered tokens', () => {
+  const malformedToken = 'invalid.jwt.token.string';
+  assert.throws(
+    () => {
+      verifyJwt(malformedToken);
+    },
+    /jwt malformed|invalid token/i,
+    'Malformed token must throw an error'
+  );
 });

@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest } from '../middleware/auth.js';
-import { User } from '../models/User.js';
 import { Engine1Service } from '../services/engine1Service.js';
 
 const OnboardingSchema = z.object({
@@ -18,26 +17,21 @@ export class OnboardingController {
    * and persists needProfile and personaProfile to MongoDB.
    */
   public static async submitOnboarding(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
+    const user = req.user;
 
-    if (!uid) {
-      res.status(401).json({ error: 'Unauthorized' });
+    if (!user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
     }
 
     try {
       const validated = OnboardingSchema.parse(req.body);
-
-      const user = await User.findOne({ firebaseUid: uid });
-      if (!user) {
-        res.status(404).json({ error: 'Not Found', message: 'User not found in database' });
-        return;
-      }
+      const userIdStr = user._id.toString();
 
       // Execute server-side Engine 1 processing
       const { needProfile, personaProfile, userProfileData } = Engine1Service.processOnboarding(
         validated,
-        uid
+        userIdStr
       );
 
       user.onboardingCompleted = true;
@@ -49,26 +43,20 @@ export class OnboardingController {
 
       await user.save();
 
-      console.log(`✅ Onboarding completed and persisted in MongoDB for user: ${uid}`);
+      console.log(`✅ Onboarding completed and persisted in MongoDB for user: ${userIdStr}`);
 
       res.status(200).json({
         success: true,
         message: 'Onboarding completed and personalization profiles persisted',
-        user: {
-          id: user._id,
-          firebaseUid: user.firebaseUid,
-          onboardingCompleted: user.onboardingCompleted,
-          profile: user.profile,
-          personalization: user.personalization,
-        },
+        user: user.toJSON(),
       });
     } catch (err: any) {
       if (err instanceof z.ZodError) {
-        res.status(400).json({ error: 'Validation Error', issues: err.issues });
+        res.status(400).json({ success: false, message: 'Validation Error', issues: err.issues });
         return;
       }
       console.error('Error submitting onboarding:', err);
-      res.status(500).json({ error: 'Server Error', message: err.message });
+      res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
   }
 
@@ -76,21 +64,16 @@ export class OnboardingController {
    * GET /api/me/personalization
    */
   public static async getPersonalization(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
+    const user = req.user;
 
-    try {
-      const user = await User.findOne({ firebaseUid: uid });
-      if (!user) {
-        res.status(404).json({ error: 'Not Found', message: 'User not found' });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        personalization: user.personalization,
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: 'Server Error', message: err.message });
+    if (!user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
     }
+
+    res.status(200).json({
+      success: true,
+      personalization: user.personalization,
+    });
   }
 }

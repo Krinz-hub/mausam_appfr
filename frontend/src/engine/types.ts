@@ -83,6 +83,7 @@ export interface PrimaryInsight {
   priority: number;
   reasonCodes: string[];
   icon: string;
+  characterState?: string;
 }
 
 export interface SecondaryCard {
@@ -91,6 +92,21 @@ export interface SecondaryCard {
   shortMessage: string;
   priority: number;
   icon: string;
+  characterState?: string;
+}
+
+import { AstronomicalInsight } from './astronomy/astronomicalTypes';
+import { CharacterState } from '../engines/weather/weatherCharacterTypes';
+
+export interface SuggestionInsightItem {
+  id: string;
+  type: string;
+  message: string;
+  tip?: string;
+  characterState: CharacterState;
+  badge?: string;
+  isPrimary?: boolean;
+  priority?: number;
 }
 
 export interface WeatherDecision {
@@ -98,6 +114,7 @@ export interface WeatherDecision {
   timestamp: string;
   primary: PrimaryInsight;
   secondary: SecondaryCard[];
+  astronomicalInsight?: AstronomicalInsight | null;
   confidence: number;
   expiresAt: string;
   weatherSnapshot: {
@@ -117,6 +134,8 @@ export interface ExperienceConfig {
   characterState: string;
   primaryInsight: PrimaryInsight;
   cards: SecondaryCard[];
+  astronomicalInsight?: AstronomicalInsight | null;
+  suggestions?: SuggestionInsightItem[];
   visibleFeatures: WeatherFactor[];
   action: {
     label: string;

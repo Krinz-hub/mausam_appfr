@@ -14,6 +14,9 @@ import {
   AppScreen,
   WeatherHero,
   InsightCard,
+  AstronomicalInsightCard,
+  SwipeableInsightsCarousel,
+  SuggestionInsightItem,
   Character,
   WeatherCharacter,
   CharacterBubble,
@@ -130,127 +133,63 @@ export default function HomeScreen() {
     return WeatherCharacterEngine.resolve(weatherContext);
   }, [weatherContext]);
 
-  // Construct a diverse pool of weather & personalized insights to cycle through
-  const suggestions = useMemo<Array<{ message: string; tip?: string; characterState?: EngineCharacterState }>>(() => {
-    const list: Array<{ message: string; tip?: string; characterState?: EngineCharacterState }> = [];
+  // Construct suggestions pool from engine experience with character live reaction prepend
+  const suggestions = useMemo<SuggestionInsightItem[]>(() => {
+    const list: SuggestionInsightItem[] = [];
 
-    // 1. Primary character reaction for current conditions
+    // 1. Companion character's immediate live reaction for current atmospheric conditions
     if (characterResolution) {
+      const state = getCharacterStateForMessage(
+        characterResolution.message,
+        characterResolution.tip,
+        characterResolution.state
+      );
       list.push({
+        id: 'char_status',
+        type: 'now',
         message: characterResolution.message,
         tip: characterResolution.tip,
-        characterState: characterResolution.state,
+        characterState: state,
+        badge: 'Live Reaction',
+        isPrimary: !experience?.primaryInsight,
       });
     }
 
-    // 2. Primary personalized insight from DecisionEngine
-    if (experience?.primaryInsight) {
+    // 2. Engine-provided structured suggestions (primary, astronomical insight, secondary cards, contextual alerts)
+    if (experience?.suggestions && experience.suggestions.length > 0) {
+      list.push(...experience.suggestions);
+    } else if (experience?.primaryInsight) {
       list.push({
+        id: 'primary_decision',
+        type: experience.primaryInsight.type,
         message: experience.primaryInsight.title,
         tip: experience.primaryInsight.shortMessage,
-        characterState: getCharacterStateForMessage(
-          experience.primaryInsight.title,
-          experience.primaryInsight.shortMessage,
-          characterResolution?.state || 'sunny'
-        ),
-      });
-    }
-
-    // 3. Secondary cards from DecisionEngine
-    if (experience?.cards && experience.cards.length > 0) {
-      for (const card of experience.cards) {
-        list.push({
-          message: card.title,
-          tip: card.shortMessage,
-          characterState: getCharacterStateForMessage(
-            card.title,
-            card.shortMessage,
-            characterResolution?.state || 'sunny'
-          ),
-        });
-      }
-    }
-
-    // 4. Contextual tips based on live weather readings
-    if (weather) {
-      const cur = weather.current;
-
-      // Rain probability / umbrella
-      if (cur.rainProbability !== undefined && cur.rainProbability >= 25) {
-        list.push({
-          message: 'Umbrella Advisory ☔',
-          tip: `Rain chance is around ${cur.rainProbability}%. Keep rain gear handy just in case!`,
-          characterState: 'rain',
-        });
-      }
-
-      // UV index advice
-      if (cur.uvIndex !== undefined && cur.uvIndex >= 5) {
-        list.push({
-          message: 'High UV Alert ☀️',
-          tip: `UV index reaches ${cur.uvIndex}. Wear SPF 30+ sunscreen and sunglasses today.`,
-          characterState: 'bright_sun',
-        });
-      }
-
-      // High heat or cold advice
-      if (cur.feelsLike !== undefined && cur.feelsLike >= 30) {
-        list.push({
-          message: 'Beat The Heat 💧',
-          tip: `Feels like ${Math.round(cur.feelsLike)}°! Stay well-hydrated and seek shaded spots outdoors.`,
-          characterState: 'extreme_heat',
-        });
-      } else if (cur.temperature <= 16) {
-        list.push({
-          message: 'Crisp Weather 🧣',
-          tip: `Chilly ${Math.round(cur.temperature)}° air. Dress warmly in comfortable breathable layers.`,
-          characterState: 'extreme_cold',
-        });
-      }
-
-      // Wind advice
-      if (cur.windSpeed !== undefined && cur.windSpeed >= 20) {
-        list.push({
-          message: 'Breezy Outlook 💨',
-          tip: `Winds active around ${Math.round(cur.windSpeed)} km/h. Watch out for sudden gusts.`,
-          characterState: 'windy',
-        });
-      }
-
-      // Air Quality
-      if (cur.aqi !== undefined && cur.aqi >= 80) {
-        list.push({
-          message: 'Air Quality Check 🌫️',
-          tip: `AQI is ${cur.aqi}. Sensitive groups should keep strenuous outdoor exercise light.`,
-          characterState: 'bad_air_quality',
-        });
-      } else if (cur.aqi !== undefined && cur.aqi <= 40) {
-        list.push({
-          message: 'Crisp & Clean Air 🌿',
-          tip: `AQI is ${cur.aqi} — great atmospheric clarity for walking and outdoor workouts.`,
-          characterState: 'rainbow',
-        });
-      }
-    }
-
-    // 5. Friendly companion tip
-    list.push({
-      message: 'Always Keeping Watch 🌤️',
-      tip: 'Tap the bubble anytime to cycle through your atmospheric intelligence!',
-      characterState: characterResolution?.state || 'sunny',
-    });
-
-    // Fallback if list is empty
-    if (list.length === 0) {
-      list.push({
-        message: 'Looking good out there!',
-        tip: 'Enjoy your day and check back for live weather updates.',
-        characterState: 'sunny',
+        characterState: (experience.primaryInsight.characterState as EngineCharacterState) || 'sunny',
+        badge: 'Primary Intelligence',
+        isPrimary: true,
       });
     }
 
     return list;
-  }, [characterResolution, experience, weather]);
+  }, [characterResolution, experience]);
+
+  const handleNextSuggestion = () => {
+    if (suggestions.length === 0) return;
+    hapticManager.selection();
+    audioManager.play('selection');
+    setSuggestionIndex((prev) => (prev + 1) % suggestions.length);
+  };
+
+  const handlePrevSuggestion = () => {
+    if (suggestions.length === 0) return;
+    hapticManager.selection();
+    audioManager.play('selection');
+    setSuggestionIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+  };
+
+  const handleSelectSuggestionIndex = (index: number) => {
+    setSuggestionIndex(index);
+  };
 
   const handleCharacterTap = () => {
     const now = Date.now();
@@ -302,6 +241,9 @@ export default function HomeScreen() {
     : suggestions[suggestionIndex % suggestions.length];
 
   const activeCharacterState = useMemo<EngineCharacterState>(() => {
+    if (isTired) {
+      return TIRED_PHRASES[tiredIndex % TIRED_PHRASES.length].characterState || 'fog';
+    }
     if (currentSuggestion?.characterState) {
       return currentSuggestion.characterState;
     }
@@ -309,11 +251,11 @@ export default function HomeScreen() {
       return getCharacterStateForMessage(
         currentSuggestion.message,
         currentSuggestion.tip,
-        characterResolution?.state || 'sunny'
+        'sunny'
       );
     }
     return characterResolution?.state || 'sunny';
-  }, [currentSuggestion, characterResolution?.state]);
+  }, [isTired, tiredIndex, currentSuggestion, characterResolution?.state]);
 
   if (isLoading) {
     return (
@@ -374,8 +316,8 @@ export default function HomeScreen() {
         {characterResolution && (
           <View style={styles.characterSection}>
             <WeatherCharacter
+              key={`weather_char_${activeCharacterState}_${suggestionIndex}_${isTired ? 'tired' : 'norm'}`}
               state={activeCharacterState}
-              resolved={characterResolution}
               hover={true}
               isTired={isTired}
               onPress={handleCharacterTap}
@@ -385,6 +327,8 @@ export default function HomeScreen() {
               message={currentSuggestion.message}
               tip={currentSuggestion.tip}
               onPress={handleCharacterTap}
+              onSwipeLeft={handleNextSuggestion}
+              onSwipeRight={handlePrevSuggestion}
               pointerPosition="above"
               isTired={isTired}
               style={{ marginTop: 8 }}
@@ -392,15 +336,21 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* 3. ONE Primary Personalized Insight Card */}
-        {primaryInsight && (
+        {/* 3. Main Suggestion Insights Carousel (Swipeable Left & Right to Shuffle) */}
+        {suggestions.length > 0 && (
           <View style={styles.primaryInsightContainer}>
-            <InsightCard
-              isPrimary={true}
-              type={primaryInsight.type}
-              title={primaryInsight.title}
-              shortMessage={primaryInsight.shortMessage}
+            <SwipeableInsightsCarousel
+              items={suggestions}
+              activeIndex={suggestionIndex % suggestions.length}
+              onIndexChange={handleSelectSuggestionIndex}
             />
+          </View>
+        )}
+
+        {/* Conditional Engine-Approved Astronomical Insight Card */}
+        {experience?.astronomicalInsight && (
+          <View style={styles.astronomicalContainer}>
+            <AstronomicalInsightCard insight={experience.astronomicalInsight} />
           </View>
         )}
 
@@ -582,6 +532,10 @@ const styles = StyleSheet.create({
   primaryInsightContainer: {
     width: '100%',
     marginVertical: 12,
+  },
+  astronomicalContainer: {
+    width: '100%',
+    marginVertical: 6,
   },
   supportingSection: {
     marginTop: 24,

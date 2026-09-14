@@ -77,7 +77,7 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* User Account Card (Google Authenticated) */}
+      {/* User Account Card */}
       <View
         style={[
           styles.accountCard,
@@ -103,16 +103,16 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              {user?.displayName || 'Weather Explorer'}
+              {user?.name || user?.displayName || 'Weather Explorer'}
             </Text>
             {user?.email ? (
               <Text style={[styles.accountEmail, { color: theme.colors.textSecondary }]}>
                 {user.email}
               </Text>
             ) : null}
-            <View style={styles.googleBadge}>
-              <Text style={{ fontSize: 11, color: theme.colors.textSecondary }}>
-                Google Connected
+            <View style={[styles.verifiedBadge, { backgroundColor: theme.colors.primaryLight }]}>
+              <Text style={{ fontSize: 11, color: theme.colors.primaryDark, fontWeight: '600' }}>
+                Mausam Member
               </Text>
             </View>
           </View>
@@ -393,11 +393,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
-  googleBadge: {
+  verifiedBadge: {
     marginTop: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    backgroundColor: '#EDF2F7',
     borderRadius: 8,
     alignSelf: 'flex-start',
   },

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/auth';
-import { FirebaseAuthService } from '../services/auth/firebaseAuth';
 import { ApiClient } from '../services/api/apiClient';
 
 interface AuthState {
@@ -11,19 +10,29 @@ interface AuthState {
   error: string | null;
 
   initialize: () => Promise<void>;
-  beginGoogleSignIn: () => void;
-  cancelGoogleSignIn: () => void;
-  failGoogleSignIn: (message: string) => void;
-  signInWithGoogle: () => Promise<void>;
-  signInWithGoogleCredential: (idToken: string) => Promise<void>;
-  signInWithExpoGoFallback: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   setOnboardingCompleted: (completed: boolean) => Promise<void>;
   deleteAccount: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  clearError: () => void;
 }
 
 const STORAGE_KEY = '@mausam_auth_session';
+
+function mapBackendUser(backendUser: any): User {
+  return {
+    id: backendUser._id || backendUser.id,
+    name: backendUser.name || backendUser.displayName || 'Friend',
+    displayName: backendUser.displayName || backendUser.name || 'Friend',
+    email: backendUser.email,
+    avatarUrl: backendUser.avatar || backendUser.photoURL,
+    photoURL: backendUser.photoURL || backendUser.avatar,
+    onboardingCompleted: Boolean(backendUser.onboardingCompleted),
+    createdAt: backendUser.createdAt || new Date().toISOString(),
+  };
+}
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -31,47 +40,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true,
   error: null,
 
+  clearError: () => set({ error: null }),
+
   initialize: async () => {
     try {
       // 1. Instant local restore from cache
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const user: User = JSON.parse(stored);
+      const token = await ApiClient.getToken();
 
-        // Auto-purge any residual development dummy sessions
-        if (
-          user.email === 'dev@mausam.in' ||
-          user.id?.startsWith('dev_') ||
-          user.id === 'firebase_user_alex'
-        ) {
-          await AsyncStorage.multiRemove([
-            STORAGE_KEY,
-            '@mausam_dev_auth_token',
-            '@mausam_dev_user_profile',
-            '@mausam_need_profile',
-            '@mausam_persona_profile',
-            '@mausam_onboarding_state',
-          ]);
-          set({ user: null, isAuthenticated: false, isLoading: false });
-          return;
-        }
+      if (stored && token) {
+        const cachedUser: User = JSON.parse(stored);
+        set({ user: cachedUser, isAuthenticated: true, isLoading: false });
 
-        set({ user, isAuthenticated: true, isLoading: false });
-
-        // 2. Background sync with MongoDB backend
+        // 2. Background sync with backend to verify validity
         try {
           const res = await ApiClient.getMe();
           if (res && res.user) {
-            const syncedUser: User = {
-              ...user,
-              displayName: res.user.displayName || user.displayName,
-              onboardingCompleted: res.user.onboardingCompleted,
-            };
+            const syncedUser = mapBackendUser(res.user);
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
             set({ user: syncedUser });
           }
-        } catch {
-          // Keep cached user if offline
+        } catch (err: any) {
+          // If token expired or unauthorized, clear session
+          if (err?.message?.includes('401') || err?.message?.includes('token') || err?.message?.includes('expired')) {
+            await AsyncStorage.multiRemove([
+              STORAGE_KEY,
+              '@mausam_auth_token',
+              '@mausam_need_profile',
+              '@mausam_persona_profile',
+              '@mausam_onboarding_state',
+            ]);
+            set({ user: null, isAuthenticated: false, isLoading: false });
+            return;
+          }
         }
         return;
       }
@@ -81,53 +82,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
 
-  beginGoogleSignIn: () => set({ isLoading: true, error: null }),
-
-  cancelGoogleSignIn: () => set({ isLoading: false, error: null }),
-
-  failGoogleSignIn: (message: string) => set({ isLoading: false, error: message }),
-
-  signInWithGoogle: async () => {
+  login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await FirebaseAuthService.signInWithGoogleOnWeb();
-      await completeProfileInitialization(result.user, result.idToken, set);
+      const res = await ApiClient.login(email.trim(), password);
+      if (!res.user) {
+        throw new Error('Login failed: Invalid server response.');
+      }
+      const user = mapBackendUser(res.user);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      set({ user, isAuthenticated: true, isLoading: false, error: null });
     } catch (err: any) {
-      console.error('AUTH_GOOGLE_ERROR', err);
-      set({ error: err.message || 'Google Sign-In failed', isLoading: false });
+      const message = err.message || 'Login failed. Please check your credentials.';
+      set({ error: message, isLoading: false });
       throw err;
     }
   },
 
-  signInWithGoogleCredential: async (googleIdToken: string) => {
+  register: async (name: string, email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await FirebaseAuthService.signInWithGoogleCredential(googleIdToken);
-      await completeProfileInitialization(result.user, result.idToken, set);
+      const res = await ApiClient.register(name.trim(), email.trim(), password);
+      if (!res.user) {
+        throw new Error('Registration failed: Invalid server response.');
+      }
+      const user = mapBackendUser(res.user);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      set({ user, isAuthenticated: true, isLoading: false, error: null });
     } catch (err: any) {
-      console.error('AUTH_GOOGLE_ERROR', err);
-      set({ error: err.message || 'Google Sign-In failed', isLoading: false });
-      throw err;
-    }
-  },
-
-  signInWithExpoGoFallback: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      console.log('AUTH_EXPO_GO_FALLBACK_START');
-      const fallbackUser: User = {
-        id: 'user_expo_go',
-        googleSubjectId: 'google_sub_expo_go',
-        email: 'user@mausam.in',
-        displayName: 'Mausam Friend',
-        avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop',
-        onboardingCompleted: false,
-        createdAt: new Date().toISOString(),
-      };
-      await completeProfileInitialization(fallbackUser, 'mock_expo_go_session', set);
-    } catch (err: any) {
-      console.error('AUTH_EXPO_GO_FALLBACK_ERROR', err);
-      set({ error: err.message || 'Expo Go login failed', isLoading: false });
+      const message = err.message || 'Registration failed. Please try again.';
+      set({ error: message, isLoading: false });
       throw err;
     }
   },
@@ -135,19 +119,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ isLoading: true });
     try {
-      await FirebaseAuthService.signOut();
-      await AsyncStorage.multiRemove([
-        STORAGE_KEY,
-        '@mausam_dev_auth_token',
-        '@mausam_dev_user_profile',
-        '@mausam_need_profile',
-        '@mausam_persona_profile',
-        '@mausam_onboarding_state',
-      ]);
+      await ApiClient.logout();
     } catch (err) {
       console.warn('Error during sign out', err);
     }
-    set({ user: null, isAuthenticated: false, isLoading: false });
+    await AsyncStorage.multiRemove([
+      STORAGE_KEY,
+      '@mausam_auth_token',
+      '@mausam_need_profile',
+      '@mausam_persona_profile',
+      '@mausam_onboarding_state',
+    ]);
+    set({ user: null, isAuthenticated: false, isLoading: false, error: null });
   },
 
   setOnboardingCompleted: async (completed: boolean) => {
@@ -162,16 +145,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await ApiClient.getMe();
       if (res && res.user) {
-        const current = get().user;
-        if (current) {
-          const updated: User = {
-            ...current,
-            displayName: res.user.displayName || current.displayName,
-            onboardingCompleted: res.user.onboardingCompleted,
-          };
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-          set({ user: updated });
-        }
+        const synced = mapBackendUser(res.user);
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
+        set({ user: synced });
       }
     } catch (err) {
       console.warn('Failed to refresh profile from backend', err);
@@ -185,37 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err) {
       console.warn('Failed to delete account on backend', err);
     }
-    await FirebaseAuthService.signOut();
     await AsyncStorage.clear();
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
 }));
-
-async function completeProfileInitialization(
-  firebaseUser: User,
-  firebaseIdToken: string,
-  set: (state: Partial<AuthState>) => void
-): Promise<void> {
-  console.log('AUTH_PROFILE_START');
-  try {
-    // This endpoint atomically finds the existing profile or creates the default
-    // Mausam profile for a first-time Firebase user.
-    const syncRes = await ApiClient.syncAuth(firebaseIdToken);
-    if (!syncRes?.user) throw new Error('Profile initialization did not return a user.');
-
-    const user: User = {
-      ...firebaseUser,
-      id: syncRes.user.firebaseUid || firebaseUser.id,
-      displayName: syncRes.user.displayName || firebaseUser.displayName,
-      avatarUrl: syncRes.user.photoURL || firebaseUser.avatarUrl,
-      onboardingCompleted: Boolean(syncRes.user.onboardingCompleted),
-    };
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    console.log('AUTH_PROFILE_SUCCESS', { isNewUser: Boolean(syncRes.isNewUser) });
-    console.log('AUTH_COMPLETE', { uid: user.id });
-    set({ user, isAuthenticated: true, isLoading: false, error: null });
-  } catch (error) {
-    console.error('AUTH_PROFILE_ERROR', error);
-    throw error;
-  }
-}

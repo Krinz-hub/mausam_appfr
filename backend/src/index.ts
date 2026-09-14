@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { ENV } from './config/env.js';
 import { connectDB, disconnectDB } from './config/db.js';
-import { initFirebase } from './config/firebase.js';
 import { authRouter } from './routes/authRoutes.js';
 import { userRouter } from './routes/userRoutes.js';
 import { weatherRouter } from './routes/weatherRoutes.js';
@@ -12,11 +12,13 @@ const app = express();
 
 // 1. Global Middleware
 app.use(cors({
-  origin: '*', // Allow Expo client / mobile / web
+  origin: true, // Echo request origin to allow credentials from web & mobile
+  credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.use(cookieParser());
 app.use(express.json());
 
 // 2. Request Logger in development
@@ -47,7 +49,6 @@ app.use(errorHandler);
 // 6. Bootstrap Server
 async function startServer() {
   try {
-    initFirebase();
     await connectDB();
 
     const server = app.listen(ENV.PORT, '0.0.0.0', () => {

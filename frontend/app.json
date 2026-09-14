@@ -19,7 +19,6 @@
       "bundleIdentifier": "com.anonymous.mausam"
     },
     "android": {
-      "googleServicesFile": "./android/app/google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#EBF4FF"
       },
@@ -42,8 +41,7 @@
         {
           "locationWhenInUsePermission": "Mausam needs access to your location to provide accurate local weather."
         }
-      ],
-      "@react-native-google-signin/google-signin"
+      ]
     ]
   }
 }

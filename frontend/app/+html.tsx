@@ -26,6 +26,13 @@ export default function Root({ children }: { children: React.ReactNode }) {
               html, body, #root, [class*="css-text-"], [class*="r-"], [class*="css-"], div, span, p, a, button, input, textarea, select, * {
                 font-family: 'Comfortaa', cursive, sans-serif !important;
               }
+              html, body, #root {
+                background-color: #071521;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 100%;
+              }
             `,
           }}
         />

@@ -3,34 +3,37 @@ import assert from 'node:assert';
 
 process.env.NODE_ENV = 'test';
 
-// Polyfill window.localStorage for Node test environment
-if (typeof (globalThis as any).window === 'undefined') {
-  const store: Record<string, string> = {};
-  (globalThis as any).window = {
-    localStorage: {
-      getItem: (k: string) => store[k] ?? null,
-      setItem: (k: string, v: string) => {
-        store[k] = String(v);
-      },
-      removeItem: (k: string) => {
-        delete store[k];
-      },
-      clear: () => {
-        Object.keys(store).forEach((k) => delete store[k]);
-      },
-    },
-  };
-}
+import { ApiClient, getApiBaseUrl } from '../services/api/apiClient';
 
-import { ApiClient } from '../services/api/apiClient';
-import { FirebaseAuthService } from '../services/auth/firebaseAuth';
+test('ApiClient - Native token lifecycle management', async () => {
+  // Clear any existing custom token getter and token
+  ApiClient.setTokenGetter(null);
+  await ApiClient.setToken(null);
 
-test('FirebaseAuthService - has no token before authentication', async () => {
-  const token = await FirebaseAuthService.getIdToken();
-  assert.equal(token, null);
+  const initialToken = await ApiClient.getToken();
+  assert.equal(initialToken, null, 'Initial token should be null');
+
+  // Set native token
+  await ApiClient.setToken('sample_native_jwt_token_123');
+  const storedToken = await ApiClient.getToken();
+  assert.equal(storedToken, 'sample_native_jwt_token_123', 'Should retrieve the stored token');
+
+  // Custom token getter overrides
+  ApiClient.setTokenGetter(async () => 'custom_mocked_token');
+  const customToken = await ApiClient.getToken();
+  assert.equal(customToken, 'custom_mocked_token', 'Custom token getter should be used when provided');
+
+  // Reset custom token getter
+  ApiClient.setTokenGetter(null);
+
+  // Clear token
+  await ApiClient.setToken(null);
+  const clearedToken = await ApiClient.getToken();
+  assert.equal(clearedToken, null, 'Token should be null after clearing');
 });
 
-test('ApiClient - Attaches bearer token correctly to requests', async () => {
-  ApiClient.setTokenGetter(async () => 'test_bearer_token_xyz');
-  assert.ok(ApiClient, 'API client should be available with a Firebase token getter');
+test('ApiClient - getApiBaseUrl returns valid configured or default URL', () => {
+  const baseUrl = getApiBaseUrl();
+  assert.ok(typeof baseUrl === 'string' && baseUrl.length > 0, 'Base URL should be a non-empty string');
+  assert.ok(baseUrl.startsWith('http://') || baseUrl.startsWith('https://'), 'Base URL should start with http:// or https://');
 });

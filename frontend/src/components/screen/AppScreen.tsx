@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   ViewStyle,
+  StyleProp,
   StatusBar,
   Platform,
 } from 'react-native';
@@ -14,10 +15,11 @@ import { useTheme } from '../../design';
 export interface AppScreenProps {
   children: React.ReactNode;
   scrollable?: boolean;
-  style?: ViewStyle;
-  contentContainerStyle?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   backgroundColor?: string;
   useAtmosphereGradient?: boolean;
+  gradientColors?: [string, string, ...string[]];
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
@@ -28,6 +30,7 @@ export const AppScreen: React.FC<AppScreenProps> = ({
   contentContainerStyle,
   backgroundColor,
   useAtmosphereGradient = true,
+  gradientColors,
   edges = ['top', 'left', 'right'],
 }) => {
   const theme = useTheme();
@@ -71,9 +74,9 @@ export const AppScreen: React.FC<AppScreenProps> = ({
         backgroundColor={Platform.OS === 'android' ? 'transparent' : undefined}
         translucent={Platform.OS === 'android'}
       />
-      {useAtmosphereGradient && gradient ? (
+      {useAtmosphereGradient && (gradientColors || gradient) ? (
         <LinearGradient
-          colors={[gradient.top, gradient.bottom]}
+          colors={gradientColors || [gradient!.top, gradient!.bottom]}
           style={StyleSheet.absoluteFill}
         />
       ) : null}

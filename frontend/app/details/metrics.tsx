@@ -8,6 +8,9 @@ import { AppScreen, Character, Text } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useLocationStore } from '../../src/state/useLocationStore';
 
+import { audioManager } from '../../src/services/audio/audioManager';
+import { hapticManager } from '../../src/services/haptics/hapticManager';
+
 export default function DetailedMetricsScreen() {
   const router = useRouter();
   const theme = useTheme();
@@ -20,6 +23,16 @@ export default function DetailedMetricsScreen() {
   });
 
   const current = weather?.current;
+
+  const handleClose = () => {
+    audioManager.play('selection');
+    hapticManager.impact('light');
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
 
   return (
     <AppScreen scrollable={true} edges={['top', 'bottom']}>
@@ -44,11 +57,18 @@ export default function DetailedMetricsScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.back()}
+          onPress={handleClose}
           accessible={true}
           accessibilityRole="button"
           accessibilityLabel="Close detailed view"
-          style={[styles.closeBtn, { backgroundColor: theme.colors.backgroundCardMuted }]}
+          style={({ pressed }) => [
+            styles.closeBtn,
+            {
+              backgroundColor: theme.colors.backgroundCardMuted,
+              opacity: pressed ? 0.8 : 1,
+              transform: [{ scale: pressed ? 0.94 : 1 }],
+            },
+          ]}
         >
           <Ionicons name="close" size={20} color={theme.colors.textPrimary} />
         </Pressable>

@@ -21,22 +21,40 @@ function RootNavigator() {
   const theme = useTheme();
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: 'fade',
-        contentStyle: { backgroundColor: theme.colors.background },
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="welcome" />
-      <Stack.Screen name="onboarding/index" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="details/metrics"
-        options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-      />
-    </Stack>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade',
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{ contentStyle: { backgroundColor: theme.colors.background } }}
+        />
+        <Stack.Screen
+          name="welcome"
+          options={{ contentStyle: { backgroundColor: theme.colors.background } }}
+        />
+        <Stack.Screen
+          name="onboarding/index"
+          options={{ contentStyle: { backgroundColor: theme.colors.background } }}
+        />
+        <Stack.Screen
+          name="(tabs)"
+          options={{ contentStyle: { backgroundColor: theme.colors.background } }}
+        />
+        <Stack.Screen
+          name="details/metrics"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'slide_from_bottom',
+            contentStyle: { backgroundColor: theme.colors.background },
+          }}
+        />
+      </Stack>
+    </View>
   );
 }
 

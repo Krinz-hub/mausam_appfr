@@ -14,9 +14,12 @@ export * from './weather/WeatherCharacter';
 export * from './weather/CharacterBubble';
 export * from './weather/WeatherTip';
 export * from './insights/InsightCard';
+export * from './insights/AstronomicalInsightCard';
 export * from './insights/FeedbackModal';
+export * from './insights/SwipeableInsightsCarousel';
 export * from './location/LocationModal';
 export * from './states/LoadingState';
 export * from './states/ErrorState';
 export * from './icons/WeatherIcon';
+export * from './forecast';
 

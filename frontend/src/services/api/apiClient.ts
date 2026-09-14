@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FirebaseAuthService } from '../auth/firebaseAuth';
 
 function getPlatformOS(): string {
   try {
@@ -66,17 +65,47 @@ export function getApiBaseUrl(): string {
 
 export const API_BASE_URL = getApiBaseUrl();
 
-const CACHE_KEYS = {
+export const CACHE_KEYS = {
   USER_PROFILE: '@mausam_api_cache_user',
   PERSONALIZATION: '@mausam_api_cache_personalization',
+  AUTH_TOKEN: '@mausam_auth_token',
 };
 
 export class ApiClient {
-  private static tokenGetter: (() => Promise<string | null>) | null = () =>
-    FirebaseAuthService.getIdToken();
+  private static cachedToken: string | null = null;
+  private static customTokenGetter: (() => Promise<string | null>) | null = null;
 
-  public static setTokenGetter(getter: () => Promise<string | null>) {
-    this.tokenGetter = getter;
+  public static setTokenGetter(getter: (() => Promise<string | null>) | null) {
+    this.customTokenGetter = getter;
+  }
+
+  public static async getToken(): Promise<string | null> {
+    if (this.customTokenGetter) {
+      return this.customTokenGetter();
+    }
+    if (this.cachedToken) {
+      return this.cachedToken;
+    }
+    try {
+      const token = await AsyncStorage.getItem(CACHE_KEYS.AUTH_TOKEN);
+      this.cachedToken = token;
+      return token;
+    } catch {
+      return null;
+    }
+  }
+
+  public static async setToken(token: string | null): Promise<void> {
+    this.cachedToken = token;
+    try {
+      if (token) {
+        await AsyncStorage.setItem(CACHE_KEYS.AUTH_TOKEN, token);
+      } else {
+        await AsyncStorage.removeItem(CACHE_KEYS.AUTH_TOKEN);
+      }
+    } catch (err) {
+      console.warn('Failed to save auth token to storage', err);
+    }
   }
 
   private static async getAuthHeaders(): Promise<Record<string, string>> {
@@ -84,22 +113,21 @@ export class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (this.tokenGetter) {
-      try {
-        const token = await this.tokenGetter();
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-      } catch (err) {
-        console.warn('Failed to retrieve auth token for request', err);
+    try {
+      const token = await this.getToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
+    } catch (err) {
+      console.warn('Failed to retrieve auth token for request', err);
     }
 
     return headers;
   }
 
   /**
-   * Performs an authenticated HTTP fetch with timeout and error extraction.
+   * Performs an authenticated HTTP fetch with timeout, error extraction,
+   * cookie credential inclusion, and fallback offline caching.
    */
   private static async request<T>(
     endpoint: string,
@@ -110,6 +138,7 @@ export class ApiClient {
     const authHeaders = await this.getAuthHeaders();
 
     const config: RequestInit = {
+      credentials: 'include', // Includes HTTP-only cookies in browsers
       ...options,
       headers: {
         ...authHeaders,
@@ -155,34 +184,86 @@ export class ApiClient {
   }
 
   /**
-   * POST /api/auth/sync
-   * Authenticates user with backend and retrieves MongoDB application profile.
+   * POST /api/auth/register
+   * Registers a new user with name, email, and password.
    */
-  public static async syncAuth(explicitToken?: string): Promise<{
+  public static async register(
+    name: string,
+    email: string,
+    password: string
+  ): Promise<{
     success: boolean;
-    isNewUser: boolean;
+    token: string;
     user: any;
   }> {
-    const headers: Record<string, string> = {};
-    if (explicitToken) {
-      headers['Authorization'] = `Bearer ${explicitToken}`;
-    }
-
-    return this.request(
-      '/auth/sync',
+    const res = await this.request<{ success: boolean; token: string; user: any }>(
+      '/auth/register',
       {
         method: 'POST',
-        headers,
+        body: JSON.stringify({ name, email, password }),
       },
       CACHE_KEYS.USER_PROFILE
     );
+
+    if (res?.token) {
+      await this.setToken(res.token);
+    }
+    return res;
   }
 
   /**
-   * GET /api/me
+   * POST /api/auth/login
+   * Authenticates an existing user with email and password.
+   */
+  public static async login(
+    email: string,
+    password: string
+  ): Promise<{
+    success: boolean;
+    token: string;
+    user: any;
+  }> {
+    const res = await this.request<{ success: boolean; token: string; user: any }>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      },
+      CACHE_KEYS.USER_PROFILE
+    );
+
+    if (res?.token) {
+      await this.setToken(res.token);
+    }
+    return res;
+  }
+
+  /**
+   * POST /api/auth/logout
+   * Clears the HTTP-only cookie and local token.
+   */
+  public static async logout(): Promise<{ success: boolean; message: string }> {
+    try {
+      await this.request<{ success: boolean; message: string }>('/auth/logout', {
+        method: 'POST',
+      });
+    } catch {
+      // Ignore network errors on logout
+    }
+    await this.setToken(null);
+    await AsyncStorage.multiRemove([
+      CACHE_KEYS.USER_PROFILE,
+      CACHE_KEYS.PERSONALIZATION,
+      CACHE_KEYS.AUTH_TOKEN,
+    ]);
+    return { success: true, message: 'Logged out successfully' };
+  }
+
+  /**
+   * GET /api/auth/me
    */
   public static async getMe(): Promise<{ success: boolean; user: any }> {
-    return this.request('/me', { method: 'GET' }, CACHE_KEYS.USER_PROFILE);
+    return this.request('/auth/me', { method: 'GET' }, CACHE_KEYS.USER_PROFILE);
   }
 
   /**
@@ -236,8 +317,12 @@ export class ApiClient {
    */
   public static async deleteAccount(): Promise<any> {
     const res = await this.request('/me', { method: 'DELETE' });
-    // Clean up local cache
-    await AsyncStorage.multiRemove([CACHE_KEYS.USER_PROFILE, CACHE_KEYS.PERSONALIZATION]);
+    await this.setToken(null);
+    await AsyncStorage.multiRemove([
+      CACHE_KEYS.USER_PROFILE,
+      CACHE_KEYS.PERSONALIZATION,
+      CACHE_KEYS.AUTH_TOKEN,
+    ]);
     return res;
   }
 }

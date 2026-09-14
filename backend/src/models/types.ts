@@ -35,10 +35,12 @@ export interface IPersonalizationData {
 
 export interface IUserDocument {
   _id?: any;
-  firebaseUid: string;
+  name: string;
   email: string;
-  displayName: string;
-  photoURL: string;
+  password?: string;
+  displayName?: string;
+  avatar?: string;
+  photoURL?: string;
   onboardingCompleted: boolean;
   profile: IUserProfileData;
   preferences: IUserPreferences;

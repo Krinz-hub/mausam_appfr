@@ -14,16 +14,21 @@
     "db:clean": "node --input-type=module -e \"import mongoose from 'mongoose'; import dotenv from 'dotenv'; dotenv.config(); await mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB_NAME, family: 4 }); const r = await mongoose.connection.db.collection('users').deleteMany({}); console.log('Cleared users:', r.deletedCount); await mongoose.disconnect();\""
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "firebase-admin": "^12.2.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.9",
     "tsx": "^4.16.2",
     "typescript": "^5.5.2"

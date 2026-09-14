@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import {
   AppScreen,
-  AnimatedBar,
   Character,
   LoadingState,
   ErrorState,
-  WeatherIcon,
   Text,
+  ForecastHeader,
+  ForecastMetricSelector,
+  ComfortWindowCard,
+  HourlyConditions,
+  CurrentOutlookCard,
+  WeeklyOutlook,
+  FactorTab,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
-import { audioManager } from '../../src/services/audio/audioManager';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useLocationStore } from '../../src/state/useLocationStore';
 import {
@@ -26,10 +25,10 @@ import {
   findOutdoorComfortWindow,
 } from '../../src/engine/decision/activityCalculators';
 
-type FactorTab = 'rain' | 'temp' | 'wind' | 'uv';
-
 export default function ForecastScreen() {
+  const router = useRouter();
   const theme = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
   const persona = useOnboardingStore((s) => s.personaProfile);
   const location = useLocationStore((s) => s.location);
   const [selectedFactor, setSelectedFactor] = useState<FactorTab>('rain');
@@ -65,371 +64,82 @@ export default function ForecastScreen() {
   const runningWindow = findBestRunningWindow(weather.hourly);
   const comfortWindow = findOutdoorComfortWindow(weather.hourly);
   const bestWindow = persona?.activities['fitness'] ? runningWindow : comfortWindow;
-
+  const isFitness = !!persona?.activities['fitness'];
 
   const selectedHour = weather.hourly[selectedHourIndex] || weather.hourly[0];
+  const isCurrentHour = selectedHourIndex === 0;
 
-  const handleSelectFactor = (factor: FactorTab) => {
-    audioManager.play('selection');
-    setSelectedFactor(factor);
-  };
-
-  const handleSelectHour = (idx: number) => {
-    audioManager.play('selection');
-    setSelectedHourIndex(idx);
-  };
+  // Responsive horizontal padding based on viewport
+  const horizontalPadding = windowWidth > 600 ? 28 : theme.spacing.screenHorizontal;
 
   return (
-    <AppScreen scrollable={true} contentContainerStyle={{ paddingBottom: 60 }}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.title1,
-              fontWeight: theme.typography.weights.heavy,
-            },
-          ]}
-        >
-          Forecast
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          Hourly timeline & personalized week ahead • {weather.locationName}
-        </Text>
-      </View>
+    <AppScreen
+      scrollable={true}
+      contentContainerStyle={[
+        styles.scrollContent,
+        { paddingHorizontal: horizontalPadding },
+      ]}
+    >
+      {/* 1. Header with large typography & non-overlapping settings button */}
+      <ForecastHeader
+        locationName={weather.locationName}
+        onPressSettings={() => router.push('/(tabs)/profile')}
+      />
 
-      {/* Factor Selector Pills with Vector Icons */}
-      <View style={styles.tabContainer}>
-        {(
-          [
-            { id: 'rain', label: 'Rain %', icon: 'rainy-outline' },
-            { id: 'temp', label: 'Temp', icon: 'thermometer-outline' },
-            { id: 'wind', label: 'Wind', icon: 'speedometer-outline' },
-            { id: 'uv', label: 'UV Index', icon: 'sunny-outline' },
-          ] as { id: FactorTab; label: string; icon: keyof typeof Ionicons.glyphMap }[]
-        ).map((tab) => {
-          const isSelected = selectedFactor === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              onPress={() => handleSelectFactor(tab.id)}
-              accessible={true}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`Select ${tab.label}`}
-              style={[
-                styles.factorTab,
-                {
-                  backgroundColor: isSelected
-                    ? theme.colors.primaryLight
-                    : theme.colors.backgroundCard,
-                  borderColor: isSelected
-                    ? theme.colors.primary
-                    : 'transparent',
-                  borderWidth: isSelected ? 1.5 : 0,
-                  borderRadius: theme.radius.pill,
-                },
-              ]}
-            >
-              <Ionicons
-                name={tab.icon}
-                size={14}
-                color={
-                  isSelected
-                    ? theme.colors.primaryDark
-                    : theme.colors.textSecondary
-                }
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.factorTabLabel,
-                  {
-                    color: isSelected
-                      ? theme.colors.primaryDark
-                      : theme.colors.textSecondary,
-                    fontWeight: isSelected
-                      ? theme.typography.weights.bold
-                      : theme.typography.weights.medium,
-                  },
-                ]}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {/* 2. Horizontally scrollable capsule metric pills */}
+      <ForecastMetricSelector
+        selectedFactor={selectedFactor}
+        onSelectFactor={setSelectedFactor}
+      />
 
-      {/* Activity Window Calculator Banner (Section 31) with Vector Icon */}
-      {bestWindow && (
-        <View
-          style={[
-            styles.activityWindowCard,
-            {
-              backgroundColor: theme.colors.primaryLight,
-              borderRadius: theme.radius.card,
-              padding: 14,
-              marginVertical: 8,
-            },
-          ]}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons
-              name={
-                persona?.activities['fitness']
-                  ? 'fitness-outline'
-                  : 'partly-sunny-outline'
-              }
-              size={22}
-              color={theme.colors.primaryDark}
-              style={{ marginRight: 10 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  color: theme.colors.primaryDark,
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                }}
-              >
-                {persona?.activities['fitness']
-                  ? 'Best Outdoor Workout Window'
-                  : 'Optimal Comfort Window'}
-              </Text>
-              <Text
-                style={{
-                  color: theme.colors.textSecondary,
-                  fontSize: 12,
-                  marginTop: 2,
-                }}
-              >
-                {bestWindow.summary}
-              </Text>
-            </View>
-          </View>
-        </View>
-      )}
+      {/* 3. Optimal Comfort Window dynamic insight card */}
+      <ComfortWindowCard
+        windowData={bestWindow}
+        isFitnessPersona={isFitness}
+      />
 
-      {/* 1. Horizontal Hourly Timeline */}
-      <View style={styles.sectionWrapper}>
-        <Text
-          style={[
-            styles.sectionHeading,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          Hourly Conditions
-        </Text>
+      {/* 4. Horizontal scrolling Hourly Conditions carousel */}
+      <HourlyConditions
+        hourly={weather.hourly}
+        selectedHourIndex={selectedHourIndex}
+        onSelectHour={setSelectedHourIndex}
+        sunrise={weather.current.sunrise}
+        sunset={weather.current.sunset}
+      />
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.hourlyList}
-        >
-          {weather.hourly.map((item, index) => {
-            const isSelected = selectedHourIndex === index;
-            return (
-              <Pressable
-                key={index}
-                onPress={() => handleSelectHour(index)}
-                accessible={true}
-                accessibilityRole="button"
-                accessibilityLabel={`${item.time}, ${item.temp} degrees, ${item.conditionText}`}
-                style={[
-                  styles.hourCard,
-                  {
-                    backgroundColor: isSelected
-                      ? theme.colors.cardSelectedBg
-                      : theme.colors.backgroundCard,
-                    borderColor: isSelected
-                      ? theme.colors.borderSelected
-                      : 'transparent',
-                    borderRadius: theme.radius.md,
-                    borderWidth: isSelected ? 2 : 0,
-                    transform: [{ scale: isSelected ? 1.05 : 1 }],
-                    ...(isSelected ? theme.shadows.cardSelected : theme.shadows.sm),
-                  },
-                ]}
-              >
-                <Text style={[styles.hourTime, { color: theme.colors.textSecondary }]}>
-                  {item.time}
-                </Text>
-                <WeatherIcon
-                  condition={item.conditionText}
-                  hour={item.hour}
-                  time={item.timestamp || item.time}
-                  isNight={item.isNight}
-                  sunrise={weather.current.sunrise}
-                  sunset={weather.current.sunset}
-                  size={24}
-                  style={{ marginVertical: 6 }}
-                />
-                <Text style={[styles.hourTemp, { color: theme.colors.textPrimary }]}>
-                  {Math.round(item.temp)}°
-                </Text>
-                {item.rainProb > 0 && (
-                  <Text style={[styles.hourRain, { color: theme.colors.weatherRain }]}>
-                    {item.rainProb}%
-                  </Text>
-                )}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
+      {/* 5. Large Outlook Card responding to selected hour & metric */}
+      <CurrentOutlookCard
+        selectedHour={selectedHour}
+        isCurrentHour={isCurrentHour}
+        selectedFactor={selectedFactor}
+      />
 
-      {/* Real Animated Bar for Selected Hour */}
+      {/* 6. 7-Day Personalized Outlook with condition-driven recommendations */}
+      <WeeklyOutlook
+        daily={weather.daily}
+        persona={persona}
+        aqi={weather.current.aqi}
+      />
+
+      {/* 7. Character Companion Note above safe area inset */}
       <View
         style={[
-          styles.expandedHourCard,
+          styles.characterNoteCard,
           {
             backgroundColor: theme.colors.backgroundCard,
-            borderRadius: theme.radius.card,
-            padding: theme.spacing.cardPadding,
-            ...theme.shadows.sm,
+            shadowColor: theme.colors.textPrimary,
           },
         ]}
       >
-        <View style={styles.expandedHeader}>
-          <Text
-            style={[
-              styles.expandedTitle,
-              {
-                color: theme.colors.textPrimary,
-                fontSize: theme.typography.sizes.headline,
-                fontWeight: theme.typography.weights.bold,
-              },
-            ]}
-          >
-            {selectedHour.time} Outlook: {selectedHour.conditionText}
-          </Text>
-        </View>
-
-        {selectedFactor === 'rain' && (
-          <AnimatedBar
-            label="Rain Probability"
-            value={selectedHour.rainProb}
-            unit="%"
-            color={theme.colors.weatherRain}
-          />
-        )}
-        {selectedFactor === 'temp' && (
-          <AnimatedBar
-            label={`Temperature (${Math.round(selectedHour.temp)}°C)`}
-            value={Math.min(100, Math.max(0, ((selectedHour.temp - 10) / 35) * 100))}
-            unit="%"
-            color={theme.colors.weatherHeat}
-          />
-        )}
-        {selectedFactor === 'wind' && (
-          <AnimatedBar
-            label={`Wind Speed (${Math.round(selectedHour.windSpeed)} km/h)`}
-            value={Math.min(100, (selectedHour.windSpeed / 50) * 100)}
-            unit="%"
-            color={theme.colors.weatherWind}
-          />
-        )}
-        {selectedFactor === 'uv' && (
-          <AnimatedBar
-            label={`UV Index (${selectedHour.uvIndex} / 12)`}
-            value={Math.min(100, (selectedHour.uvIndex / 12) * 100)}
-            unit="%"
-            color={theme.colors.weatherUV}
-          />
-        )}
-      </View>
-
-      {/* 2. Clean Vertical 7-Day Forecast with ONE Personalized Signal */}
-      <View style={styles.sectionWrapper}>
-        <Text
-          style={[
-            styles.sectionHeading,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          7-Day Personalized Outlook
-        </Text>
-
-        <View style={styles.dailyContainer}>
-          {weather.daily.map((day, idx) => {
-            // Generate ONE personalized signal per day
-            let signal = 'Comfortable day ahead';
-            if (day.rainProb >= 60) {
-              signal = 'Rain expected — carry an umbrella';
-            } else if (day.maxTemp >= 34) {
-              signal = 'Peak afternoon heat';
-            } else if (persona?.activities['fitness'] && day.rainProb < 20) {
-              signal = 'Ideal outdoor exercise morning';
-            } else if (persona?.activities['commuter'] && day.rainProb < 30) {
-              signal = 'Clear commute route';
-            }
-
-            return (
-              <View
-                key={idx}
-                style={[
-                  styles.dailyRow,
-                  {
-                    backgroundColor: theme.colors.backgroundCard,
-                    borderRadius: theme.radius.md,
-                    ...theme.shadows.sm,
-                  },
-                ]}
-              >
-                <View style={styles.dailyLeft}>
-                  <Text style={[styles.dailyDay, { color: theme.colors.textPrimary }]}>
-                    {day.dayName}
-                  </Text>
-                  <WeatherIcon
-                    condition={day.conditionText}
-                    size={20}
-                  />
-                </View>
-
-                <View style={styles.dailyMiddle}>
-                  <Text
-                    style={[
-                      styles.dailySignal,
-                      { color: theme.colors.primaryHover },
-                    ]}
-                  >
-                    • {signal}
-                  </Text>
-                </View>
-
-                <View style={styles.dailyRight}>
-                  <Text style={[styles.dailyMin, { color: theme.colors.textMuted }]}>
-                    {day.minTemp}°
-                  </Text>
-                  <Text style={[styles.dailySlash, { color: theme.colors.border }]}>/</Text>
-                  <Text style={[styles.dailyMax, { color: theme.colors.textPrimary }]}>
-                    {day.maxTemp}°
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* Character Companion Note */}
-      <View style={styles.characterNoteRow}>
-        <Character state="happy" size="sm" />
+        <Character state="happy" size={38} />
         <Text
           style={[
             styles.characterNoteText,
-            { color: theme.colors.textSecondary },
+            {
+              color: theme.colors.textSecondary,
+              fontSize: theme.typography.sizes.footnote,
+              fontWeight: theme.typography.weights.medium,
+            },
           ]}
         >
           I'll keep monitoring changes throughout the week for you.
@@ -440,135 +150,26 @@ export default function ForecastScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingVertical: 12,
+  scrollContent: {
+    paddingTop: 4,
+    paddingBottom: 60,
   },
-  title: {
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginVertical: 12,
-  },
-  activityWindowCard: {
-    padding: 14,
-    marginVertical: 8,
-  },
-  factorTab: {
+  characterNoteCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  factorTabIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  factorTabLabel: {
-    fontSize: 13,
-  },
-  sectionWrapper: {
-    marginTop: 18,
-  },
-  sectionHeading: {
-    marginBottom: 10,
-  },
-  hourlyList: {
-    paddingVertical: 6,
-    gap: 10,
-  },
-  hourCard: {
-    width: 72,
-    paddingVertical: 12,
-    alignItems: 'center',
-    minHeight: 96,
-  },
-  hourTime: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  hourIcon: {
-    fontSize: 24,
-    marginVertical: 6,
-  },
-  hourTemp: {
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  hourRain: {
-    fontSize: 11,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  expandedHourCard: {
-    marginTop: 14,
-  },
-  expandedHeader: {
-    marginBottom: 8,
-  },
-  expandedTitle: {
-    letterSpacing: -0.2,
-  },
-  dailyContainer: {
-    gap: 8,
-  },
-  dailyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: 18,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  dailyLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 90,
-  },
-  dailyDay: {
-    fontSize: 14,
-    fontWeight: '700',
-    width: 60,
-  },
-  dailyIcon: {
-    fontSize: 20,
-  },
-  dailyMiddle: {
-    flex: 1,
-    paddingHorizontal: 6,
-  },
-  dailySignal: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  dailyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dailyMin: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  dailySlash: {
-    marginHorizontal: 4,
-  },
-  dailyMax: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  characterNoteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 28,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    elevation: 1,
   },
   characterNoteText: {
-    fontSize: 13,
-    marginLeft: 12,
+    lineHeight: 16,
+    marginLeft: 10,
     flex: 1,
-    lineHeight: 18,
   },
 });

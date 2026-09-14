@@ -67,6 +67,23 @@ test('Character Message Matcher - Weather insights map to matching visual states
     getCharacterStateForMessage('Severe Thunderstorm ⛈️', 'Dangerous lightning and heavy rain expected.'),
     'thunderstorm'
   );
+
+  // Tomorrow weather forecasts
+  assert.strictEqual(
+    getCharacterStateForMessage('Rain in store tomorrow', 'Showers expected tomorrow with 65% rain chance.'),
+    'rain'
+  );
+
+  assert.strictEqual(
+    getCharacterStateForMessage('Warm afternoon tomorrow', 'Peak heat reaching 36°C tomorrow. Best outdoor workout window early.'),
+    'extreme_heat'
+  );
+
+  // Phrases containing 'rest of the day' should NOT falsely trigger sleeping/fog
+  assert.strictEqual(
+    getCharacterStateForMessage('Smooth commute conditions', 'Clear roads and pleasant skies for the rest of your trip.', 'sunny'),
+    'sunny'
+  );
 });
 
 test('Character Message Matcher - Fallback preserves base weather state', () => {

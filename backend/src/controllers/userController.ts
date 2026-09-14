@@ -1,73 +1,49 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { User } from '../models/User.js';
-import { deleteFirebaseUser } from '../config/firebase.js';
+import { clearAuthCookie } from '../utils/jwt.js';
 
 export class UserController {
   /**
    * GET /api/me
    */
   public static async getMe(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
-
-    try {
-      const user = await User.findOne({ firebaseUid: uid });
-      if (!user) {
-        res.status(404).json({ error: 'Not Found', message: 'User not found in database' });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        user: {
-          id: user._id,
-          firebaseUid: user.firebaseUid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          onboardingCompleted: user.onboardingCompleted,
-          profile: user.profile,
-          preferences: user.preferences,
-          personalization: user.personalization,
-          savedLocations: user.savedLocations,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: 'Server Error', message: err.message });
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
     }
+
+    res.status(200).json({
+      success: true,
+      user: req.user.toJSON(),
+    });
   }
 
   /**
    * PATCH /api/me/profile
    */
   public static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
-    const { displayName, photoURL } = req.body;
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const { name, displayName, avatar, photoURL } = req.body;
 
     try {
-      const user = await User.findOne({ firebaseUid: uid });
-      if (!user) {
-        res.status(404).json({ error: 'Not Found', message: 'User not found' });
-        return;
-      }
+      if (name !== undefined) req.user.name = name;
+      if (displayName !== undefined) req.user.displayName = displayName;
+      if (avatar !== undefined) req.user.avatar = avatar;
+      if (photoURL !== undefined) req.user.photoURL = photoURL;
 
-      if (displayName !== undefined) user.displayName = displayName;
-      if (photoURL !== undefined) user.photoURL = photoURL;
-
-      await user.save();
+      await req.user.save();
 
       res.status(200).json({
         success: true,
-        user: {
-          id: user._id,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        },
+        user: req.user.toJSON(),
       });
     } catch (err: any) {
-      res.status(500).json({ error: 'Server Error', message: err.message });
+      res.status(500).json({ success: false, message: err.message || 'Failed to update profile' });
     }
   }
 
@@ -75,55 +51,52 @@ export class UserController {
    * PATCH /api/me/preferences
    */
   public static async updatePreferences(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
     const prefs = req.body;
 
     try {
-      const user = await User.findOne({ firebaseUid: uid });
-      if (!user) {
-        res.status(404).json({ error: 'Not Found', message: 'User not found' });
-        return;
-      }
-
-      user.preferences = {
-        ...user.preferences,
+      req.user.preferences = {
+        ...req.user.preferences,
         ...prefs,
       };
 
-      await user.save();
+      await req.user.save();
 
       res.status(200).json({
         success: true,
-        preferences: user.preferences,
+        preferences: req.user.preferences,
       });
     } catch (err: any) {
-      res.status(500).json({ error: 'Server Error', message: err.message });
+      res.status(500).json({ success: false, message: err.message || 'Failed to update preferences' });
     }
   }
 
   /**
    * DELETE /api/me
-   * Deletes user document from MongoDB and removes from Firebase Auth
+   * Deletes user document from MongoDB and clears authentication cookie
    */
   public static async deleteAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const uid = req.user?.uid;
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
 
     try {
-      if (!uid) {
-        res.status(400).json({ error: 'Bad Request', message: 'Missing user ID' });
-        return;
-      }
-
-      const deleted = await User.findOneAndDelete({ firebaseUid: uid });
-      await deleteFirebaseUser(uid);
+      const userId = req.user._id;
+      await User.findByIdAndDelete(userId);
+      clearAuthCookie(res);
 
       res.status(200).json({
         success: true,
         message: 'Account and associated data deleted successfully',
-        deletedUser: deleted?._id,
+        deletedUser: userId,
       });
     } catch (err: any) {
-      res.status(500).json({ error: 'Server Error', message: err.message });
+      res.status(500).json({ success: false, message: err.message || 'Failed to delete account' });
     }
   }
 }
