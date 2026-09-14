@@ -27,10 +27,10 @@ async function runDiagnostics() {
   // 2. Test JWT Signing & Verification
   console.log('\n2. Testing JWT Signing & Verification...');
   try {
-    const testPayload = { userId: 'diag_user_123', email: 'test@mausam.in' };
-    const token = generateToken(testPayload);
+    const testUserId = 'diag_user_123';
+    const token = generateToken(testUserId);
     const decoded = verifyJwt(token);
-    if (decoded && decoded.userId === testPayload.userId && decoded.email === testPayload.email) {
+    if (decoded && decoded.userId === testUserId) {
       console.log('   ✅ JWT Signing and Verification operational');
       jwtSuccess = true;
     } else {
