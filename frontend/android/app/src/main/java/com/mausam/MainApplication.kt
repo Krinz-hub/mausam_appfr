@@ -1,4 +1,4 @@
-package com.anonymous.mausam
+package com.mausam
 
 import android.app.Application
 import android.content.res.Configuration

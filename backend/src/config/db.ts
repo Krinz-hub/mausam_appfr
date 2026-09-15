@@ -32,6 +32,20 @@ export async function connectDB(): Promise<void> {
       socketTimeoutMS: 45000,
       family: 4, // Force IPv4 to prevent macOS IPv6 monitor timeouts
     });
+
+    // Clean up any legacy indexes (e.g., firebaseUid from older auth systems)
+    try {
+      const collection = mongoose.connection.db?.collection('users');
+      if (collection) {
+        const indexes = await collection.indexes();
+        if (indexes.some((idx) => idx.name === 'firebaseUid_1')) {
+          await collection.dropIndex('firebaseUid_1');
+          console.log('🧹 Cleaned up legacy firebaseUid_1 index from users collection');
+        }
+      }
+    } catch {
+      // Non-blocking index cleanup
+    }
   } catch (error) {
     console.warn('⚠️ MongoDB initial connection failed:', error instanceof Error ? error.message : error);
     if (ENV.NODE_ENV === 'production') {
