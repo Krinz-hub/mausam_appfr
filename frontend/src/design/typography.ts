@@ -42,6 +42,55 @@ export const typography = {
     footnote: 16,
     caption: 14,
   },
+  // Standardized 5-Tier Typography System
+  display: {
+    fontFamily: 'Comfortaa_700Bold',
+    fontSize: 64,
+    lineHeight: 72,
+    fontWeight: '800' as TextStyle['fontWeight'],
+    letterSpacing: -1,
+  },
+  heading: {
+    fontFamily: 'Comfortaa_700Bold',
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: '800' as TextStyle['fontWeight'],
+    letterSpacing: -0.4,
+  },
+  subheading: {
+    fontFamily: 'Comfortaa_700Bold',
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '700' as TextStyle['fontWeight'],
+    letterSpacing: -0.2,
+  },
+  body: {
+    fontFamily: 'Comfortaa_500Medium',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500' as TextStyle['fontWeight'],
+  },
+  bodyBold: {
+    fontFamily: 'Comfortaa_700Bold',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700' as TextStyle['fontWeight'],
+  },
+  caption: {
+    fontFamily: 'Comfortaa_500Medium',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500' as TextStyle['fontWeight'],
+  },
+  label: {
+    fontFamily: 'Comfortaa_700Bold',
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '700' as TextStyle['fontWeight'],
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as TextStyle['textTransform'],
+  },
+
   // Neo-brutalist annotation and badge typography presets
   retroHeader: {
     fontSize: 13,

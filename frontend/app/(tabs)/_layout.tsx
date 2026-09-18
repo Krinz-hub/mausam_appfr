@@ -1,13 +1,19 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet, View, Text } from 'react-native';
+import { Platform, StyleSheet, View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/design';
 import { audioManager } from '../../src/services/audio/audioManager';
 import { hapticManager } from '../../src/services/haptics/hapticManager';
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
+  // Dynamic safe-area aware bottom bar calculation
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 16 : 6);
+  const barHeight = 54 + bottomInset;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -15,16 +21,18 @@ export default function TabsLayout() {
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: '#171717',
-          tabBarInactiveTintColor: '#717171',
+          tabBarInactiveTintColor: '#525252',
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
             backgroundColor: '#FFFDF7',
             borderTopColor: '#171717',
-            borderTopWidth: 3,
-            height: Platform.OS === 'ios' ? 88 : 70,
-            paddingTop: 8,
-            paddingBottom: Platform.OS === 'ios' ? 24 : 10,
-            paddingHorizontal: 8,
-            elevation: 8,
+            borderTopWidth: 2,
+            height: barHeight,
+            paddingTop: 4,
+            paddingBottom: bottomInset,
+            paddingHorizontal: 4,
+            elevation: 0,
+            shadowColor: 'transparent',
           },
         }}
         screenListeners={{
@@ -38,11 +46,24 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: 'Home',
+            tabBarButton: (props: any) => (
+              <Pressable
+                {...props}
+                style={({ pressed }) => [
+                  props.style,
+                  styles.tabButton,
+                  pressed && styles.tabButtonPressed,
+                ]}
+              />
+            ),
             tabBarLabel: ({ focused }) => (
               <Text
                 style={[
                   styles.tabLabel,
-                  { color: focused ? '#171717' : '#717171', fontWeight: focused ? '800' : '600' },
+                  {
+                    color: focused ? '#171717' : '#525252',
+                    fontWeight: focused ? '800' : '600',
+                  },
                 ]}
               >
                 {focused ? 'HOME ●' : 'HOME'}
@@ -52,7 +73,7 @@ export default function TabsLayout() {
               <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
                 <Ionicons
                   name={focused ? 'home' : 'home-outline'}
-                  size={19}
+                  size={18}
                   color="#171717"
                 />
               </View>
@@ -64,11 +85,24 @@ export default function TabsLayout() {
           name="forecast"
           options={{
             title: 'Forecast',
+            tabBarButton: (props: any) => (
+              <Pressable
+                {...props}
+                style={({ pressed }) => [
+                  props.style,
+                  styles.tabButton,
+                  pressed && styles.tabButtonPressed,
+                ]}
+              />
+            ),
             tabBarLabel: ({ focused }) => (
               <Text
                 style={[
                   styles.tabLabel,
-                  { color: focused ? '#171717' : '#717171', fontWeight: focused ? '800' : '600' },
+                  {
+                    color: focused ? '#171717' : '#525252',
+                    fontWeight: focused ? '800' : '600',
+                  },
                 ]}
               >
                 {focused ? 'TIMELINE ●' : 'TIMELINE'}
@@ -78,7 +112,7 @@ export default function TabsLayout() {
               <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
                 <Ionicons
                   name={focused ? 'partly-sunny' : 'partly-sunny-outline'}
-                  size={19}
+                  size={18}
                   color="#171717"
                 />
               </View>
@@ -90,11 +124,24 @@ export default function TabsLayout() {
           name="tips"
           options={{
             title: 'Insights',
+            tabBarButton: (props: any) => (
+              <Pressable
+                {...props}
+                style={({ pressed }) => [
+                  props.style,
+                  styles.tabButton,
+                  pressed && styles.tabButtonPressed,
+                ]}
+              />
+            ),
             tabBarLabel: ({ focused }) => (
               <Text
                 style={[
                   styles.tabLabel,
-                  { color: focused ? '#171717' : '#717171', fontWeight: focused ? '800' : '600' },
+                  {
+                    color: focused ? '#171717' : '#525252',
+                    fontWeight: focused ? '800' : '600',
+                  },
                 ]}
               >
                 {focused ? 'INSIGHTS ●' : 'INSIGHTS'}
@@ -104,7 +151,7 @@ export default function TabsLayout() {
               <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
                 <Ionicons
                   name={focused ? 'bulb' : 'bulb-outline'}
-                  size={19}
+                  size={18}
                   color="#171717"
                 />
               </View>
@@ -116,11 +163,24 @@ export default function TabsLayout() {
           name="profile"
           options={{
             title: 'Profile',
+            tabBarButton: (props: any) => (
+              <Pressable
+                {...props}
+                style={({ pressed }) => [
+                  props.style,
+                  styles.tabButton,
+                  pressed && styles.tabButtonPressed,
+                ]}
+              />
+            ),
             tabBarLabel: ({ focused }) => (
               <Text
                 style={[
                   styles.tabLabel,
-                  { color: focused ? '#171717' : '#717171', fontWeight: focused ? '800' : '600' },
+                  {
+                    color: focused ? '#171717' : '#525252',
+                    fontWeight: focused ? '800' : '600',
+                  },
                 ]}
               >
                 {focused ? 'PROFILE ●' : 'PROFILE'}
@@ -130,7 +190,7 @@ export default function TabsLayout() {
               <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
                 <Ionicons
                   name={focused ? 'person' : 'person-outline'}
-                  size={19}
+                  size={18}
                   color="#171717"
                 />
               </View>

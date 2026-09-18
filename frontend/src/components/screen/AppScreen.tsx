@@ -8,7 +8,7 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../design';
 
 export interface AppScreenProps {
@@ -20,6 +20,8 @@ export interface AppScreenProps {
   useAtmosphereGradient?: boolean;
   gradientColors?: [string, string, ...string[]];
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
+  refreshControl?: React.ReactElement;
+  showsVerticalScrollIndicator?: boolean;
 }
 
 export const AppScreen: React.FC<AppScreenProps> = ({
@@ -29,9 +31,15 @@ export const AppScreen: React.FC<AppScreenProps> = ({
   contentContainerStyle,
   backgroundColor,
   edges = ['top', 'left', 'right'],
+  refreshControl,
+  showsVerticalScrollIndicator = false,
 }) => {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const bg = backgroundColor || theme.colors.background;
+
+  // Calculate dynamic bottom clearance ensuring content always scrolls above bottom tab navigation
+  const safeBottomPadding = Math.max(insets.bottom, 8) + (theme.spacing.bottomNavClearance || 88);
 
   const content = scrollable ? (
     <ScrollView
@@ -40,12 +48,14 @@ export const AppScreen: React.FC<AppScreenProps> = ({
         styles.scrollContent,
         {
           paddingHorizontal: theme.spacing.screenHorizontal,
-          paddingBottom: theme.spacing.xxl,
+          paddingBottom: safeBottomPadding,
         },
         contentContainerStyle,
       ]}
-      showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
       keyboardShouldPersistTaps="handled"
+      refreshControl={refreshControl}
+      nestedScrollEnabled={true}
     >
       {children}
     </ScrollView>
@@ -55,6 +65,7 @@ export const AppScreen: React.FC<AppScreenProps> = ({
         styles.fixedContent,
         {
           paddingHorizontal: theme.spacing.screenHorizontal,
+          paddingBottom: safeBottomPadding,
         },
         contentContainerStyle,
       ]}

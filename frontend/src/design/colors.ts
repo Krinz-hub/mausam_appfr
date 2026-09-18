@@ -52,11 +52,11 @@ export const dayColors = {
   borderSelected: '#171717',
   borderHighlight: '#FF5533',
 
-  // Text Hierarchy
+  // Text Hierarchy (Optimized for WCAG AA contrast on #FFFDF7 & #FFFFFF)
   textPrimary: '#171717',
-  textSecondary: '#4A4A4A',
-  textMuted: '#717171',
-  textDisabled: '#A0A0A0',
+  textSecondary: '#2E2E2E',
+  textMuted: '#525252',
+  textDisabled: '#8A8A8A',
   textInverse: '#FFFDF7',
   textLink: '#FF5533',
 
@@ -136,11 +136,11 @@ export const nightColors = {
   borderSelected: '#FFB21A',
   borderHighlight: '#FFB21A',
 
-  // Text Hierarchy
+  // Text Hierarchy (Optimized for WCAG AA contrast on #171717 & #242424)
   textPrimary: '#FFFDF7',
-  textSecondary: '#D0D0D0',
-  textMuted: '#9E9E9E',
-  textDisabled: '#686868',
+  textSecondary: '#E8E8E8',
+  textMuted: '#BFBFBF',
+  textDisabled: '#7A7A7A',
   textInverse: '#171717',
   textLink: '#FFB21A',
 
