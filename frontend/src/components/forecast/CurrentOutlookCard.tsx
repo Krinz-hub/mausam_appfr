@@ -38,6 +38,12 @@ export const CurrentOutlookCard: React.FC<CurrentOutlookCardProps> = ({
     metricValueFormatted = `${Math.round(selectedHour.windSpeed)} km/h`;
     barValue = Math.min(100, (selectedHour.windSpeed / 50) * 100);
     barColor = '#7A9E7E';
+  } else if (selectedFactor === 'aqi') {
+    metricLabel = 'Air Quality Index';
+    const aqiVal = (selectedHour as any).aqi ?? 45;
+    metricValueFormatted = `${aqiVal} AQI`;
+    barValue = Math.min(100, (aqiVal / 200) * 100);
+    barColor = aqiVal > 100 ? '#FF5533' : aqiVal > 50 ? '#FFB21A' : '#7A9E7E';
   } else if (selectedFactor === 'uv') {
     metricLabel = 'UV Index';
     metricValueFormatted = `${selectedHour.uvIndex} / 12`;
@@ -47,21 +53,21 @@ export const CurrentOutlookCard: React.FC<CurrentOutlookCardProps> = ({
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.underlay} />
+      <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
-      <View style={styles.card}>
+      <View style={[styles.card, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
         <View style={styles.cardHeader}>
           <Text style={styles.headerDot}>●</Text>
-          <Text style={styles.title}>
+          <Text style={[styles.title, theme.isNight && { color: '#FFFDF7' }]}>
             {title}
           </Text>
         </View>
 
         <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>
+          <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>
             {metricLabel.toUpperCase()}
           </Text>
-          <Text style={styles.metricValue}>
+          <Text style={[styles.metricValue, theme.isNight && { color: '#FFFDF7' }]}>
             {metricValueFormatted}
           </Text>
         </View>

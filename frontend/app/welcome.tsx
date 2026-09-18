@@ -110,26 +110,26 @@ export default function WelcomeScreen() {
 
             <View style={styles.brandTitleRow}>
               <Text style={styles.brandDot}>●</Text>
-              <Text style={styles.appName}>
+              <Text style={[styles.appName, theme.isNight && { color: '#FFFDF7' }]}>
                 MAUSAM
               </Text>
             </View>
 
-            <Text style={styles.tagline}>
+            <Text style={[styles.tagline, theme.isNight && { color: '#BFBFBF' }]}>
               Personalized weather intelligence with companion personality.
             </Text>
           </View>
 
           {/* Retro Window Card Container */}
           <View style={styles.cardWrapper}>
-            <View style={styles.cardUnderlay} />
+            <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
-            <View style={styles.authCard}>
+            <View style={[styles.authCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
               {/* Retro Window Header */}
-              <View style={styles.windowHeader}>
+              <View style={[styles.windowHeader, theme.isNight && { backgroundColor: '#1C1C1C', borderBottomColor: '#3A3A3A' }]}>
                 <View style={styles.windowHeaderLeft}>
                   <Text style={styles.windowDot}>●</Text>
-                  <Text style={styles.windowTitle}>TERMINAL // ACCESS</Text>
+                  <Text style={[styles.windowTitle, theme.isNight && { color: '#FFFDF7' }]}>TERMINAL // ACCESS</Text>
                 </View>
                 <Text style={styles.windowStatus}>ONLINE</Text>
               </View>
@@ -141,13 +141,16 @@ export default function WelcomeScreen() {
                     onPress={() => switchMode('login')}
                     style={[
                       styles.tabButton,
-                      mode === 'login' ? styles.tabButtonActive : styles.tabButtonInactive,
+                      mode === 'login'
+                        ? styles.tabButtonActive
+                        : (theme.isNight ? { backgroundColor: '#1C1C1C', borderColor: '#3A3A3A' } : styles.tabButtonInactive),
                     ]}
                   >
                     <Text
                       style={[
                         styles.tabText,
                         { fontWeight: mode === 'login' ? '800' : '600' },
+                        theme.isNight && mode !== 'login' && { color: '#FFFDF7' },
                       ]}
                     >
                       {mode === 'login' ? 'SIGN IN ●' : 'SIGN IN'}
@@ -158,13 +161,16 @@ export default function WelcomeScreen() {
                     onPress={() => switchMode('register')}
                     style={[
                       styles.tabButton,
-                      mode === 'register' ? styles.tabButtonActive : styles.tabButtonInactive,
+                      mode === 'register'
+                        ? styles.tabButtonActive
+                        : (theme.isNight ? { backgroundColor: '#1C1C1C', borderColor: '#3A3A3A' } : styles.tabButtonInactive),
                     ]}
                   >
                     <Text
                       style={[
                         styles.tabText,
                         { fontWeight: mode === 'register' ? '800' : '600' },
+                        theme.isNight && mode !== 'register' && { color: '#FFFDF7' },
                       ]}
                     >
                       {mode === 'register' ? 'REGISTER ●' : 'REGISTER'}
@@ -174,9 +180,9 @@ export default function WelcomeScreen() {
 
                 {/* Error Message */}
                 {activeError ? (
-                  <View style={styles.errorBanner}>
+                  <View style={[styles.errorBanner, theme.isNight && { backgroundColor: '#361814', borderColor: '#3A3A3A' }]}>
                     <Text style={styles.errorIcon}>⚠</Text>
-                    <Text style={styles.errorText}>
+                    <Text style={[styles.errorText, theme.isNight && { color: '#FF5533' }]}>
                       {activeError}
                     </Text>
                   </View>
@@ -186,20 +192,20 @@ export default function WelcomeScreen() {
                 <View style={styles.form}>
                   {mode === 'register' ? (
                     <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>
+                      <Text style={[styles.inputLabel, theme.isNight && { color: '#FFFDF7' }]}>
                         FULL NAME
                       </Text>
-                      <View style={styles.inputWrapper}>
+                      <View style={[styles.inputWrapper, theme.isNight && { backgroundColor: '#1C1C1C', borderColor: '#3A3A3A' }]}>
                         <Ionicons
                           name="person-outline"
                           size={18}
-                          color="#171717"
+                          color={theme.isNight ? '#FFFDF7' : '#171717'}
                           style={styles.inputIcon}
                         />
                         <TextInput
-                          style={styles.input}
+                          style={[styles.input, theme.isNight && { color: '#FFFDF7' }]}
                           placeholder="e.g. Maya Lin"
-                          placeholderTextColor="#717171"
+                          placeholderTextColor={theme.isNight ? '#888888' : '#717171'}
                           value={name}
                           onChangeText={(val) => {
                             setName(val);
@@ -213,20 +219,20 @@ export default function WelcomeScreen() {
                   ) : null}
 
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>
+                    <Text style={[styles.inputLabel, theme.isNight && { color: '#FFFDF7' }]}>
                       EMAIL ADDRESS
                     </Text>
-                    <View style={styles.inputWrapper}>
+                    <View style={[styles.inputWrapper, theme.isNight && { backgroundColor: '#1C1C1C', borderColor: '#3A3A3A' }]}>
                       <Ionicons
                         name="mail-outline"
                         size={18}
-                        color="#171717"
+                        color={theme.isNight ? '#FFFDF7' : '#171717'}
                         style={styles.inputIcon}
                       />
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, theme.isNight && { color: '#FFFDF7' }]}
                         placeholder="you@example.com"
-                        placeholderTextColor="#717171"
+                        placeholderTextColor={theme.isNight ? '#888888' : '#717171'}
                         value={email}
                         onChangeText={(val) => {
                           setEmail(val);
@@ -240,20 +246,20 @@ export default function WelcomeScreen() {
                   </View>
 
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>
+                    <Text style={[styles.inputLabel, theme.isNight && { color: '#FFFDF7' }]}>
                       PASSWORD
                     </Text>
-                    <View style={styles.inputWrapper}>
+                    <View style={[styles.inputWrapper, theme.isNight && { backgroundColor: '#1C1C1C', borderColor: '#3A3A3A' }]}>
                       <Ionicons
                         name="lock-closed-outline"
                         size={18}
-                        color="#171717"
+                        color={theme.isNight ? '#FFFDF7' : '#171717'}
                         style={styles.inputIcon}
                       />
                       <TextInput
-                        style={[styles.input, { flex: 1 }]}
+                        style={[styles.input, { flex: 1 }, theme.isNight && { color: '#FFFDF7' }]}
                         placeholder={mode === 'register' ? 'At least 6 characters' : 'Enter your password'}
-                        placeholderTextColor="#717171"
+                        placeholderTextColor={theme.isNight ? '#888888' : '#717171'}
                         value={password}
                         onChangeText={(val) => {
                           setPassword(val);
@@ -270,7 +276,7 @@ export default function WelcomeScreen() {
                         <Ionicons
                           name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                           size={18}
-                          color="#171717"
+                          color={theme.isNight ? '#FFFDF7' : '#171717'}
                         />
                       </Pressable>
                     </View>
@@ -300,11 +306,11 @@ export default function WelcomeScreen() {
                   onPress={() => switchMode(mode === 'login' ? 'register' : 'login')}
                   style={styles.switchLink}
                 >
-                  <Text style={styles.switchText}>
+                  <Text style={[styles.switchText, theme.isNight && { color: '#BFBFBF' }]}>
                     {mode === 'login'
                       ? "Don't have an account? "
                       : 'Already have an account? '}
-                    <Text style={styles.switchHighlight}>
+                    <Text style={[styles.switchHighlight, theme.isNight && { color: '#FFB21A' }]}>
                       {mode === 'login' ? 'Register here' : 'Sign in here'}
                     </Text>
                   </Text>

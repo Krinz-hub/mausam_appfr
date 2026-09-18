@@ -15,17 +15,22 @@ export default function TabsLayout() {
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 16 : 6);
   const barHeight = 54 + bottomInset;
 
+  const activeLabelColor = theme.isNight ? '#FFB21A' : '#171717';
+  const inactiveLabelColor = theme.isNight ? '#888888' : '#525252';
+  const activeIconColor = '#171717';
+  const inactiveIconColor = theme.isNight ? '#A0A0A0' : '#171717';
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#171717',
-          tabBarInactiveTintColor: '#525252',
+          tabBarActiveTintColor: activeLabelColor,
+          tabBarInactiveTintColor: inactiveLabelColor,
           tabBarHideOnKeyboard: true,
           tabBarStyle: {
-            backgroundColor: '#FFFDF7',
-            borderTopColor: '#171717',
+            backgroundColor: theme.isNight ? '#1C1C1C' : '#FFFDF7',
+            borderTopColor: theme.isNight ? '#333333' : '#171717',
             borderTopWidth: 2,
             height: barHeight,
             paddingTop: 4,
@@ -61,7 +66,7 @@ export default function TabsLayout() {
                 style={[
                   styles.tabLabel,
                   {
-                    color: focused ? '#171717' : '#525252',
+                    color: focused ? activeLabelColor : inactiveLabelColor,
                     fontWeight: focused ? '800' : '600',
                   },
                 ]}
@@ -70,11 +75,19 @@ export default function TabsLayout() {
               </Text>
             ),
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
+              <View
+                style={[
+                  styles.iconBox,
+                  focused && [
+                    styles.iconBoxFocused,
+                    { borderColor: theme.isNight ? '#FFB21A' : '#171717' },
+                  ],
+                ]}
+              >
                 <Ionicons
                   name={focused ? 'home' : 'home-outline'}
                   size={18}
-                  color="#171717"
+                  color={focused ? activeIconColor : inactiveIconColor}
                 />
               </View>
             ),
@@ -100,7 +113,7 @@ export default function TabsLayout() {
                 style={[
                   styles.tabLabel,
                   {
-                    color: focused ? '#171717' : '#525252',
+                    color: focused ? activeLabelColor : inactiveLabelColor,
                     fontWeight: focused ? '800' : '600',
                   },
                 ]}
@@ -109,11 +122,19 @@ export default function TabsLayout() {
               </Text>
             ),
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
+              <View
+                style={[
+                  styles.iconBox,
+                  focused && [
+                    styles.iconBoxFocused,
+                    { borderColor: theme.isNight ? '#FFB21A' : '#171717' },
+                  ],
+                ]}
+              >
                 <Ionicons
                   name={focused ? 'partly-sunny' : 'partly-sunny-outline'}
                   size={18}
-                  color="#171717"
+                  color={focused ? activeIconColor : inactiveIconColor}
                 />
               </View>
             ),
@@ -139,7 +160,7 @@ export default function TabsLayout() {
                 style={[
                   styles.tabLabel,
                   {
-                    color: focused ? '#171717' : '#525252',
+                    color: focused ? activeLabelColor : inactiveLabelColor,
                     fontWeight: focused ? '800' : '600',
                   },
                 ]}
@@ -148,11 +169,19 @@ export default function TabsLayout() {
               </Text>
             ),
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
+              <View
+                style={[
+                  styles.iconBox,
+                  focused && [
+                    styles.iconBoxFocused,
+                    { borderColor: theme.isNight ? '#FFB21A' : '#171717' },
+                  ],
+                ]}
+              >
                 <Ionicons
                   name={focused ? 'bulb' : 'bulb-outline'}
                   size={18}
-                  color="#171717"
+                  color={focused ? activeIconColor : inactiveIconColor}
                 />
               </View>
             ),
@@ -178,7 +207,7 @@ export default function TabsLayout() {
                 style={[
                   styles.tabLabel,
                   {
-                    color: focused ? '#171717' : '#525252',
+                    color: focused ? activeLabelColor : inactiveLabelColor,
                     fontWeight: focused ? '800' : '600',
                   },
                 ]}
@@ -187,11 +216,19 @@ export default function TabsLayout() {
               </Text>
             ),
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconBox, focused && styles.iconBoxFocused]}>
+              <View
+                style={[
+                  styles.iconBox,
+                  focused && [
+                    styles.iconBoxFocused,
+                    { borderColor: theme.isNight ? '#FFB21A' : '#171717' },
+                  ],
+                ]}
+              >
                 <Ionicons
                   name={focused ? 'person' : 'person-outline'}
                   size={18}
-                  color="#171717"
+                  color={focused ? activeIconColor : inactiveIconColor}
                 />
               </View>
             ),
@@ -203,14 +240,27 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
+    paddingVertical: 2,
+  },
+  tabButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
+  },
   tabLabel: {
     fontSize: 10,
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     marginTop: 2,
+    textAlign: 'center',
   },
   iconBox: {
-    width: 42,
-    height: 28,
+    width: 36,
+    height: 24,
     borderRadius: 6,
     borderWidth: 1.5,
     borderColor: 'transparent',
@@ -219,16 +269,6 @@ const styles = StyleSheet.create({
   },
   iconBoxFocused: {
     backgroundColor: '#FFB21A',
-    borderColor: '#171717',
-    borderWidth: 2,
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '2px 2px 0px #171717' } as any)
-      : {
-          shadowColor: '#171717',
-          shadowOffset: { width: 2, height: 2 },
-          shadowOpacity: 1,
-          shadowRadius: 0,
-          elevation: 2,
-        }),
+    borderWidth: 1.5,
   },
 });

@@ -130,9 +130,9 @@ export const nightColors = {
   surfaceBlue: '#1F2A38',
 
   // Borders
-  border: '#FFFDF7',
-  borderLight: '#FFFDF7',
-  borderFunctional: '#FFFDF7',
+  border: '#3A3A3A',
+  borderLight: '#2E2E2E',
+  borderFunctional: '#3A3A3A',
   borderSelected: '#FFB21A',
   borderHighlight: '#FFB21A',
 

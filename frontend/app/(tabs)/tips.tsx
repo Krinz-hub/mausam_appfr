@@ -93,88 +93,105 @@ export default function TipsScreen() {
 
   const activeExperience = experience || DecisionEngine.decide(weather, persona || useOnboardingStore.getState().personaProfile!, new Date().getHours()).experience;
 
-  const allInsights = [
+  const rawInsights = [
     { ...activeExperience.primaryInsight, isPrimary: true },
     ...activeExperience.cards.map((c) => ({ ...c, isPrimary: false, reasonCodes: [] })),
   ];
 
+  // Visual Hierarchy Sorting:
+  // 1. Important / Current Warning (storm, severe, alert)
+  // 2. Personalized Recommendation (primary insight / fitness / commute)
+  // 3. Secondary Insight (UV, wind, comfort)
+  // 4. General Info / Tip
+  const sortedInsights = [...rawInsights].sort((a, b) => {
+    const score = (item: typeof a) => {
+      const type = (item.type || '').toLowerCase();
+      if (item.priority === 3 || type.includes('storm') || type.includes('severe') || type.includes('alert')) return 4;
+      if (item.isPrimary) return 3;
+      if (item.priority === 2 || type.includes('heat') || type.includes('cold') || type.includes('rain')) return 2;
+      return 1;
+    };
+    return score(b) - score(a);
+  });
+
   return (
-    <AppScreen scrollable={true} contentContainerStyle={{ paddingBottom: 60 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={{ color: '#FF5533', fontSize: 10, marginRight: 6 }}>●</Text>
-            <Text style={{ fontSize: 10, fontWeight: '800', color: '#717171', letterSpacing: 0.8 }}>
-              ADVISORY MATRIX
+    <AppScreen
+      scrollable={true}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
+      }
+      contentContainerStyle={{ paddingBottom: 16 }}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+          <Text style={{ color: '#FF5533', fontSize: 10, marginRight: 6 }}>●</Text>
+          <Text style={{ fontSize: 10, fontWeight: '800', color: theme.isNight ? '#FFB21A' : '#525252', letterSpacing: 0.8 }}>
+            ADVISORY MATRIX
+          </Text>
+        </View>
+        <Text
+          style={[
+            styles.title,
+            {
+              color: theme.isNight ? '#FFFDF7' : '#171717',
+              fontSize: 30,
+              fontWeight: '800',
+            },
+          ]}
+        >
+          Insights & Tips
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.isNight ? '#BFBFBF' : '#525252', fontWeight: '500' }]}>
+          Tailored suggestions ranked by your sensitivity and routine
+        </Text>
+      </View>
+
+      {/* Character Status Banner */}
+      <View style={styles.bannerWrapper}>
+        <View style={[styles.bannerUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+        <View style={[styles.bannerCard, theme.isNight && { backgroundColor: '#2E2416', borderColor: '#3A3A3A' }]}>
+          <Character state="happy" size="md" />
+          <View style={{ flex: 1, marginLeft: 14 }}>
+            <Text style={[styles.bannerTitle, theme.isNight && { color: '#FFFDF7' }]}>
+              Adapting to your feedback
+            </Text>
+            <Text style={[styles.bannerText, theme.isNight && { color: '#E8E8E8' }]}>
+              Every thumbs up or down tunes tomorrow’s suggestions.
             </Text>
           </View>
-          <Text
-            style={[
-              styles.title,
-              {
-                color: '#171717',
-                fontSize: 30,
-                fontWeight: '800',
-              },
-            ]}
-          >
-            Insights & Tips
-          </Text>
-          <Text style={[styles.subtitle, { color: '#4A4A4A', fontWeight: '500' }]}>
-            Tailored suggestions ranked by your sensitivity and routine
-          </Text>
         </View>
+      </View>
 
-        {/* Character Status Banner */}
-        <View style={styles.bannerWrapper}>
-          <View style={styles.bannerUnderlay} />
-          <View style={styles.bannerCard}>
-            <Character state="happy" size="md" />
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={styles.bannerTitle}>
-                Adapting to your feedback
-              </Text>
-              <Text style={styles.bannerText}>
-                Every thumbs up or down tunes tomorrow’s suggestions.
-              </Text>
-            </View>
-          </View>
-        </View>
+      {/* Ranked Insights List */}
+      <View style={styles.insightsList}>
+        {sortedInsights.map((insight, index) => {
+          const currentDecisionId = activeExperience.decisionId;
+          const feedbackStatus = feedbackHistory[currentDecisionId]?.type;
 
-        {/* Ranked Insights List */}
-        <View style={styles.insightsList}>
-          {allInsights.map((insight, index) => {
-            const currentDecisionId = activeExperience.decisionId;
-            const feedbackStatus = feedbackHistory[currentDecisionId]?.type;
-
-            return (
-              <InsightCard
-                key={index}
-                decisionId={currentDecisionId}
-                type={insight.type}
-                title={insight.title}
-                shortMessage={insight.shortMessage}
-                reasonCodes={insight.reasonCodes}
-                priority={insight.priority}
-                icon={insight.icon}
-                isPrimary={insight.isPrimary}
-                feedbackGiven={feedbackStatus}
-                onFeedback={handleFeedback}
-              />
-            );
-          })}
-        </View>
-      </ScrollView>
+          return (
+            <InsightCard
+              key={`${insight.type}_${index}`}
+              decisionId={currentDecisionId}
+              type={insight.type}
+              title={insight.title}
+              shortMessage={insight.shortMessage}
+              reasonCodes={insight.reasonCodes}
+              priority={insight.priority}
+              icon={insight.icon}
+              isPrimary={insight.isPrimary}
+              feedbackGiven={feedbackStatus}
+              onFeedback={handleFeedback}
+            />
+          );
+        })}
+      </View>
 
       {/* Feedback Reason Modal */}
       <FeedbackModal
@@ -212,16 +229,16 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   bannerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#FFF0D4',
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   bannerTitle: {
     fontSize: 15,
@@ -232,7 +249,7 @@ const styles = StyleSheet.create({
   bannerText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#4A4A4A',
+    color: '#2E2E2E',
     lineHeight: 18,
     marginTop: 2,
   },

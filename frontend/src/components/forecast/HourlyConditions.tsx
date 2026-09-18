@@ -34,7 +34,12 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionDot}>●</Text>
-        <Text style={styles.heading}>
+        <Text
+          style={[
+            styles.heading,
+            { color: theme.isNight ? '#FFFDF7' : '#171717' },
+          ]}
+        >
           HOURLY CONDITIONS
         </Text>
       </View>
@@ -51,7 +56,12 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
 
           return (
             <View key={index} style={styles.cardWrapper}>
-              <View style={styles.cardUnderlay} />
+              <View
+                style={[
+                  styles.cardUnderlay,
+                  { backgroundColor: theme.isNight ? '#000000' : '#171717' },
+                ]}
+              />
 
               <Pressable
                 onPress={() => handleSelect(index)}
@@ -62,10 +72,15 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
                 style={({ pressed }) => [
                   styles.hourCard,
                   {
-                    backgroundColor: isSelected ? '#FFB21A' : '#FFFFFF',
-                    borderWidth: isSelected ? 2.5 : 2,
+                    backgroundColor: isSelected
+                      ? '#FFB21A'
+                      : theme.isNight
+                      ? '#242424'
+                      : '#FFFFFF',
+                    borderColor:
+                      isSelected || !theme.isNight ? '#171717' : '#3A3A3A',
                   },
-                  (pressed || isSelected) && styles.cardPressed,
+                  pressed && styles.cardPressed,
                 ]}
               >
                 <Text
@@ -73,7 +88,11 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
                     styles.hourTime,
                     {
                       fontWeight: isSelected ? '800' : '700',
-                      color: '#171717',
+                      color: isSelected
+                        ? '#171717'
+                        : theme.isNight
+                        ? '#E8E8E8'
+                        : '#171717',
                     },
                   ]}
                 >
@@ -92,13 +111,37 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
                   />
                 </View>
 
-                <Text style={styles.hourTemp}>
+                <Text
+                  style={[
+                    styles.hourTemp,
+                    {
+                      color: isSelected
+                        ? '#171717'
+                        : theme.isNight
+                        ? '#FFFDF7'
+                        : '#171717',
+                    },
+                  ]}
+                >
                   {Math.round(item.temp)}°
                 </Text>
 
                 {item.rainProb > 0 ? (
-                  <View style={styles.rainBadge}>
-                    <Text style={styles.rainText}>
+                  <View
+                    style={[
+                      styles.rainBadge,
+                      theme.isNight && {
+                        backgroundColor: '#1F2A38',
+                        borderColor: '#3A3A3A',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.rainText,
+                        theme.isNight && { color: '#A8C7FF' },
+                      ]}
+                    >
                       {item.rainProb}%
                     </Text>
                   </View>
@@ -135,8 +178,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   carouselContainer: {
-    paddingVertical: 4,
-    paddingRight: 16,
+    paddingVertical: 6,
+    paddingRight: 24,
     flexDirection: 'row',
   },
   cardWrapper: {
@@ -155,14 +198,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   hourCard: {
-    width: 76,
+    width: 72,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderRadius: 10,
     borderColor: '#171717',
-    minHeight: 116,
+    minHeight: 114,
   },
   cardPressed: {
     transform: [{ translateX: 1.5 }, { translateY: 1.5 }],

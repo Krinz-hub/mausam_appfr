@@ -144,11 +144,29 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerDot}>●</Text>
-          <Text style={styles.headerTitle}>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: theme.isNight ? '#FFFDF7' : '#171717' },
+            ]}
+          >
             INTELLIGENCE POOL
           </Text>
-          <View style={styles.counterBadge}>
-            <Text style={styles.counterText}>
+          <View
+            style={[
+              styles.counterBadge,
+              theme.isNight && {
+                backgroundColor: '#362910',
+                borderColor: '#FFB21A',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.counterText,
+                theme.isNight && { color: '#FFB21A' },
+              ]}
+            >
               {safeIndex + 1}/{items.length}
             </Text>
           </View>
@@ -158,30 +176,46 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
         <View style={styles.navControls}>
           <Pressable
             onPress={() => handleNavigate(safeIndex - 1)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 6 }}
             style={({ pressed }) => [
               styles.navButton,
+              {
+                backgroundColor: theme.isNight ? '#242424' : '#FFFFFF',
+                borderColor: theme.isNight ? '#3A3A3A' : '#171717',
+              },
               pressed && styles.navButtonPressed,
             ]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Previous suggestion"
           >
-            <Ionicons name="chevron-back" size={15} color="#171717" />
+            <Ionicons
+              name="chevron-back"
+              size={15}
+              color={theme.isNight ? '#FFFDF7' : '#171717'}
+            />
           </Pressable>
 
           <Pressable
             onPress={() => handleNavigate(safeIndex + 1)}
-            hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
+            hitSlop={{ top: 10, bottom: 10, left: 6, right: 10 }}
             style={({ pressed }) => [
               styles.navButton,
+              {
+                backgroundColor: theme.isNight ? '#242424' : '#FFFFFF',
+                borderColor: theme.isNight ? '#3A3A3A' : '#171717',
+              },
               pressed && styles.navButtonPressed,
             ]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Next suggestion"
           >
-            <Ionicons name="chevron-forward" size={15} color="#171717" />
+            <Ionicons
+              name="chevron-forward"
+              size={15}
+              color={theme.isNight ? '#FFFDF7' : '#171717'}
+            />
           </Pressable>
         </View>
       </View>
@@ -206,8 +240,18 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
         >
           {items.map((item, idx) => {
             const isPrimary = item.isPrimary ?? (idx === 0);
-            const cardBg = isPrimary ? '#FFF7DE' : '#FFFFFF';
-            const badgeBg = isPrimary ? '#FFB21A' : '#EBF3FF';
+            const cardBg = theme.isNight
+              ? (isPrimary ? '#2E2416' : '#242424')
+              : (isPrimary ? '#FFF7DE' : '#FFFFFF');
+            const cardBorder = theme.isNight
+              ? (isPrimary ? '#FFB21A' : '#3A3A3A')
+              : '#171717';
+            const badgeBg = isPrimary
+              ? '#FFB21A'
+              : theme.isNight
+              ? '#1F2A38'
+              : '#EBF3FF';
+            const underlayBg = theme.isNight ? '#000000' : '#171717';
 
             return (
               <View
@@ -216,12 +260,20 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
               >
                 <View style={styles.cardWrapper}>
                   {/* Hard offset shadow underlay */}
-                  <View style={styles.cardUnderlay} />
+                  <View
+                    style={[
+                      styles.cardUnderlay,
+                      { backgroundColor: underlayBg },
+                    ]}
+                  />
 
                   <View
                     style={[
                       styles.card,
-                      { backgroundColor: cardBg },
+                      {
+                        backgroundColor: cardBg,
+                        borderColor: cardBorder,
+                      },
                     ]}
                   >
                     {/* Top Meta Row (Badge, Category Icon, Swipe Cue) */}
@@ -230,35 +282,66 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
                         <View
                           style={[
                             styles.iconBox,
-                            { backgroundColor: badgeBg },
+                            {
+                              backgroundColor: badgeBg,
+                              borderColor: cardBorder,
+                            },
                           ]}
                         >
                           <Ionicons
                             name={getInsightIcon(item.type)}
                             size={16}
-                            color="#171717"
+                            color={isPrimary || !theme.isNight ? '#171717' : '#A8C7FF'}
                           />
                         </View>
-                        <Text style={styles.badgeText}>
+                        <Text
+                          style={[
+                            styles.badgeText,
+                            { color: theme.isNight ? '#FFFDF7' : '#171717' },
+                          ]}
+                        >
                           {item.badge || (isPrimary ? 'Priority Intelligence' : 'Contextual Advisory')}
                         </Text>
                       </View>
 
-                      <View style={styles.swipeCue}>
-                        <Text style={styles.swipeCueText}>
+                      <View
+                        style={[
+                          styles.swipeCue,
+                          theme.isNight && {
+                            backgroundColor: '#1C1C1C',
+                            borderColor: '#3A3A3A',
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.swipeCueText,
+                            theme.isNight && { color: '#BFBFBF' },
+                          ]}
+                        >
                           SWIPE ➔
                         </Text>
                       </View>
                     </View>
 
                     {/* Title */}
-                    <Text style={styles.cardTitle}>
+                    <Text
+                      style={[
+                        styles.cardTitle,
+                        { color: theme.isNight ? '#FFFDF7' : '#171717' },
+                      ]}
+                    >
                       {item.message}
                     </Text>
 
                     {/* Body / Description */}
                     {item.tip ? (
-                      <Text style={styles.cardMessage}>
+                      <Text
+                        style={[
+                          styles.cardMessage,
+                          { color: theme.isNight ? '#E8E8E8' : '#2E2E2E' },
+                        ]}
+                      >
                         {item.tip}
                       </Text>
                     ) : null}
@@ -379,12 +462,12 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   card: {
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 16,
     minHeight: 115,
   },
@@ -427,7 +510,7 @@ const styles = StyleSheet.create({
   swipeCueText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#717171',
+    color: '#525252',
     letterSpacing: 0.5,
   },
   cardTitle: {
@@ -440,7 +523,7 @@ const styles = StyleSheet.create({
   cardMessage: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#4A4A4A',
+    color: '#2E2E2E',
     lineHeight: 18,
   },
   paginationRow: {
@@ -450,7 +533,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   dotTouch: {
-    padding: 4,
+    padding: 6,
   },
   squareDot: {
     width: 10,

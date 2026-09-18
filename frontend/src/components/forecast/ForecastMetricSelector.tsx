@@ -6,7 +6,7 @@ import { useTheme } from '../../design';
 import { audioManager } from '../../services/audio/audioManager';
 import { hapticManager } from '../../services/haptics/hapticManager';
 
-export type FactorTab = 'rain' | 'temp' | 'wind' | 'uv';
+export type FactorTab = 'rain' | 'temp' | 'wind' | 'aqi' | 'uv';
 
 export interface MetricTabItem {
   id: FactorTab;
@@ -18,6 +18,7 @@ export const METRIC_TABS: MetricTabItem[] = [
   { id: 'rain', label: 'Rain %', icon: 'rainy-outline' },
   { id: 'temp', label: 'Temp', icon: 'thermometer-outline' },
   { id: 'wind', label: 'Wind', icon: 'speedometer-outline' },
+  { id: 'aqi', label: 'Air Quality', icon: 'leaf-outline' },
   { id: 'uv', label: 'UV Index', icon: 'sunny-outline' },
 ];
 
@@ -51,7 +52,12 @@ export const ForecastMetricSelector: React.FC<ForecastMetricSelectorProps> = ({
           return (
             <View key={tab.id} style={styles.tabWrapper}>
               {/* Hard shadow underlay */}
-              <View style={styles.tabUnderlay} />
+              <View
+                style={[
+                  styles.tabUnderlay,
+                  { backgroundColor: theme.isNight ? '#000000' : '#171717' },
+                ]}
+              />
 
               <Pressable
                 onPress={() => handlePress(tab.id)}
@@ -62,23 +68,38 @@ export const ForecastMetricSelector: React.FC<ForecastMetricSelectorProps> = ({
                 style={({ pressed }) => [
                   styles.tabButton,
                   {
-                    backgroundColor: isSelected ? '#FFB21A' : '#FFFFFF',
-                    borderWidth: isSelected ? 2.5 : 2,
+                    backgroundColor: isSelected
+                      ? '#FFB21A'
+                      : theme.isNight
+                      ? '#242424'
+                      : '#FFFFFF',
+                    borderColor:
+                      isSelected || !theme.isNight ? '#171717' : '#3A3A3A',
                   },
-                  (pressed || isSelected) && styles.tabButtonPressed,
+                  pressed && styles.tabButtonPressed,
                 ]}
               >
                 <Ionicons
                   name={tab.icon}
                   size={16}
-                  color="#171717"
+                  color={
+                    isSelected
+                      ? '#171717'
+                      : theme.isNight
+                      ? '#E8E8E8'
+                      : '#171717'
+                  }
                   style={styles.tabIcon}
                 />
                 <Text
                   style={[
                     styles.tabLabel,
                     {
-                      color: '#171717',
+                      color: isSelected
+                        ? '#171717'
+                        : theme.isNight
+                        ? '#E8E8E8'
+                        : '#171717',
                       fontWeight: isSelected ? '800' : '600',
                     },
                   ]}

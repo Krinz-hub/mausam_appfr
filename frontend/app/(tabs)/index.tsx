@@ -286,60 +286,58 @@ export default function HomeScreen() {
   return (
     <AppScreen
       scrollable={true}
-      contentContainerStyle={{ paddingBottom: 60 }}
-    >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
-        {/* 1. Hero Weather (Greeting, Location, Large Temp, Feels Like, Minimal Metrics) */}
-        <WeatherHero
-          greeting={greeting}
-          locationName={location.name || weather.locationName}
-          temperature={weather.current.temperature}
-          feelsLike={weather.current.feelsLike}
-          conditionText={weather.current.conditionText}
-          conditionEmoji={weather.current.conditionEmoji}
-          humidity={weather.current.humidity}
-          windSpeed={weather.current.windSpeed}
-          uvIndex={weather.current.uvIndex}
-          isPrecise={location.isPrecise}
-          isLocating={isLocating}
-          isNight={weather.current.isDay !== undefined ? !weather.current.isDay : undefined}
-          sunrise={weather.current.sunrise}
-          sunset={weather.current.sunset}
-          onPressLocation={() => setLocationModalVisible(true)}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
         />
+      }
+      contentContainerStyle={{ paddingBottom: 16 }}
+    >
+      {/* 1. Hero Weather (Greeting, Location, Large Temp, Feels Like, Minimal Metrics) */}
+      <WeatherHero
+        greeting={greeting}
+        locationName={location.name || weather.locationName}
+        temperature={weather.current.temperature}
+        feelsLike={weather.current.feelsLike}
+        conditionText={weather.current.conditionText}
+        conditionEmoji={weather.current.conditionEmoji}
+        humidity={weather.current.humidity}
+        windSpeed={weather.current.windSpeed}
+        uvIndex={weather.current.uvIndex}
+        isPrecise={location.isPrecise}
+        isLocating={isLocating}
+        isNight={weather.current.isDay !== undefined ? !weather.current.isDay : undefined}
+        sunrise={weather.current.sunrise}
+        sunset={weather.current.sunset}
+        onPressLocation={() => setLocationModalVisible(true)}
+      />
 
-        {/* 2. Character Anchor with Centralized Weather Reaction Engine */}
-        {characterResolution && (
-          <View style={styles.characterSection}>
-            <WeatherCharacter
-              key={`weather_char_${activeCharacterState}_${suggestionIndex}_${isTired ? 'tired' : 'norm'}`}
-              state={activeCharacterState}
-              hover={true}
-              isTired={isTired}
-              onPress={handleCharacterTap}
-            />
-          </View>
-        )}
+      {/* 2. Character Anchor with Centralized Weather Reaction Engine */}
+      {characterResolution && (
+        <View style={styles.characterSection}>
+          <WeatherCharacter
+            state={activeCharacterState}
+            hover={true}
+            isTired={isTired}
+            onPress={handleCharacterTap}
+          />
+        </View>
+      )}
 
-        {/* 3. Main Suggestion Insights Carousel (Swipeable Left & Right to Shuffle) */}
-        {suggestions.length > 0 && (
-          <View style={styles.primaryInsightContainer}>
-            <SwipeableInsightsCarousel
-              items={suggestions}
-              activeIndex={suggestionIndex % suggestions.length}
-              onIndexChange={handleSelectSuggestionIndex}
-            />
-          </View>
-        )}
+      {/* 3. Main Suggestion Insights Carousel (Swipeable Left & Right to Shuffle) */}
+      {suggestions.length > 0 && (
+        <View style={styles.primaryInsightContainer}>
+          <SwipeableInsightsCarousel
+            items={suggestions}
+            activeIndex={suggestionIndex % suggestions.length}
+            onIndexChange={handleSelectSuggestionIndex}
+          />
+        </View>
+      )}
 
         {/* Conditional Engine-Approved Astronomical Insight Card */}
         {experience?.astronomicalInsight && (
@@ -357,7 +355,7 @@ export default function HomeScreen() {
                 style={[
                   styles.sectionTitle,
                   {
-                    color: '#171717',
+                    color: theme.isNight ? '#FFFDF7' : '#171717',
                     fontSize: 12,
                     fontWeight: '800',
                     letterSpacing: 0.8,
@@ -369,7 +367,7 @@ export default function HomeScreen() {
             </View>
             <Pressable
               onPress={() => router.push('/(tabs)/forecast')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               accessible={true}
               accessibilityRole="button"
               accessibilityLabel="View detailed hourly timeline"
@@ -399,12 +397,23 @@ export default function HomeScreen() {
               const isCurrentHour = idx === 0;
               return (
                 <View key={idx} style={styles.miniCardWrapper}>
-                  <View style={styles.miniCardUnderlay} />
+                  <View
+                    style={[
+                      styles.miniCardUnderlay,
+                      { backgroundColor: theme.isNight ? '#000000' : '#171717' },
+                    ]}
+                  />
                   <View
                     style={[
                       styles.miniHourlyCard,
                       {
-                        backgroundColor: isCurrentHour ? '#FFB21A' : '#FFFFFF',
+                        backgroundColor: isCurrentHour
+                          ? '#FFB21A'
+                          : theme.isNight
+                          ? '#242424'
+                          : '#FFFFFF',
+                        borderColor:
+                          isCurrentHour || !theme.isNight ? '#171717' : '#3A3A3A',
                       },
                     ]}
                   >
@@ -412,7 +421,11 @@ export default function HomeScreen() {
                       style={[
                         styles.miniHourText,
                         {
-                          color: '#171717',
+                          color: isCurrentHour
+                            ? '#171717'
+                            : theme.isNight
+                            ? '#E8E8E8'
+                            : '#171717',
                           fontWeight: isCurrentHour ? '800' : '700',
                         },
                       ]}
@@ -433,7 +446,11 @@ export default function HomeScreen() {
                       style={[
                         styles.miniTemp,
                         {
-                          color: '#171717',
+                          color: isCurrentHour
+                            ? '#171717'
+                            : theme.isNight
+                            ? '#FFFDF7'
+                            : '#171717',
                           fontWeight: '800',
                         },
                       ]}
@@ -449,7 +466,12 @@ export default function HomeScreen() {
 
         {/* 5. Progressive Disclosure Link to Raw Detailed Weather */}
         <View style={styles.detailLinkContainer}>
-          <View style={styles.detailUnderlay} />
+          <View
+            style={[
+              styles.detailUnderlay,
+              { backgroundColor: theme.isNight ? '#000000' : '#171717' },
+            ]}
+          />
           <Pressable
             onPress={() => router.push('/details/metrics')}
             accessible={true}
@@ -457,6 +479,10 @@ export default function HomeScreen() {
             accessibilityLabel="View detailed metrics"
             style={({ pressed }) => [
               styles.detailLinkCard,
+              {
+                backgroundColor: theme.isNight ? '#242424' : '#FFFFFF',
+                borderColor: theme.isNight ? '#3A3A3A' : '#171717',
+              },
               pressed && { transform: [{ translateX: 2 }, { translateY: 2 }] },
             ]}
           >
@@ -467,7 +493,7 @@ export default function HomeScreen() {
                   style={[
                     styles.detailTitle,
                     {
-                      color: '#171717',
+                      color: theme.isNight ? '#FFFDF7' : '#171717',
                       fontSize: 14,
                       fontWeight: '800',
                     },
@@ -480,7 +506,7 @@ export default function HomeScreen() {
                 style={[
                   styles.detailSubtitle,
                   {
-                    color: '#4A4A4A',
+                    color: theme.isNight ? '#BFBFBF' : '#4A4A4A',
                     fontSize: 12,
                     fontWeight: '500',
                   },
@@ -489,12 +515,16 @@ export default function HomeScreen() {
                 Humidity, UV, AQI, pressure & visibility metrics
               </Text>
             </View>
-            <View style={styles.arrowBox}>
+            <View
+              style={[
+                styles.arrowBox,
+                theme.isNight && { borderColor: '#FFB21A' },
+              ]}
+            >
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#171717' }}>➔</Text>
             </View>
           </Pressable>
         </View>
-      </ScrollView>
 
       {/* Optional Feedback Reason Modal */}
       <FeedbackModal

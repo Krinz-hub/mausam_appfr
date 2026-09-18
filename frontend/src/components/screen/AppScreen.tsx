@@ -7,6 +7,7 @@ import {
   StyleProp,
   StatusBar,
   Platform,
+  RefreshControlProps,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../design';
@@ -20,7 +21,7 @@ export interface AppScreenProps {
   useAtmosphereGradient?: boolean;
   gradientColors?: [string, string, ...string[]];
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
-  refreshControl?: React.ReactElement;
+  refreshControl?: React.ReactElement<RefreshControlProps>;
   showsVerticalScrollIndicator?: boolean;
 }
 

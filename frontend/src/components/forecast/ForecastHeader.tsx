@@ -2,16 +2,13 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppText as Text } from '../common/AppText';
 import { useTheme } from '../../design';
-import { FloatingSettingsButton } from './FloatingSettingsButton';
-
 export interface ForecastHeaderProps {
   locationName: string;
-  onPressSettings: () => void;
+  onPressSettings?: () => void;
 }
 
 export const ForecastHeader: React.FC<ForecastHeaderProps> = ({
   locationName,
-  onPressSettings,
 }) => {
   const theme = useTheme();
 
@@ -20,19 +17,32 @@ export const ForecastHeader: React.FC<ForecastHeaderProps> = ({
       <View style={styles.textContainer}>
         <View style={styles.badgeRow}>
           <Text style={styles.badgeDot}>●</Text>
-          <Text style={styles.badgeLabel}>OUTLOOK & TIMELINE</Text>
+          <Text
+            style={[
+              styles.badgeLabel,
+              { color: theme.isNight ? '#BFBFBF' : '#525252' },
+            ]}
+          >
+            OUTLOOK & TIMELINE
+          </Text>
         </View>
 
-        <Text style={styles.title}>
+        <Text
+          style={[
+            styles.title,
+            { color: theme.isNight ? '#FFFDF7' : '#171717' },
+          ]}
+        >
           Forecast
         </Text>
-        <Text style={styles.subtitle}>
+        <Text
+          style={[
+            styles.subtitle,
+            { color: theme.isNight ? '#BFBFBF' : '#4A4A4A' },
+          ]}
+        >
           24h hourly curves & weekly intelligence • {locationName}
         </Text>
-      </View>
-
-      <View style={styles.buttonWrapper}>
-        <FloatingSettingsButton onPress={onPressSettings} />
       </View>
     </View>
   );
@@ -79,8 +89,5 @@ const styles = StyleSheet.create({
     color: '#4A4A4A',
     fontWeight: '500',
     marginTop: 2,
-  },
-  buttonWrapper: {
-    paddingTop: 4,
   },
 });

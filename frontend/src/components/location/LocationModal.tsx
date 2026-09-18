@@ -112,7 +112,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
           ]}
         >
           {/* Header */}
-          <View style={styles.sheetHeader}>
+          <View style={[styles.sheetHeader, { borderBottomColor: theme.colors.border }]}>
             <View>
               <Text
                 style={[
@@ -138,7 +138,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
               accessibilityLabel="Close location picker"
               style={[
                 styles.closeButton,
-                { backgroundColor: theme.colors.backgroundCardMuted },
+                {
+                  backgroundColor: theme.colors.backgroundCardMuted,
+                  borderColor: theme.colors.border,
+                },
               ]}
             >
               <Ionicons name="close" size={18} color={theme.colors.textPrimary} />
@@ -162,6 +165,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                   styles.detectButton,
                   {
                     backgroundColor: theme.colors.primary,
+                    borderColor: theme.colors.border,
                     borderRadius: theme.radius.md,
                   },
                 ]}
@@ -193,6 +197,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                   styles.detectButtonSecondary,
                   {
                     backgroundColor: theme.colors.backgroundCardMuted,
+                    borderColor: theme.colors.border,
                     borderRadius: theme.radius.md,
                   },
                 ]}
@@ -331,8 +336,11 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                         styles.hubChip,
                         {
                           backgroundColor: isCurrent
-                            ? theme.colors.primaryLight
-                            : theme.colors.backgroundCardMuted,
+                            ? (theme.isNight ? '#362910' : theme.colors.primaryLight)
+                            : (theme.isNight ? '#1C1C1C' : theme.colors.backgroundCardMuted),
+                          borderColor: isCurrent
+                            ? (theme.isNight ? '#FFB21A' : theme.colors.border)
+                            : theme.colors.border,
                           borderRadius: theme.radius.pill,
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -343,7 +351,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                         <Ionicons
                           name="checkmark-circle"
                           size={14}
-                          color={theme.colors.primaryDark}
+                          color={theme.isNight ? '#FFB21A' : theme.colors.primaryDark}
                           style={{ marginRight: 4 }}
                         />
                       )}
@@ -352,7 +360,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }
                           styles.hubText,
                           {
                             color: isCurrent
-                              ? theme.colors.primaryDark
+                              ? (theme.isNight ? '#FFB21A' : theme.colors.primaryDark)
                               : theme.colors.textPrimary,
                             fontWeight: isCurrent
                               ? theme.typography.weights.bold

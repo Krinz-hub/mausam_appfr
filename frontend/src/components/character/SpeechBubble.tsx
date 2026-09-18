@@ -21,17 +21,17 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   return (
     <View style={[styles.container, style]}>
       {pointerDirection === 'up' && (
-        <View style={styles.pointerUp} />
+        <View style={[styles.pointerUp, theme.isNight && { borderBottomColor: '#3A3A3A' }]} />
       )}
 
       <View style={styles.wrapper}>
-        <View style={styles.underlay} />
-        <View style={styles.bubble}>
-          <Text style={styles.title}>
+        <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
+        <View style={[styles.bubble, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+          <Text style={[styles.title, theme.isNight && { color: '#FFFDF7' }]}>
             {text}
           </Text>
           {subtext && (
-            <Text style={styles.subtext}>
+            <Text style={[styles.subtext, theme.isNight && { color: '#BFBFBF' }]}>
               {subtext}
             </Text>
           )}
@@ -39,7 +39,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       </View>
 
       {pointerDirection === 'down' && (
-        <View style={styles.pointerDown} />
+        <View style={[styles.pointerDown, theme.isNight && { borderTopColor: '#3A3A3A' }]} />
       )}
     </View>
   );

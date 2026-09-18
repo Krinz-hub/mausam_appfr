@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, StyleSheet, useWindowDimensions, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../src/design';
 import {
@@ -26,7 +25,6 @@ import {
 } from '../../src/engine/decision/activityCalculators';
 
 export default function ForecastScreen() {
-  const router = useRouter();
   const theme = useTheme();
   const { width: windowWidth } = useWindowDimensions();
   const persona = useOnboardingStore((s) => s.personaProfile);
@@ -81,30 +79,29 @@ export default function ForecastScreen() {
   return (
     <AppScreen
       scrollable={true}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={refetch}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
+      }
       contentContainerStyle={[
         styles.scrollContent,
         { paddingHorizontal: horizontalPadding },
       ]}
     >
-      {/* 1. Header with large typography & non-overlapping settings button */}
-      <ForecastHeader
-        locationName={weather.locationName}
-        onPressSettings={() => router.push('/(tabs)/profile')}
-      />
+      {/* 1. Header with date & location context */}
+      <ForecastHeader locationName={weather.locationName} />
 
-      {/* 2. Horizontally scrollable capsule metric pills */}
-      <ForecastMetricSelector
-        selectedFactor={selectedFactor}
-        onSelectFactor={setSelectedFactor}
-      />
-
-      {/* 3. Optimal Comfort Window dynamic insight card */}
+      {/* 2. Weather Advisory & Optimal Comfort Window */}
       <ComfortWindowCard
         windowData={bestWindow}
         isFitnessPersona={isFitness}
       />
 
-      {/* 4. Horizontal scrolling Hourly Conditions carousel */}
+      {/* 3. Hourly Forecast Carousel */}
       <HourlyConditions
         hourly={weather.hourly}
         selectedHourIndex={selectedHourIndex}
@@ -113,26 +110,32 @@ export default function ForecastScreen() {
         sunset={weather.current.sunset}
       />
 
-      {/* 5. Large Outlook Card responding to selected hour & metric */}
+      {/* 4. Metric tabs for detailed condition analysis */}
+      <ForecastMetricSelector
+        selectedFactor={selectedFactor}
+        onSelectFactor={setSelectedFactor}
+      />
+
+      {/* 5. Detailed outlook & chart for selected hour & factor */}
       <CurrentOutlookCard
         selectedHour={selectedHour}
         isCurrentHour={isCurrentHour}
         selectedFactor={selectedFactor}
       />
 
-      {/* 6. 7-Day Personalized Outlook with condition-driven recommendations */}
+      {/* 6. 7-Day Personalized Outlook */}
       <WeeklyOutlook
         daily={weather.daily}
         persona={persona}
         aqi={weather.current.aqi}
       />
 
-      {/* 7. Character Companion Note above safe area inset */}
+      {/* 7. Character Companion Note */}
       <View style={styles.characterNoteWrapper}>
-        <View style={styles.characterNoteUnderlay} />
-        <View style={styles.characterNoteCard}>
+        <View style={[styles.characterNoteUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+        <View style={[styles.characterNoteCard, theme.isNight && { backgroundColor: '#2E2416', borderColor: '#3A3A3A' }]}>
           <Character state="happy" size={36} />
-          <Text style={styles.characterNoteText}>
+          <Text style={[styles.characterNoteText, theme.isNight && { color: '#FFFDF7' }]}>
             I'll keep monitoring atmospheric shifts across the week for you.
           </Text>
         </View>
@@ -144,7 +147,7 @@ export default function ForecastScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 4,
-    paddingBottom: 60,
+    paddingBottom: 16,
   },
   characterNoteWrapper: {
     position: 'relative',

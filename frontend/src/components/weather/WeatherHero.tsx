@@ -38,13 +38,13 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   style,
   isPrecise = false,
   isLocating = false,
-  isNight,
+  isNight: isNightProp,
   sunrise,
   sunset,
   onPressLocation,
 }) => {
   const theme = useTheme();
-  const nightActive = isNight !== undefined ? isNight : theme.isNight;
+  const isNight = isNightProp !== undefined ? isNightProp : theme.isNight;
 
   const handleLocationPress = () => {
     hapticManager.selection();
@@ -52,13 +52,28 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
     onPressLocation?.();
   };
 
+  const cardBg = isNight ? '#242424' : '#FFFFFF';
+  const cardBorder = isNight ? '#3A3A3A' : '#171717';
+  const underlayBg = isNight ? '#000000' : '#171717';
+  const textPrimary = isNight ? '#FFFDF7' : '#171717';
+  const textSecondary = isNight ? '#E8E8E8' : '#2E2E2E';
+  const textMuted = isNight ? '#BFBFBF' : '#525252';
+
   return (
     <View style={[styles.container, style]}>
       {/* 1. Top Expressive Retro Header Bar (56-64px height) */}
       <View style={styles.topHeaderBar}>
-        <View style={styles.brandTitleBox}>
+        <View
+          style={[
+            styles.brandTitleBox,
+            {
+              backgroundColor: isNight ? '#242424' : '#FFFDF7',
+              borderColor: cardBorder,
+            },
+          ]}
+        >
           <Text style={styles.brandDot}>●</Text>
-          <Text style={styles.brandTitle}>MAUSAM</Text>
+          <Text style={[styles.brandTitle, { color: textPrimary }]}>MAUSAM</Text>
           <Text style={styles.brandSubtitle}>// LIVE</Text>
         </View>
 
@@ -69,50 +84,82 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           accessibilityLabel={`Location: ${locationName}. Tap to change or refresh GPS`}
           style={({ pressed }) => [
             styles.locationButton,
+            {
+              backgroundColor: cardBg,
+              borderColor: cardBorder,
+            },
             pressed && styles.locationButtonPressed,
           ]}
         >
           <Ionicons
             name="location-sharp"
             size={14}
-            color="#171717"
+            color={textPrimary}
             style={{ marginRight: 4 }}
           />
-          <Text numberOfLines={1} style={styles.locationButtonText}>
+          <Text
+            numberOfLines={1}
+            style={[styles.locationButtonText, { color: textPrimary }]}
+          >
             {isLocating ? 'Locating...' : locationName}
           </Text>
           <Ionicons
             name={isPrecise ? 'navigate-circle' : 'chevron-down'}
             size={13}
-            color="#171717"
+            color={textPrimary}
             style={{ marginLeft: 4 }}
           />
         </Pressable>
       </View>
 
       {/* Greeting tag */}
-      <Text style={styles.greetingText}>
+      <Text style={[styles.greetingText, { color: textMuted }]}>
         {greeting}
       </Text>
 
       {/* 2. Main Physical Weather Panel */}
       <View style={styles.cardWrapper}>
         {/* Physical hard shadow underlay */}
-        <View style={styles.cardUnderlay} />
+        <View style={[styles.cardUnderlay, { backgroundColor: underlayBg }]} />
 
-        <View style={styles.cardBody}>
+        <View
+          style={[
+            styles.cardBody,
+            {
+              backgroundColor: cardBg,
+              borderColor: cardBorder,
+            },
+          ]}
+        >
           {/* Card retro title bar */}
           <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardLabel}>WEATHER REPORT</Text>
-            <View style={styles.liveBadge}>
+            <Text style={[styles.cardLabel, { color: textSecondary }]}>
+              WEATHER REPORT
+            </Text>
+            <View
+              style={[
+                styles.liveBadge,
+                isNight && {
+                  backgroundColor: '#362910',
+                  borderColor: '#FFB21A',
+                },
+              ]}
+            >
               <Text style={styles.liveBadgeDot}>●</Text>
-              <Text style={styles.liveBadgeText}>ONLINE</Text>
+              <Text
+                style={[
+                  styles.liveBadgeText,
+                  isNight && { color: '#FFB21A' },
+                ]}
+              >
+                ONLINE
+              </Text>
             </View>
           </View>
 
           {/* Large Hero Temperature Display */}
           <View style={styles.tempSection}>
-            <Text style={styles.tempText}>
+            <Text style={[styles.tempText, { color: textPrimary }]}>
               {Math.round(temperature)}°
             </Text>
 
@@ -120,19 +167,27 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               <View style={styles.conditionRow}>
                 <WeatherIcon
                   condition={conditionText}
-                  isNight={nightActive}
+                  isNight={isNight}
                   sunrise={sunrise}
                   sunset={sunset}
                   size={24}
                   style={{ marginRight: 8 }}
                 />
-                <Text style={styles.conditionSummary}>
+                <Text style={[styles.conditionSummary, { color: textPrimary }]}>
                   {conditionText}
                 </Text>
               </View>
 
-              <View style={styles.feelsLikeBadge}>
-                <Text style={styles.feelsLikeText}>
+              <View
+                style={[
+                  styles.feelsLikeBadge,
+                  {
+                    backgroundColor: isNight ? '#1C1C1C' : '#F7F4EB',
+                    borderColor: cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.feelsLikeText, { color: textSecondary }]}>
                   Feels like {Math.round(feelsLike)}°
                 </Text>
               </View>
@@ -140,29 +195,56 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           </View>
 
           {/* Separator */}
-          <View style={styles.separator} />
+          <View
+            style={[
+              styles.separator,
+              { backgroundColor: isNight ? '#383838' : '#171717' },
+            ]}
+          />
 
           {/* Structured Metrics Row */}
           {humidity !== undefined && (
             <View style={styles.metricsRow}>
               <View style={styles.metricItem}>
-                <Text style={styles.metricLabel}>HUMIDITY</Text>
-                <Text style={styles.metricValue}>{Math.round(humidity)}%</Text>
+                <Text style={[styles.metricLabel, { color: textMuted }]}>
+                  HUMIDITY
+                </Text>
+                <Text style={[styles.metricValue, { color: textPrimary }]}>
+                  {Math.round(humidity)}%
+                </Text>
               </View>
 
-              <View style={styles.metricDivider} />
+              <View
+                style={[
+                  styles.metricDivider,
+                  { backgroundColor: isNight ? '#383838' : '#171717' },
+                ]}
+              />
 
               <View style={styles.metricItem}>
-                <Text style={styles.metricLabel}>WIND</Text>
-                <Text style={styles.metricValue}>{Math.round(windSpeed ?? 0)} km/h</Text>
+                <Text style={[styles.metricLabel, { color: textMuted }]}>
+                  WIND
+                </Text>
+                <Text style={[styles.metricValue, { color: textPrimary }]}>
+                  {Math.round(windSpeed ?? 0)} km/h
+                </Text>
               </View>
 
               {uvIndex !== undefined && (
                 <>
-                  <View style={styles.metricDivider} />
+                  <View
+                    style={[
+                      styles.metricDivider,
+                      { backgroundColor: isNight ? '#383838' : '#171717' },
+                    ]}
+                  />
                   <View style={styles.metricItem}>
-                    <Text style={styles.metricLabel}>UV INDEX</Text>
-                    <Text style={styles.metricValue}>{Math.round(uvIndex)}</Text>
+                    <Text style={[styles.metricLabel, { color: textMuted }]}>
+                      UV INDEX
+                    </Text>
+                    <Text style={[styles.metricValue, { color: textPrimary }]}>
+                      {Math.round(uvIndex)}
+                    </Text>
                   </View>
                 </>
               )}
@@ -247,18 +329,18 @@ const styles = StyleSheet.create({
   },
   cardUnderlay: {
     position: 'absolute',
-    left: 5,
-    top: 5,
+    left: 4,
+    top: 4,
     right: 0,
     bottom: 0,
     backgroundColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   cardBody: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#171717',
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 16,
   },
   cardHeaderRow: {
@@ -358,7 +440,7 @@ const styles = StyleSheet.create({
   metricLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#717171',
+    color: '#525252',
     letterSpacing: 0.5,
     marginBottom: 2,
   },

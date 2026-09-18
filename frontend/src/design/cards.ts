@@ -1,23 +1,37 @@
-import { StyleSheet, ViewStyle } from 'react-native';
 import { radius } from './radius';
 import { spacing } from './spacing';
 
 export const cardTokens = {
   borderWidth: 2,
   borderColor: '#171717',
+  borderNight: '#3A3A3A',
   borderRadius: radius.card, // 10
   padding: spacing.cardPadding, // 16
   paddingLarge: spacing.cardPaddingLarge, // 20
   paddingDense: spacing.cardPaddingDense, // 12
   shadowOffset: 4,
   underlayColor: '#171717',
+  underlayNight: '#000000',
   bgDefault: '#FFFFFF',
-  bgPrimary: '#FFF7DE',
-  bgMuted: '#F7F4EB',
   bgNight: '#242424',
-};
+  bgPrimary: '#FFF7DE',
+  bgPrimaryNight: '#2E2416',
+  bgMuted: '#F7F4EB',
+  bgMutedNight: '#1C1C1C',
+} as const;
 
-export const cardStyles = StyleSheet.create({
+export const getCardColors = (isNight: boolean) => ({
+  bg: isNight ? cardTokens.bgNight : cardTokens.bgDefault,
+  bgPrimary: isNight ? cardTokens.bgPrimaryNight : cardTokens.bgPrimary,
+  bgMuted: isNight ? cardTokens.bgMutedNight : cardTokens.bgMuted,
+  border: isNight ? cardTokens.borderNight : cardTokens.borderColor,
+  underlay: isNight ? cardTokens.underlayNight : cardTokens.underlayColor,
+  text: isNight ? '#FFFDF7' : '#171717',
+  textSecondary: isNight ? '#E8E8E8' : '#2E2E2E',
+  textMuted: isNight ? '#BFBFBF' : '#525252',
+});
+
+export const cardStyles = {
   // Wrapper that provides offset margin for the physical shadow underlay
   wrapper: {
     position: 'relative',
@@ -64,4 +78,4 @@ export const cardStyles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.elementSpacingSmall,
   },
-});
+};

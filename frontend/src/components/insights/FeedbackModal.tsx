@@ -63,26 +63,26 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     >
       <View style={styles.overlay}>
         <View style={styles.wrapper}>
-          <View style={styles.underlay} />
+          <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
-          <View style={styles.modalContainer}>
+          <View style={[styles.modalContainer, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
             {/* Retro window header */}
-            <View style={styles.windowHeader}>
+            <View style={[styles.windowHeader, theme.isNight && { backgroundColor: '#1C1C1C', borderBottomColor: '#3A3A3A' }]}>
               <View style={styles.headerLeft}>
                 <Text style={styles.dot}>●</Text>
-                <Text style={styles.headerTitle}>DIAGNOSTIC FEEDBACK</Text>
+                <Text style={[styles.headerTitle, theme.isNight && { color: '#FFFDF7' }]}>DIAGNOSTIC FEEDBACK</Text>
               </View>
               <Pressable onPress={onClose}>
-                <Text style={styles.headerClose}>[ ✕ ]</Text>
+                <Text style={[styles.headerClose, theme.isNight && { color: '#FFFDF7' }]}>[ ✕ ]</Text>
               </Pressable>
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={styles.title}>
+              <Text style={[styles.title, theme.isNight && { color: '#FFFDF7' }]}>
                 What was off?
               </Text>
 
-              <Text style={styles.subtext}>
+              <Text style={[styles.subtext, theme.isNight && { color: '#BFBFBF' }]}>
                 Help your companion understand so tomorrow's forecast is dialed in.
               </Text>
 
@@ -100,7 +100,12 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                       style={[
                         styles.reasonItem,
                         {
-                          backgroundColor: isSelected ? '#FFB21A' : '#FFFFFF',
+                          backgroundColor: isSelected
+                            ? '#FFB21A'
+                            : (theme.isNight ? '#1C1C1C' : '#FFFFFF'),
+                          borderColor: theme.isNight
+                            ? (isSelected ? '#FFB21A' : '#3A3A3A')
+                            : '#171717',
                           borderWidth: isSelected ? 2.5 : 2,
                         },
                       ]}
@@ -108,7 +113,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                       <Ionicons
                         name={r.icon}
                         size={18}
-                        color="#171717"
+                        color={isSelected ? '#171717' : (theme.isNight ? '#FFFDF7' : '#171717')}
                         style={{ marginRight: 10 }}
                       />
                       <Text
@@ -116,6 +121,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                           styles.reasonLabel,
                           {
                             fontWeight: isSelected ? '800' : '600',
+                            color: isSelected ? '#171717' : (theme.isNight ? '#FFFDF7' : '#171717'),
                           },
                         ]}
                       >

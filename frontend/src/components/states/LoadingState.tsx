@@ -3,6 +3,8 @@ import { View, StyleSheet, ViewStyle } from 'react-native';
 import { AppText as Text } from '../common/AppText';
 import { Character } from '../character/Character';
 
+import { useTheme } from '../../design';
+
 export interface LoadingStateProps {
   message?: string;
   style?: ViewStyle;
@@ -12,6 +14,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Consulting the skies for you...',
   style,
 }) => {
+  const theme = useTheme();
   const [dotCount, setDotCount] = useState(1);
 
   useEffect(() => {
@@ -25,16 +28,16 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <View style={[styles.wrapper, style]}>
-      <View style={styles.underlay} />
-      <View style={styles.card}>
+      <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
+      <View style={[styles.card, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
         <Character state="thinking" size="lg" />
 
-        <View style={styles.loadingBanner}>
-          <Text style={styles.loadingLabel}>LOADING</Text>
+        <View style={[styles.loadingBanner, theme.isNight && { backgroundColor: '#2E2416', borderColor: '#3A3A3A' }]}>
+          <Text style={[styles.loadingLabel, theme.isNight && { color: '#FFB21A' }]}>LOADING</Text>
           <Text style={styles.dotsText}>{dots}</Text>
         </View>
 
-        <Text style={styles.messageText}>
+        <Text style={[styles.messageText, theme.isNight && { color: '#E8E8E8' }]}>
           {message}
         </Text>
       </View>

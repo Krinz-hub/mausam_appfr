@@ -31,8 +31,12 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   const touchStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
   const isSwipeHandledRef = React.useRef<boolean>(false);
 
-  const bubbleBg = isTired ? '#FFF0D4' : '#FFFFFF';
-  const headerBg = isTired ? '#FFB21A' : '#F7F4EB';
+  const bubbleBg = theme.isNight
+    ? (isTired ? '#2E2416' : '#242424')
+    : (isTired ? '#FFF0D4' : '#FFFFFF');
+  const headerBg = theme.isNight
+    ? (isTired ? '#FFB21A' : '#1C1C1C')
+    : (isTired ? '#FFB21A' : '#F7F4EB');
 
   const handleTouchStart = (e: any) => {
     isSwipeHandledRef.current = false;
@@ -74,13 +78,13 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
       {/* Pointer connection dots above bubble */}
       {pointerPosition === 'above' && (
         <View style={styles.trailAbove}>
-          <View style={styles.dotSmall} />
-          <View style={styles.dotMedium} />
+          <View style={[styles.dotSmall, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]} />
+          <View style={[styles.dotMedium, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]} />
         </View>
       )}
 
       {/* Physical hard shadow underlay */}
-      <View style={styles.underlay} />
+      <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
       <Pressable
         testID={testID}
@@ -92,7 +96,7 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
         accessibilityLabel={`Companion reaction: ${message}${tip ? `. Tip: ${tip}` : ''}. Swipe left or right to shuffle suggestions.`}
         style={({ pressed }) => [
           styles.container,
-          { backgroundColor: bubbleBg },
+          { backgroundColor: bubbleBg, borderColor: theme.isNight ? '#3A3A3A' : '#171717' },
           Platform.select({
             web: { cursor: 'pointer' } as any,
             default: {},
@@ -101,30 +105,30 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
         ]}
       >
         {/* Retro computer dialog title header */}
-        <View style={[styles.dialogHeader, { backgroundColor: headerBg }]}>
+        <View style={[styles.dialogHeader, { backgroundColor: headerBg, borderBottomColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerDot}>●</Text>
-            <Text style={styles.headerTitle}>
+            <Text style={[styles.headerTitle, theme.isNight && { color: '#FFFDF7' }]}>
               {isTired ? 'SYSTEM WARNING // REST' : 'COMPANION LOG // INSIGHT'}
             </Text>
           </View>
-          <Text style={styles.headerClose}>[ ✕ ]</Text>
+          <Text style={[styles.headerClose, theme.isNight && { color: '#FFFDF7' }]}>[ ✕ ]</Text>
         </View>
 
         {/* Message and tip body */}
         <View style={styles.body}>
-          <Text style={styles.messageText}>
+          <Text style={[styles.messageText, theme.isNight && { color: '#FFFDF7' }]}>
             {message}
           </Text>
           {tip ? (
-            <Text style={styles.tipText}>
+            <Text style={[styles.tipText, theme.isNight && { color: '#E8E8E8' }]}>
               {tip}
             </Text>
           ) : null}
 
           {/* Footer prompt */}
-          <View style={styles.footerRow}>
-            <Text style={styles.footerHint}>
+          <View style={[styles.footerRow, theme.isNight && { borderTopColor: '#3A3A3A' }]}>
+            <Text style={[styles.footerHint, theme.isNight && { color: '#BFBFBF' }]}>
               TAP TO CYCLE • SWIPE TO SHUFFLE ➔
             </Text>
           </View>
@@ -134,8 +138,8 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
       {/* Pointer connection dots below bubble */}
       {pointerPosition === 'below' && (
         <View style={styles.trailBelow}>
-          <View style={styles.dotMedium} />
-          <View style={styles.dotSmall} />
+          <View style={[styles.dotMedium, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]} />
+          <View style={[styles.dotSmall, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]} />
         </View>
       )}
     </View>

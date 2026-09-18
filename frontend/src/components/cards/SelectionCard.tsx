@@ -79,7 +79,7 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
           styles.underlay,
           {
             borderRadius: theme.radius.card,
-            backgroundColor: '#171717',
+            backgroundColor: theme.isNight ? '#000000' : '#171717',
           },
         ]}
       />
@@ -95,8 +95,10 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
         style={[
           styles.card,
           {
-            backgroundColor: selected ? '#FFF0D4' : '#FFFFFF',
-            borderColor: '#171717',
+            backgroundColor: selected
+              ? (theme.isNight ? '#362910' : '#FFF0D4')
+              : (theme.isNight ? '#242424' : '#FFFFFF'),
+            borderColor: theme.isNight ? (selected ? '#FFB21A' : '#3A3A3A') : '#171717',
             borderWidth: selected ? 3 : 2.5,
             borderRadius: theme.radius.card,
             paddingHorizontal: isPill ? theme.spacing.md : theme.spacing.cardPadding,
@@ -113,8 +115,10 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
             style={[
               styles.iconContainer,
               {
-                backgroundColor: selected ? '#FFB21A' : '#F7F4EB',
-                borderColor: '#171717',
+                backgroundColor: selected
+                  ? '#FFB21A'
+                  : (theme.isNight ? '#1C1C1C' : '#F7F4EB'),
+                borderColor: theme.isNight ? (selected ? '#FFB21A' : '#3A3A3A') : '#171717',
                 borderWidth: 2,
                 borderRadius: 8,
                 marginRight: isRow || isPill ? theme.spacing.md : 0,
@@ -126,7 +130,7 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
               <Ionicons
                 name={iconName}
                 size={20}
-                color="#171717"
+                color={selected ? '#171717' : (theme.isNight ? '#FFFDF7' : '#171717')}
               />
             ) : (
               <Text style={styles.iconText}>{icon}</Text>
@@ -141,7 +145,7 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
               style={[
                 styles.title,
                 {
-                  color: '#171717',
+                  color: theme.isNight ? '#FFFDF7' : '#171717',
                   fontSize: isPill ? theme.typography.sizes.headline : theme.typography.sizes.body,
                   fontWeight: theme.typography.weights.bold,
                 },
@@ -159,7 +163,7 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
               style={[
                 styles.subtitle,
                 {
-                  color: '#4A4A4A',
+                  color: theme.isNight ? '#BFBFBF' : '#4A4A4A',
                   fontSize: theme.typography.sizes.footnote,
                   marginTop: theme.spacing.xxs,
                 },
@@ -175,15 +179,21 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
           style={[
             styles.checkBadge,
             {
-              backgroundColor: selected ? '#171717' : '#FFFFFF',
-              borderColor: '#171717',
+              backgroundColor: selected
+                ? (theme.isNight ? '#FFB21A' : '#171717')
+                : (theme.isNight ? '#1C1C1C' : '#FFFFFF'),
+              borderColor: theme.isNight ? (selected ? '#FFB21A' : '#3A3A3A') : '#171717',
               borderWidth: 2,
               borderRadius: 6,
               marginLeft: theme.spacing.sm,
             },
           ]}
         >
-          {selected && <Text style={styles.checkMark}>✓</Text>}
+          {selected && (
+            <Text style={[styles.checkMark, theme.isNight && selected && { color: '#171717' }]}>
+              ✓
+            </Text>
+          )}
         </View>
       </AnimatedPressable>
     </View>

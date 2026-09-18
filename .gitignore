@@ -27,6 +27,8 @@ frontend/dist/
 frontend/.expo/
 frontend/.expo-shared/
 backend/dist/
+*.apk
+*.aab
 
 # React Native
 android/.gradle/

@@ -51,7 +51,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   return (
     <View style={[styles.wrapper, style]}>
       {/* Physical hard shadow underlay */}
-      <View style={styles.underlay} />
+      <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
       <View
         accessible={true}
@@ -60,7 +60,12 @@ export const InsightCard: React.FC<InsightCardProps> = ({
         style={[
           styles.card,
           {
-            backgroundColor: isPrimary ? '#FFF0D4' : '#FFFFFF',
+            backgroundColor: theme.isNight
+              ? (isPrimary ? '#2E2416' : '#242424')
+              : (isPrimary ? '#FFF0D4' : '#FFFFFF'),
+            borderColor: theme.isNight
+              ? (isPrimary ? '#FFB21A' : '#3A3A3A')
+              : '#171717',
           },
         ]}
       >
@@ -70,28 +75,33 @@ export const InsightCard: React.FC<InsightCardProps> = ({
             style={[
               styles.iconBox,
               {
-                backgroundColor: isPrimary ? '#FFB21A' : '#F7F4EB',
+                backgroundColor: theme.isNight
+                  ? (isPrimary ? '#FFB21A' : '#1C1C1C')
+                  : (isPrimary ? '#FFB21A' : '#F7F4EB'),
+                borderColor: theme.isNight
+                  ? (isPrimary ? '#FFB21A' : '#3A3A3A')
+                  : '#171717',
               },
             ]}
           >
             <Ionicons
               name={getInsightIcon(type)}
               size={18}
-              color="#171717"
+              color={theme.isNight && !isPrimary ? '#FFFDF7' : '#171717'}
             />
           </View>
-          <Text style={styles.title}>
+          <Text style={[styles.title, theme.isNight && { color: '#FFFDF7' }]}>
             {title}
           </Text>
           {isPrimary && (
-            <View style={styles.primaryBadge}>
+            <View style={[styles.primaryBadge, theme.isNight && { borderColor: '#3A3A3A' }]}>
               <Text style={styles.primaryBadgeText}>KEY</Text>
             </View>
           )}
         </View>
 
         {/* Description */}
-        <Text style={styles.shortMessage}>
+        <Text style={[styles.shortMessage, theme.isNight && { color: '#E8E8E8' }]}>
           {shortMessage}
         </Text>
       </View>
@@ -117,7 +127,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   card: {
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#171717',
     borderRadius: 10,
     padding: 16,
@@ -160,7 +170,7 @@ const styles = StyleSheet.create({
   },
   shortMessage: {
     fontSize: 14,
-    color: '#4A4A4A',
+    color: '#2E2E2E',
     lineHeight: 20,
     fontWeight: '500',
   },

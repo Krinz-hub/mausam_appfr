@@ -41,26 +41,68 @@ export const AstronomicalInsightCard: React.FC<AstronomicalInsightCardProps> = (
   return (
     <View style={[styles.wrapper, style]}>
       {/* Physical hard shadow underlay */}
-      <View style={styles.underlay} />
+      <View
+        style={[
+          styles.underlay,
+          { backgroundColor: theme.isNight ? '#000000' : '#171717' },
+        ]}
+      />
 
       <View
         accessible={true}
         accessibilityRole="summary"
         accessibilityLabel={`${insight.title}. ${insight.message}`}
-        style={styles.card}
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.isNight ? '#242424' : '#FFFFFF',
+            borderColor: theme.isNight ? '#3A3A3A' : '#171717',
+          },
+        ]}
       >
         {/* Retro window header */}
         <View style={styles.windowHeader}>
-          <View style={styles.badge}>
-            <Ionicons name={getEventIcon()} size={13} color="#171717" style={{ marginRight: 4 }} />
-            <Text style={styles.badgeText}>
+          <View
+            style={[
+              styles.badge,
+              theme.isNight && {
+                backgroundColor: '#1F2A38',
+                borderColor: '#3A3A3A',
+              },
+            ]}
+          >
+            <Ionicons
+              name={getEventIcon()}
+              size={13}
+              color={theme.isNight ? '#A8C7FF' : '#171717'}
+              style={{ marginRight: 4 }}
+            />
+            <Text
+              style={[
+                styles.badgeText,
+                theme.isNight && { color: '#A8C7FF' },
+              ]}
+            >
               {badgeText}
             </Text>
           </View>
 
           {insight.activity && (
-            <View style={styles.activityBadge}>
-              <Text style={styles.activityTag}>
+            <View
+              style={[
+                styles.activityBadge,
+                theme.isNight && {
+                  backgroundColor: '#1C1C1C',
+                  borderColor: '#3A3A3A',
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.activityTag,
+                  theme.isNight && { color: '#BFBFBF' },
+                ]}
+              >
                 {insight.activity.toUpperCase()}
               </Text>
             </View>
@@ -68,12 +110,22 @@ export const AstronomicalInsightCard: React.FC<AstronomicalInsightCardProps> = (
         </View>
 
         {/* Main Headline */}
-        <Text style={styles.title}>
+        <Text
+          style={[
+            styles.title,
+            { color: theme.isNight ? '#FFFDF7' : '#171717' },
+          ]}
+        >
           {insight.title}
         </Text>
 
         {/* Informative Explanation */}
-        <Text style={styles.message}>
+        <Text
+          style={[
+            styles.message,
+            { color: theme.isNight ? '#E8E8E8' : '#4A4A4A' },
+          ]}
+        >
           {insight.message}
         </Text>
       </View>

@@ -4,6 +4,8 @@ import { AppText as Text } from '../common/AppText';
 import { Character } from '../character/Character';
 import { PrimaryButton } from '../buttons/PrimaryButton';
 
+import { useTheme } from '../../design';
+
 export interface ErrorStateProps {
   title?: string;
   message?: string;
@@ -17,18 +19,20 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   onRetry,
   style,
 }) => {
+  const theme = useTheme();
+
   return (
     <View style={[styles.wrapper, style]}>
-      <View style={styles.underlay} />
-      <View style={styles.card}>
+      <View style={[styles.underlay, theme.isNight && { backgroundColor: '#000000' }]} />
+      <View style={[styles.card, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
         <Character state="concerned" size="lg" />
 
-        <View style={styles.alertBadge}>
+        <View style={[styles.alertBadge, theme.isNight && { backgroundColor: '#361814', borderColor: '#3A3A3A' }]}>
           <Text style={styles.alertIcon}>⚠</Text>
-          <Text style={styles.alertText}>{title}</Text>
+          <Text style={[styles.alertText, theme.isNight && { color: '#FF5533' }]}>{title}</Text>
         </View>
 
-        <Text style={styles.messageText}>
+        <Text style={[styles.messageText, theme.isNight && { color: '#E8E8E8' }]}>
           {message}
         </Text>
 

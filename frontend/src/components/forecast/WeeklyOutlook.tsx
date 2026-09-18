@@ -28,16 +28,16 @@ export const WeeklyOutlook: React.FC<WeeklyOutlookProps> = ({
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionDot}>●</Text>
-        <Text style={styles.heading}>
+        <Text style={[styles.heading, theme.isNight && { color: '#FFFDF7' }]}>
           7-DAY OUTLOOK TABLE
         </Text>
       </View>
 
       {/* Neo-brutalist compact structured rows table */}
       <View style={styles.tableWrapper}>
-        <View style={styles.tableUnderlay} />
+        <View style={[styles.tableUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
 
-        <View style={styles.tableBody}>
+        <View style={[styles.tableBody, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
           {daily.map((day, idx) => {
             const isLast = idx === daily.length - 1;
             const recommendation = getDailyPersonalizedRecommendation(day, persona, aqi);
@@ -48,8 +48,10 @@ export const WeeklyOutlook: React.FC<WeeklyOutlookProps> = ({
                 onPress={() => onPressDay?.(day, idx)}
                 style={({ pressed }) => [
                   styles.row,
+                  theme.isNight && { backgroundColor: '#242424' },
                   !isLast && styles.rowBorder,
-                  pressed && styles.rowPressed,
+                  !isLast && theme.isNight && { borderBottomColor: '#383838' },
+                  pressed && (theme.isNight ? { backgroundColor: '#2E2416' } : styles.rowPressed),
                 ]}
               >
                 {/* Day & Icon */}
@@ -57,30 +59,30 @@ export const WeeklyOutlook: React.FC<WeeklyOutlookProps> = ({
                   <View style={styles.iconBox}>
                     <WeatherIcon condition={day.conditionText} size={16} />
                   </View>
-                  <Text style={styles.dayName}>
+                  <Text style={[styles.dayName, theme.isNight && { color: '#FFFDF7' }]}>
                     {day.dayName.slice(0, 3).toUpperCase()}
                   </Text>
                 </View>
 
                 {/* Condition & Recommendation */}
                 <View style={styles.recCol}>
-                  <Text style={styles.conditionText} numberOfLines={1}>
+                  <Text style={[styles.conditionText, theme.isNight && { color: '#FFFDF7' }]} numberOfLines={1}>
                     {day.conditionText}
                   </Text>
-                  <Text style={styles.recommendationText} numberOfLines={1}>
+                  <Text style={[styles.recommendationText, theme.isNight && { color: '#BFBFBF' }]} numberOfLines={1}>
                     {recommendation}
                   </Text>
                 </View>
 
                 {/* Temperatures & Arrow */}
                 <View style={styles.tempCol}>
-                  <Text style={styles.tempHigh}>
+                  <Text style={[styles.tempHigh, theme.isNight && { color: '#FFFDF7' }]}>
                     {Math.round(day.maxTemp)}°
                   </Text>
-                  <Text style={styles.tempLow}>
+                  <Text style={[styles.tempLow, theme.isNight && { color: '#888888' }]}>
                     {Math.round(day.minTemp)}°
                   </Text>
-                  <Text style={styles.arrowText}>→</Text>
+                  <Text style={[styles.arrowText, theme.isNight && { color: '#FFFDF7' }]}>→</Text>
                 </View>
               </Pressable>
             );

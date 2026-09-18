@@ -40,12 +40,12 @@ export default function DetailedMetricsScreen() {
         <View>
           <View style={styles.headerBadge}>
             <Text style={styles.badgeDot}>●</Text>
-            <Text style={styles.badgeLabel}>TELEMETRY STREAM</Text>
+            <Text style={[styles.badgeLabel, theme.isNight && { color: '#FFB21A' }]}>TELEMETRY STREAM</Text>
           </View>
-          <Text style={styles.title}>
+          <Text style={[styles.title, theme.isNight && { color: '#FFFDF7' }]}>
             Atmospheric Diagnostics
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, theme.isNight && { color: '#BFBFBF' }]}>
             {weather?.locationName || location.name} • Complete Sensor Grid
           </Text>
         </View>
@@ -57,25 +57,26 @@ export default function DetailedMetricsScreen() {
           accessibilityLabel="Close detailed view"
           style={({ pressed }) => [
             styles.closeBtn,
+            theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' },
             pressed && styles.closeBtnPressed,
           ]}
         >
-          <Ionicons name="close" size={18} color="#171717" />
+          <Ionicons name="close" size={18} color={theme.isNight ? '#FFFDF7' : '#171717'} />
         </Pressable>
       </View>
 
       {/* Hero Mini Banner with Character */}
       <View style={styles.bannerWrapper}>
-        <View style={styles.bannerUnderlay} />
-        <View style={styles.heroBanner}>
-          <View style={styles.charBox}>
+        <View style={[styles.bannerUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+        <View style={[styles.heroBanner, theme.isNight && { backgroundColor: '#2E2416', borderColor: '#3A3A3A' }]}>
+          <View style={[styles.charBox, theme.isNight && { backgroundColor: '#362910', borderColor: '#FFB21A' }]}>
             <Character state="happy" size="md" />
           </View>
           <View style={{ marginLeft: 16, flex: 1 }}>
-            <Text style={styles.heroTemp}>
+            <Text style={[styles.heroTemp, theme.isNight && { color: '#FFFDF7' }]}>
               {Math.round(current?.temperature ?? 28)}°
             </Text>
-            <Text style={styles.heroFeelsLike}>
+            <Text style={[styles.heroFeelsLike, theme.isNight && { color: '#E8E8E8' }]}>
               Feels like {Math.round(current?.feelsLike ?? 31)}° • {current?.conditionText}
             </Text>
           </View>
@@ -86,14 +87,14 @@ export default function DetailedMetricsScreen() {
       <View style={styles.metricGrid}>
         {/* Humidity */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#EBF3FF' }]}>
-              <Ionicons name="water-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#192538' : '#EBF3FF', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="water-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>HUMIDITY</Text>
-            <Text style={styles.metricVal}>{current?.humidity ?? 60}%</Text>
-            <Text style={styles.metricNote}>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>HUMIDITY</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>{current?.humidity ?? 60}%</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>
               {(current?.humidity ?? 60) > 70 ? 'Muggy moisture' : 'Comfortable'}
             </Text>
           </View>
@@ -101,27 +102,27 @@ export default function DetailedMetricsScreen() {
 
         {/* Wind Speed */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#EAF4EC' }]}>
-              <Ionicons name="speedometer-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#192C1D' : '#EAF4EC', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="speedometer-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>WIND SPEED</Text>
-            <Text style={styles.metricVal}>{Math.round(current?.windSpeed ?? 12)} km/h</Text>
-            <Text style={styles.metricNote}>Gentle breeze</Text>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>WIND SPEED</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>{Math.round(current?.windSpeed ?? 12)} km/h</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>Gentle breeze</Text>
           </View>
         </View>
 
         {/* UV Index */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#FFF6E0' }]}>
-              <Ionicons name="sunny-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#362910' : '#FFF6E0', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="sunny-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>UV INDEX</Text>
-            <Text style={styles.metricVal}>{current?.uvIndex ?? 6} / 12</Text>
-            <Text style={styles.metricNote}>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>UV INDEX</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>{current?.uvIndex ?? 6} / 12</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>
               {(current?.uvIndex ?? 6) >= 6 ? 'High solar exposure' : 'Moderate'}
             </Text>
           </View>
@@ -129,40 +130,40 @@ export default function DetailedMetricsScreen() {
 
         {/* Air Quality */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#EAF4EC' }]}>
-              <Ionicons name="leaf-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#192C1D' : '#EAF4EC', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="leaf-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>AIR QUALITY (AQI)</Text>
-            <Text style={styles.metricVal}>{current?.aqi ?? 48}</Text>
-            <Text style={styles.metricNote}>Satisfactory & breathable</Text>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>AIR QUALITY (AQI)</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>{current?.aqi ?? 48}</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>Satisfactory & breathable</Text>
           </View>
         </View>
 
         {/* Visibility */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#FFEBE6' }]}>
-              <Ionicons name="eye-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#361814' : '#FFEBE6', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="eye-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>VISIBILITY</Text>
-            <Text style={styles.metricVal}>{current?.visibility ?? 10} km</Text>
-            <Text style={styles.metricNote}>Clear road vision</Text>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>VISIBILITY</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>{current?.visibility ?? 10} km</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>Clear road vision</Text>
           </View>
         </View>
 
         {/* Atmospheric Pressure */}
         <View style={styles.cardWrapper}>
-          <View style={styles.cardUnderlay} />
-          <View style={styles.metricCard}>
-            <View style={[styles.iconBox, { backgroundColor: '#F7F4EB' }]}>
-              <Ionicons name="compass-outline" size={20} color="#171717" />
+          <View style={[styles.cardUnderlay, theme.isNight && { backgroundColor: '#000000' }]} />
+          <View style={[styles.metricCard, theme.isNight && { backgroundColor: '#242424', borderColor: '#3A3A3A' }]}>
+            <View style={[styles.iconBox, { backgroundColor: theme.isNight ? '#1C1C1C' : '#F7F4EB', borderColor: theme.isNight ? '#3A3A3A' : '#171717' }]}>
+              <Ionicons name="compass-outline" size={20} color={theme.isNight ? '#FFFDF7' : '#171717'} />
             </View>
-            <Text style={styles.metricLabel}>PRESSURE</Text>
-            <Text style={styles.metricVal}>1012 hPa</Text>
-            <Text style={styles.metricNote}>Normal barometric</Text>
+            <Text style={[styles.metricLabel, theme.isNight && { color: '#BFBFBF' }]}>PRESSURE</Text>
+            <Text style={[styles.metricVal, theme.isNight && { color: '#FFFDF7' }]}>1012 hPa</Text>
+            <Text style={[styles.metricNote, theme.isNight && { color: '#BFBFBF' }]}>Normal barometric</Text>
           </View>
         </View>
       </View>

@@ -68,7 +68,7 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
         style={[
           styles.underlay,
           {
-            backgroundColor: disabled ? '#A8A69E' : '#171717',
+            backgroundColor: disabled ? '#A8A69E' : (theme.isNight ? '#000000' : '#171717'),
             borderRadius: theme.radius.button,
           },
         ]}
@@ -86,7 +86,7 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
           styles.button,
           {
             backgroundColor: theme.colors.backgroundCard,
-            borderColor: disabled ? '#8A8A8A' : '#171717',
+            borderColor: disabled ? '#8A8A8A' : (theme.isNight ? '#3A3A3A' : '#171717'),
             borderWidth: 2.5,
             borderRadius: theme.radius.button,
             height: theme.spacing.buttonHeight,
@@ -102,7 +102,7 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
             style={[
               styles.label,
               {
-                color: disabled ? '#8A8A8A' : '#171717',
+                color: disabled ? '#8A8A8A' : (theme.isNight ? '#FFFDF7' : '#171717'),
                 fontSize: theme.typography.sizes.headline,
                 fontWeight: theme.typography.weights.bold,
                 letterSpacing: 0.5,
