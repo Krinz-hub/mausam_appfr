@@ -16,7 +16,6 @@ export const AstronomicalInsightCard: React.FC<AstronomicalInsightCardProps> = (
 }) => {
   const theme = useTheme();
 
-  // Pick appropriate icon based on event type
   const getEventIcon = (): keyof typeof Ionicons.glyphMap => {
     if (insight.type.includes('sunset') || insight.type.includes('dusk') || insight.type.includes('daylight_remaining')) {
       return 'sunny';
@@ -34,126 +33,125 @@ export const AstronomicalInsightCard: React.FC<AstronomicalInsightCardProps> = (
   };
 
   const badgeText = insight.eventTime
-    ? `${insight.type.includes('sunset') ? 'Sunset' : 'Sunrise'} ${insight.eventTime}`
+    ? `${insight.type.includes('sunset') ? 'SUNSET' : 'SUNRISE'} ${insight.eventTime}`
     : insight.minutesUntilEvent !== null && insight.minutesUntilEvent > 0
-    ? `In ${insight.minutesUntilEvent} min`
-    : 'Atmospheric Timing';
-
-  const isNight = theme.isNight;
-  const cardBg = isNight ? '#102A3B' : theme.colors.surfaceSecondary;
-  const accentColor = isNight ? '#35B7F2' : theme.colors.primary;
-  const badgeBg = isNight ? 'rgba(53, 183, 242, 0.15)' : 'rgba(53, 183, 242, 0.12)';
+    ? `IN ${insight.minutesUntilEvent} MIN`
+    : 'CELESTIAL TIMING';
 
   return (
-    <View
-      accessible={true}
-      accessibilityRole="summary"
-      accessibilityLabel={`${insight.title}. ${insight.message}`}
-      style={[
-        styles.card,
-        {
-          backgroundColor: cardBg,
-          borderRadius: theme.radius.cardLarge,
-        },
-        style,
-      ]}
-    >
-      {/* Top Header Row: Badge & Event Time */}
-      <View style={styles.headerRow}>
-        <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-          <Ionicons name={getEventIcon()} size={14} color={accentColor} style={{ marginRight: 5 }} />
-          <Text
-            style={[
-              styles.badgeText,
-              {
-                color: accentColor,
-                fontSize: theme.typography.sizes.caption,
-                fontWeight: theme.typography.weights.semibold,
-              },
-            ]}
-          >
-            {badgeText}
-          </Text>
+    <View style={[styles.wrapper, style]}>
+      {/* Physical hard shadow underlay */}
+      <View style={styles.underlay} />
+
+      <View
+        accessible={true}
+        accessibilityRole="summary"
+        accessibilityLabel={`${insight.title}. ${insight.message}`}
+        style={styles.card}
+      >
+        {/* Retro window header */}
+        <View style={styles.windowHeader}>
+          <View style={styles.badge}>
+            <Ionicons name={getEventIcon()} size={13} color="#171717" style={{ marginRight: 4 }} />
+            <Text style={styles.badgeText}>
+              {badgeText}
+            </Text>
+          </View>
+
+          {insight.activity && (
+            <View style={styles.activityBadge}>
+              <Text style={styles.activityTag}>
+                {insight.activity.toUpperCase()}
+              </Text>
+            </View>
+          )}
         </View>
 
-        {insight.activity && (
-          <Text
-            style={[
-              styles.activityTag,
-              {
-                color: isNight ? '#B9CEDA' : theme.colors.textMuted,
-                fontSize: theme.typography.sizes.caption,
-                fontWeight: theme.typography.weights.medium,
-                textTransform: 'capitalize',
-              },
-            ]}
-          >
-            {insight.activity}
-          </Text>
-        )}
+        {/* Main Headline */}
+        <Text style={styles.title}>
+          {insight.title}
+        </Text>
+
+        {/* Informative Explanation */}
+        <Text style={styles.message}>
+          {insight.message}
+        </Text>
       </View>
-
-      {/* Main Headline */}
-      <Text
-        style={[
-          styles.title,
-          {
-            color: theme.colors.textPrimary,
-            fontSize: theme.typography.sizes.headline,
-            fontWeight: theme.typography.weights.bold,
-          },
-        ]}
-      >
-        {insight.title}
-      </Text>
-
-      {/* Actionable Narrative Message */}
-      <Text
-        style={[
-          styles.message,
-          {
-            color: isNight ? '#D1E6F3' : theme.colors.textSecondary,
-            fontSize: theme.typography.sizes.callout,
-            lineHeight: theme.typography.lineHeights.callout,
-          },
-        ]}
-      >
-        {insight.message}
-      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 20,
-    marginVertical: 10,
+  wrapper: {
+    position: 'relative',
+    marginVertical: 6,
+    paddingRight: 4,
+    paddingBottom: 4,
     width: '100%',
   },
-  headerRow: {
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 16,
+  },
+  windowHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: '#A8C7FF',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   badgeText: {
-    letterSpacing: 0.1,
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.5,
+  },
+  activityBadge: {
+    backgroundColor: '#F7F4EB',
+    borderWidth: 1,
+    borderColor: '#171717',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   activityTag: {
-    letterSpacing: 0.2,
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
   },
   title: {
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 22,
+    marginBottom: 4,
   },
   message: {
-    letterSpacing: -0.1,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#4A4A4A',
+    lineHeight: 18,
   },
 });

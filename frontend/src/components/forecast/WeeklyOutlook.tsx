@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { AppText as Text } from '../common/AppText';
 import { WeatherIcon } from '../icons/WeatherIcon';
 import { useTheme } from '../../design';
@@ -26,95 +26,66 @@ export const WeeklyOutlook: React.FC<WeeklyOutlookProps> = ({
 
   return (
     <View style={styles.section}>
-      <Text
-        style={[
-          styles.heading,
-          {
-            color: theme.colors.textPrimary,
-            fontWeight: theme.typography.weights.bold,
-          },
-        ]}
-      >
-        7-Day Personalized Outlook
-      </Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionDot}>●</Text>
+        <Text style={styles.heading}>
+          7-DAY OUTLOOK TABLE
+        </Text>
+      </View>
 
-      <View style={styles.listContainer}>
-        {daily.map((day, idx) => {
-          const recommendation = getDailyPersonalizedRecommendation(day, persona, aqi);
+      {/* Neo-brutalist compact structured rows table */}
+      <View style={styles.tableWrapper}>
+        <View style={styles.tableUnderlay} />
 
-          return (
-            <View
-              key={idx}
-              style={[
-                styles.dayCard,
-                {
-                  backgroundColor: theme.colors.backgroundCard,
-                },
-              ]}
-            >
-              <View style={styles.dayCol}>
-                <Text
-                  style={[
-                    styles.dayName,
-                    {
-                      color: theme.colors.textPrimary,
-                      fontWeight: theme.typography.weights.bold,
-                    },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {day.dayName}
-                </Text>
-                <View style={styles.iconWrap}>
-                  <WeatherIcon condition={day.conditionText} size={18} />
+        <View style={styles.tableBody}>
+          {daily.map((day, idx) => {
+            const isLast = idx === daily.length - 1;
+            const recommendation = getDailyPersonalizedRecommendation(day, persona, aqi);
+
+            return (
+              <Pressable
+                key={idx}
+                onPress={() => onPressDay?.(day, idx)}
+                style={({ pressed }) => [
+                  styles.row,
+                  !isLast && styles.rowBorder,
+                  pressed && styles.rowPressed,
+                ]}
+              >
+                {/* Day & Icon */}
+                <View style={styles.dayCol}>
+                  <View style={styles.iconBox}>
+                    <WeatherIcon condition={day.conditionText} size={16} />
+                  </View>
+                  <Text style={styles.dayName}>
+                    {day.dayName.slice(0, 3).toUpperCase()}
+                  </Text>
                 </View>
-              </View>
 
-              <View style={styles.recommendationCol}>
-                <Text
-                  style={[
-                    styles.recommendationText,
-                    {
-                      color: theme.colors.primary,
-                      fontWeight: theme.typography.weights.medium,
-                    },
-                  ]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  • {recommendation}
-                </Text>
-              </View>
+                {/* Condition & Recommendation */}
+                <View style={styles.recCol}>
+                  <Text style={styles.conditionText} numberOfLines={1}>
+                    {day.conditionText}
+                  </Text>
+                  <Text style={styles.recommendationText} numberOfLines={1}>
+                    {recommendation}
+                  </Text>
+                </View>
 
-              <View style={styles.tempCol}>
-                <Text
-                  style={[
-                    styles.tempMin,
-                    { color: theme.colors.textMuted },
-                  ]}
-                >
-                  {Math.round(day.minTemp)}°
-                </Text>
-                <Text
-                  style={[
-                    styles.tempSlash,
-                    { color: theme.colors.textDisabled },
-                  ]}
-                >
-                  /
-                </Text>
-                <Text
-                  style={[
-                    styles.tempMax,
-                    { color: theme.colors.textPrimary },
-                  ]}
-                >
-                  {Math.round(day.maxTemp)}°
-                </Text>
-              </View>
-            </View>
-          );
-        })}
+                {/* Temperatures & Arrow */}
+                <View style={styles.tempCol}>
+                  <Text style={styles.tempHigh}>
+                    {Math.round(day.maxTemp)}°
+                  </Text>
+                  <Text style={styles.tempLow}>
+                    {Math.round(day.minTemp)}°
+                  </Text>
+                  <Text style={styles.arrowText}>→</Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -122,69 +93,109 @@ export const WeeklyOutlook: React.FC<WeeklyOutlookProps> = ({
 
 const styles = StyleSheet.create({
   section: {
-    marginTop: 14,
-    marginBottom: 12,
+    marginVertical: 12,
   },
-  heading: {
-    fontSize: 22,
-    lineHeight: 28,
-    marginBottom: 12,
-    letterSpacing: -0.3,
-  },
-  listContainer: {
-    gap: 8,
-  },
-  dayCard: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 64,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 5,
-    elevation: 2,
+    marginBottom: 8,
+  },
+  sectionDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  heading: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
+  },
+  tableWrapper: {
+    position: 'relative',
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  tableUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
+  tableBody: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+  },
+  rowBorder: {
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#171717',
+  },
+  rowPressed: {
+    backgroundColor: '#FFF0D4',
   },
   dayCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 82,
+    width: 78,
+  },
+  iconBox: {
+    marginRight: 6,
   },
   dayName: {
-    fontSize: 14,
-    width: 56,
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.5,
   },
-  iconWrap: {
-    width: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  recommendationCol: {
+  recCol: {
     flex: 1,
-    paddingHorizontal: 6,
-    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  conditionText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#171717',
   },
   recommendationText: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11,
+    color: '#717171',
+    fontWeight: '500',
+    marginTop: 1,
   },
   tempCol: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    minWidth: 62,
   },
-  tempMin: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  tempSlash: {
-    marginHorizontal: 3,
-    fontSize: 13,
-  },
-  tempMax: {
+  tempHigh: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#171717',
+    marginRight: 4,
+  },
+  tempLow: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#8A8A8A',
+    marginRight: 8,
+  },
+  arrowText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#171717',
   },
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { StyleSheet, Pressable, ViewStyle, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { audioManager } from '../../services/audio/audioManager';
@@ -23,38 +23,53 @@ export const FloatingSettingsButton: React.FC<FloatingSettingsButtonProps> = ({
   };
 
   return (
-    <Pressable
-      onPress={handlePress}
-      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      accessible={true}
-      accessibilityRole="button"
-      accessibilityLabel="Open settings and profile"
-      style={({ pressed }) => [
-        styles.button,
-        {
-          backgroundColor: theme.colors.primary,
-          shadowColor: theme.colors.primary,
-          opacity: pressed ? 0.85 : 1,
-          transform: [{ scale: pressed ? 0.94 : 1 }],
-        },
-        style,
-      ]}
-    >
-      <Ionicons name="options-outline" size={18} color="#FFFFFF" />
-    </Pressable>
+    <View style={[styles.wrapper, style]}>
+      <View style={styles.underlay} />
+      <Pressable
+        onPress={handlePress}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Open settings and profile"
+        style={({ pressed }) => [
+          styles.button,
+          pressed && styles.buttonPressed,
+        ]}
+      >
+        <Ionicons name="options-outline" size={18} color="#171717" />
+      </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    width: 44,
+    height: 44,
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  underlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 8,
+  },
   button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 41,
+    height: 41,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFB21A',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+  },
+  buttonPressed: {
+    transform: [{ translateX: 2 }, { translateY: 2 }],
   },
 });

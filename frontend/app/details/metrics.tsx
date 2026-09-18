@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,6 @@ import { useTheme } from '../../src/design';
 import { AppScreen, Character, Text } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
 import { useLocationStore } from '../../src/state/useLocationStore';
-
 import { audioManager } from '../../src/services/audio/audioManager';
 import { hapticManager } from '../../src/services/haptics/hapticManager';
 
@@ -39,20 +38,15 @@ export default function DetailedMetricsScreen() {
       {/* Header with Close */}
       <View style={styles.header}>
         <View>
-          <Text
-            style={[
-              styles.title,
-              {
-                color: theme.colors.textPrimary,
-                fontSize: theme.typography.sizes.title2,
-                fontWeight: theme.typography.weights.heavy,
-              },
-            ]}
-          >
+          <View style={styles.headerBadge}>
+            <Text style={styles.badgeDot}>●</Text>
+            <Text style={styles.badgeLabel}>TELEMETRY STREAM</Text>
+          </View>
+          <Text style={styles.title}>
             Atmospheric Diagnostics
           </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            {weather?.locationName || location.name} • Complete Telemetry
+          <Text style={styles.subtitle}>
+            {weather?.locationName || location.name} • Complete Sensor Grid
           </Text>
         </View>
 
@@ -63,201 +57,113 @@ export default function DetailedMetricsScreen() {
           accessibilityLabel="Close detailed view"
           style={({ pressed }) => [
             styles.closeBtn,
-            {
-              backgroundColor: theme.colors.backgroundCardMuted,
-              opacity: pressed ? 0.8 : 1,
-              transform: [{ scale: pressed ? 0.94 : 1 }],
-            },
+            pressed && styles.closeBtnPressed,
           ]}
         >
-          <Ionicons name="close" size={20} color={theme.colors.textPrimary} />
+          <Ionicons name="close" size={18} color="#171717" />
         </Pressable>
       </View>
 
       {/* Hero Mini Banner with Character */}
-      <View
-        style={[
-          styles.heroBanner,
-          {
-            backgroundColor: theme.colors.primaryLight,
-            borderRadius: theme.radius.cardLarge,
-            ...theme.shadows.sm,
-          },
-        ]}
-      >
-        <Character state="happy" size="md" />
-        <View style={{ marginLeft: 16 }}>
-          <Text style={[styles.heroTemp, { color: theme.colors.textPrimary }]}>
-            {Math.round(current?.temperature ?? 28)}°
-          </Text>
-          <Text style={[styles.heroFeelsLike, { color: theme.colors.textSecondary }]}>
-            Feels like {Math.round(current?.feelsLike ?? 31)}° • {current?.conditionText}
-          </Text>
+      <View style={styles.bannerWrapper}>
+        <View style={styles.bannerUnderlay} />
+        <View style={styles.heroBanner}>
+          <View style={styles.charBox}>
+            <Character state="happy" size="md" />
+          </View>
+          <View style={{ marginLeft: 16, flex: 1 }}>
+            <Text style={styles.heroTemp}>
+              {Math.round(current?.temperature ?? 28)}°
+            </Text>
+            <Text style={styles.heroFeelsLike}>
+              Feels like {Math.round(current?.feelsLike ?? 31)}° • {current?.conditionText}
+            </Text>
+          </View>
         </View>
       </View>
 
-      {/* Clean Spacious 2-Column Metric Grid with Vector Icons */}
+      {/* Clean 2-Column Neo-Brutalist Metric Grid */}
       <View style={styles.metricGrid}>
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="water-outline"
-            size={24}
-            color={theme.colors.weatherRain}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            Humidity
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            {current?.humidity ?? 60}%
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.textMuted }]}>
-            {(current?.humidity ?? 60) > 70 ? 'Muggy' : 'Comfortable moisture'}
-          </Text>
+        {/* Humidity */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#EBF3FF' }]}>
+              <Ionicons name="water-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>HUMIDITY</Text>
+            <Text style={styles.metricVal}>{current?.humidity ?? 60}%</Text>
+            <Text style={styles.metricNote}>
+              {(current?.humidity ?? 60) > 70 ? 'Muggy moisture' : 'Comfortable'}
+            </Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="speedometer-outline"
-            size={24}
-            color={theme.colors.weatherWind}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            Wind Speed
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            {Math.round(current?.windSpeed ?? 12)} km/h
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.textMuted }]}>
-            Light to gentle breeze
-          </Text>
+        {/* Wind Speed */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#EAF4EC' }]}>
+              <Ionicons name="speedometer-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>WIND SPEED</Text>
+            <Text style={styles.metricVal}>{Math.round(current?.windSpeed ?? 12)} km/h</Text>
+            <Text style={styles.metricNote}>Gentle breeze</Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="sunny-outline"
-            size={24}
-            color={theme.colors.weatherUV}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            UV Index
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            {current?.uvIndex ?? 6} / 12
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.weatherUV }]}>
-            {(current?.uvIndex ?? 6) >= 6 ? 'High solar exposure' : 'Moderate'}
-          </Text>
+        {/* UV Index */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#FFF6E0' }]}>
+              <Ionicons name="sunny-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>UV INDEX</Text>
+            <Text style={styles.metricVal}>{current?.uvIndex ?? 6} / 12</Text>
+            <Text style={styles.metricNote}>
+              {(current?.uvIndex ?? 6) >= 6 ? 'High solar exposure' : 'Moderate'}
+            </Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="leaf-outline"
-            size={24}
-            color={theme.colors.success}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            Air Quality (AQI)
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            {current?.aqi ?? 48}
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.success }]}>
-            Satisfactory & breathable
-          </Text>
+        {/* Air Quality */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#EAF4EC' }]}>
+              <Ionicons name="leaf-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>AIR QUALITY (AQI)</Text>
+            <Text style={styles.metricVal}>{current?.aqi ?? 48}</Text>
+            <Text style={styles.metricNote}>Satisfactory & breathable</Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="eye-outline"
-            size={24}
-            color={theme.colors.primary}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            Visibility
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            {current?.visibility ?? 10} km
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.textMuted }]}>
-            Clear road visibility
-          </Text>
+        {/* Visibility */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#FFEBE6' }]}>
+              <Ionicons name="eye-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>VISIBILITY</Text>
+            <Text style={styles.metricVal}>{current?.visibility ?? 10} km</Text>
+            <Text style={styles.metricNote}>Clear road vision</Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          <Ionicons
-            name="compass-outline"
-            size={24}
-            color={theme.colors.textSecondary}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={[styles.metricLabel, { color: theme.colors.textSecondary }]}>
-            Atmospheric Pressure
-          </Text>
-          <Text style={[styles.metricVal, { color: theme.colors.textPrimary }]}>
-            1012 hPa
-          </Text>
-          <Text style={[styles.metricNote, { color: theme.colors.textMuted }]}>
-            Normal barometric pressure
-          </Text>
+        {/* Atmospheric Pressure */}
+        <View style={styles.cardWrapper}>
+          <View style={styles.cardUnderlay} />
+          <View style={styles.metricCard}>
+            <View style={[styles.iconBox, { backgroundColor: '#F7F4EB' }]}>
+              <Ionicons name="compass-outline" size={20} color="#171717" />
+            </View>
+            <Text style={styles.metricLabel}>PRESSURE</Text>
+            <Text style={styles.metricVal}>1012 hPa</Text>
+            <Text style={styles.metricNote}>Normal barometric</Text>
+          </View>
         </View>
       </View>
     </AppScreen>
@@ -268,66 +174,161 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingVertical: 12,
   },
+  headerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  badgeDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  badgeLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.8,
+  },
   title: {
-    letterSpacing: -0.3,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 28,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
+    color: '#4A4A4A',
+    fontWeight: '500',
     marginTop: 2,
   },
   closeBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '2px 2px 0px #171717' } as any)
+      : {
+          shadowColor: '#171717',
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: 1,
+          shadowRadius: 0,
+        }),
   },
-  closeBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  closeBtnPressed: {
+    transform: [{ translateX: 1.5 }, { translateY: 1.5 }],
+  },
+  bannerWrapper: {
+    position: 'relative',
+    marginVertical: 12,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  bannerUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
   },
   heroBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
-    marginVertical: 14,
+    padding: 16,
+    backgroundColor: '#FFF0D4',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+  },
+  charBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroTemp: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: 34,
+    fontWeight: '900',
+    color: '#171717',
+    letterSpacing: -1,
   },
   heroFeelsLike: {
     fontSize: 13,
+    color: '#4A4A4A',
+    fontWeight: '600',
     marginTop: 2,
   },
   metricGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 8,
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  cardWrapper: {
+    position: 'relative',
+    width: '48%',
+    marginBottom: 14,
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
   },
   metricCard: {
-    width: '48%',
-    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 10,
+    padding: 14,
+    minHeight: 130,
   },
-  metricIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
   metricLabel: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   metricVal: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginVertical: 4,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#171717',
+    marginBottom: 4,
   },
   metricNote: {
     fontSize: 11,
-    fontWeight: '600',
+    color: '#4A4A4A',
+    fontWeight: '500',
   },
 });

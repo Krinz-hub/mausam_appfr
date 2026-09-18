@@ -19,105 +19,103 @@ export const ComfortWindowCard: React.FC<ComfortWindowCardProps> = ({
   if (!windowData) return null;
 
   const title = isFitnessPersona
-    ? 'Best Outdoor Workout Window'
+    ? 'Best Workout Window'
     : 'Optimal Comfort Window';
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.isNight
-            ? theme.colors.cardSelectedBg
-            : theme.colors.surfaceBlue,
-        },
-      ]}
-    >
-      <View
-        style={[
-          styles.iconContainer,
-          { backgroundColor: theme.colors.backgroundCard },
-        ]}
-      >
-        <Ionicons
-          name={isFitnessPersona ? 'fitness' : 'partly-sunny'}
-          size={22}
-          color={theme.colors.primary}
-        />
-      </View>
+    <View style={styles.wrapper}>
+      <View style={styles.underlay} />
 
-      <View style={styles.textColumn}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.primary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          {title}
-        </Text>
-        <Text
-          style={[
-            styles.subtitle,
-            {
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.sizes.subhead,
-              fontWeight: theme.typography.weights.medium,
-            },
-          ]}
-          numberOfLines={2}
-        >
-          {windowData.summary}
-        </Text>
+      <View style={styles.card}>
+        <View style={styles.iconContainer}>
+          <Ionicons
+            name={isFitnessPersona ? 'fitness' : 'partly-sunny'}
+            size={20}
+            color="#171717"
+          />
+        </View>
+
+        <View style={styles.textColumn}>
+          <View style={styles.badgeRow}>
+            <Text style={styles.badgeLabel}>
+              {isFitnessPersona ? 'FITNESS ADVISORY' : 'COMFORT ADVISORY'}
+            </Text>
+          </View>
+          <Text style={styles.title}>
+            {title}
+          </Text>
+          <Text style={styles.subtitle} numberOfLines={2}>
+            {windowData.summary}
+          </Text>
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    marginVertical: 6,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5F7FD',
-    borderRadius: 22,
-    minHeight: 88,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    marginVertical: 8,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 10,
+    minHeight: 80,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: '#A8C7FF',
+    borderWidth: 2,
+    borderColor: '#171717',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
   },
   textColumn: {
     flex: 1,
     justifyContent: 'center',
   },
+  badgeRow: {
+    marginBottom: 2,
+  },
+  badgeLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#FF5533',
+    letterSpacing: 0.8,
+  },
   title: {
-    fontSize: 16,
-    lineHeight: 21,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 20,
     marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    color: '#4A4A4A',
+    lineHeight: 16,
+    fontWeight: '500',
   },
 });

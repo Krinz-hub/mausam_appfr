@@ -23,7 +23,7 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   onSwipeLeft,
   onSwipeRight,
   style,
-  pointerPosition = 'above',
+  pointerPosition = 'none',
   testID = 'character-bubble',
   isTired = false,
 }) => {
@@ -31,14 +31,8 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   const touchStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
   const isSwipeHandledRef = React.useRef<boolean>(false);
 
-  const bubbleBg = theme.isNight
-    ? (isTired ? '#1A2836' : '#102A3B')
-    : (isTired ? '#FFFBEB' : theme.colors.backgroundCard);
-  const textColor = theme.isNight ? '#F3FAFF' : theme.colors.textPrimary;
-  const tipColor = theme.isNight ? '#B9CEDA' : theme.colors.textSecondary;
-  const borderColor = isTired
-    ? (theme.isNight ? 'rgba(245, 158, 11, 0.45)' : 'rgba(217, 119, 6, 0.35)')
-    : (theme.isNight ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)');
+  const bubbleBg = isTired ? '#FFF0D4' : '#FFFFFF';
+  const headerBg = isTired ? '#FFB21A' : '#F7F4EB';
 
   const handleTouchStart = (e: any) => {
     isSwipeHandledRef.current = false;
@@ -76,131 +70,195 @@ export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
   };
 
   return (
-    <Pressable
-      testID={testID}
-      onPress={handlePress}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      accessible={true}
-      accessibilityRole="button"
-      accessibilityLabel={`Companion reaction: ${message}${tip ? `. Tip: ${tip}` : ''}. Swipe left or right to shuffle suggestions.`}
-      style={({ pressed }) => [
-        styles.container,
-        style,
-        Platform.select({
-          web: { cursor: 'pointer' } as any,
-          default: {},
-        }),
-        pressed && { transform: [{ scale: 0.98 }], opacity: 0.92 },
-      ]}
-    >
-      {/* Pointer dots above bubble (when character is positioned above) */}
+    <View style={[styles.wrapper, style]}>
+      {/* Pointer connection dots above bubble */}
       {pointerPosition === 'above' && (
         <View style={styles.trailAbove}>
-          <View
-            style={[
-              styles.dotSmall,
-              { backgroundColor: bubbleBg, borderColor, borderWidth: 1 },
-            ]}
-          />
-          <View
-            style={[
-              styles.dotMedium,
-              { backgroundColor: bubbleBg, borderColor, borderWidth: 1 },
-            ]}
-          />
+          <View style={styles.dotSmall} />
+          <View style={styles.dotMedium} />
         </View>
       )}
 
-      {/* Main Bubble Body */}
-      <View
-        style={[
-          styles.bubble,
-          {
-            backgroundColor: bubbleBg,
-            borderColor,
-            borderRadius: 20,
-            borderWidth: 1,
-            ...theme.shadows.sm,
-          },
+      {/* Physical hard shadow underlay */}
+      <View style={styles.underlay} />
+
+      <Pressable
+        testID={testID}
+        onPress={handlePress}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={`Companion reaction: ${message}${tip ? `. Tip: ${tip}` : ''}. Swipe left or right to shuffle suggestions.`}
+        style={({ pressed }) => [
+          styles.container,
+          { backgroundColor: bubbleBg },
+          Platform.select({
+            web: { cursor: 'pointer' } as any,
+            default: {},
+          }),
+          pressed && styles.containerPressed,
         ]}
       >
-        <Text style={[styles.message, { color: textColor }]}>
-          {message}
-        </Text>
-        {tip ? (
-          <Text style={[styles.tip, { color: tipColor }]}>
-            {tip}
-          </Text>
-        ) : null}
-      </View>
+        {/* Retro computer dialog title header */}
+        <View style={[styles.dialogHeader, { backgroundColor: headerBg }]}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerDot}>●</Text>
+            <Text style={styles.headerTitle}>
+              {isTired ? 'SYSTEM WARNING // REST' : 'COMPANION LOG // INSIGHT'}
+            </Text>
+          </View>
+          <Text style={styles.headerClose}>[ ✕ ]</Text>
+        </View>
 
-      {/* Pointer dots below bubble */}
+        {/* Message and tip body */}
+        <View style={styles.body}>
+          <Text style={styles.messageText}>
+            {message}
+          </Text>
+          {tip ? (
+            <Text style={styles.tipText}>
+              {tip}
+            </Text>
+          ) : null}
+
+          {/* Footer prompt */}
+          <View style={styles.footerRow}>
+            <Text style={styles.footerHint}>
+              TAP TO CYCLE • SWIPE TO SHUFFLE ➔
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+
+      {/* Pointer connection dots below bubble */}
       {pointerPosition === 'below' && (
         <View style={styles.trailBelow}>
-          <View
-            style={[
-              styles.dotMedium,
-              { backgroundColor: bubbleBg, borderColor, borderWidth: 1 },
-            ]}
-          />
-          <View
-            style={[
-              styles.dotSmall,
-              { backgroundColor: bubbleBg, borderColor, borderWidth: 1 },
-            ]}
-          />
+          <View style={styles.dotMedium} />
+          <View style={styles.dotSmall} />
         </View>
       )}
-    </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
+  wrapper: {
+    position: 'relative',
     marginVertical: 6,
-    maxWidth: 340,
+    paddingRight: 4,
+    paddingBottom: 4,
     alignSelf: 'center',
+    width: '100%',
+    maxWidth: 380,
   },
-  bubble: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
+  container: {
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  containerPressed: {
+    transform: [{ translateX: 2 }, { translateY: 2 }],
+  },
+  dialogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#171717',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
-  message: {
-    fontSize: 14,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  headerTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
+  },
+  headerClose: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#171717',
+  },
+  body: {
+    padding: 12,
+  },
+  messageText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#171717',
     lineHeight: 20,
-    textAlign: 'center',
-    fontWeight: '600',
-    letterSpacing: -0.2,
-  },
-  tip: {
-    fontSize: 12,
-    lineHeight: 16,
-    textAlign: 'center',
-    marginTop: 4,
-    fontWeight: '400',
-  },
-  trailAbove: {
-    alignItems: 'center',
-    gap: 3,
     marginBottom: 4,
   },
-  trailBelow: {
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 4,
+  tipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#4A4A4A',
+    lineHeight: 18,
+    marginBottom: 8,
   },
-  dotMedium: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E0D5',
+    paddingTop: 6,
+    marginTop: 2,
+  },
+  footerHint: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
+  },
+  trailAbove: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  trailBelow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
   },
   dotSmall: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    marginHorizontal: 3,
+  },
+  dotMedium: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    marginHorizontal: 3,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Pressable,
@@ -10,11 +10,12 @@ import { AppText as Text } from '../common/AppText';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { audioManager } from '../../services/audio/audioManager';
+import { hapticManager } from '../../services/haptics/hapticManager';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -44,154 +45,186 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
   layout = 'grid',
 }) => {
   const theme = useTheme();
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    // Subtle bounce on selection
-    scale.value = withSpring(selected ? 1.02 : 1, theme.motion.spring.responsive);
-  }, [selected]);
+  const offset = useSharedValue(0);
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.97, theme.motion.spring.stiff);
+    offset.value = withTiming(2, { duration: 70 });
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(selected ? 1.02 : 1, theme.motion.spring.responsive);
+    offset.value = withTiming(0, { duration: 100 });
   };
 
   const handlePress = () => {
+    hapticManager.selection();
     audioManager.play('selection');
     onToggle(id);
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [
+      { translateX: offset.value },
+      { translateY: offset.value },
+    ],
   }));
 
   const isPill = layout === 'pill';
   const isRow = layout === 'row';
 
   return (
-    <AnimatedPressable
-      onPress={handlePress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      accessible={true}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: selected }}
-      accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}`}
-      style={[
-        styles.card,
-        {
-          backgroundColor: selected
-            ? theme.colors.cardSelectedBg
-            : theme.colors.cardUnselectedBg,
-          borderColor: selected
-            ? theme.colors.primary
-            : 'transparent',
-          borderWidth: selected ? 2 : 0,
-          borderRadius: isPill ? theme.radius.pill : theme.radius.card,
-          paddingHorizontal: isPill ? theme.spacing.lg : theme.spacing.cardPadding,
-          paddingVertical: isPill ? theme.spacing.md : theme.spacing.cardPadding,
-          flexDirection: isRow || isPill ? 'row' : 'column',
-          alignItems: isRow || isPill ? 'center' : 'flex-start',
-          ...(selected ? theme.shadows.cardSelected : theme.shadows.sm),
-        },
-        animatedStyle,
-        style,
-      ]}
-    >
-      {/* Icon */}
-      {(iconName || icon) && (
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor: selected ? theme.colors.primaryLight : theme.colors.backgroundCardMuted,
-              borderRadius: theme.radius.sm,
-              marginRight: isRow || isPill ? theme.spacing.md : 0,
-              marginBottom: isRow || isPill ? 0 : theme.spacing.sm,
-            },
-          ]}
-        >
-          {iconName ? (
-            <Ionicons
-              name={iconName}
-              size={20}
-              color={selected ? theme.colors.primaryDark : theme.colors.primary}
-            />
-          ) : (
-            <Text style={styles.iconText}>{icon}</Text>
-          )}
-        </View>
-      )}
+    <View style={[styles.wrapper, style]}>
+      {/* Physical hard shadow underlay */}
+      <View
+        style={[
+          styles.underlay,
+          {
+            borderRadius: theme.radius.card,
+            backgroundColor: '#171717',
+          },
+        ]}
+      />
 
-      {/* Content */}
-      <View style={{ flex: 1 }}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: selected ? theme.colors.primaryDark : theme.colors.textPrimary,
-              fontSize: isPill ? theme.typography.sizes.headline : theme.typography.sizes.body,
-              fontWeight: selected
-                ? theme.typography.weights.bold
-                : theme.typography.weights.medium,
-            },
-            titleStyle,
-          ]}
-        >
-          {title}
-        </Text>
-        {subtitle && (
-          <Text
+      <AnimatedPressable
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessible={true}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: selected }}
+        accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}`}
+        style={[
+          styles.card,
+          {
+            backgroundColor: selected ? '#FFF0D4' : '#FFFFFF',
+            borderColor: '#171717',
+            borderWidth: selected ? 3 : 2.5,
+            borderRadius: theme.radius.card,
+            paddingHorizontal: isPill ? theme.spacing.md : theme.spacing.cardPadding,
+            paddingVertical: isPill ? theme.spacing.sm : theme.spacing.cardPadding,
+            flexDirection: isRow || isPill ? 'row' : 'column',
+            alignItems: isRow || isPill ? 'center' : 'flex-start',
+          },
+          animatedStyle,
+        ]}
+      >
+        {/* Icon */}
+        {(iconName || icon) && (
+          <View
             style={[
-              styles.subtitle,
+              styles.iconContainer,
               {
-                color: selected ? theme.colors.primaryHover : theme.colors.textSecondary,
-                fontSize: theme.typography.sizes.footnote,
-                marginTop: theme.spacing.xxs,
+                backgroundColor: selected ? '#FFB21A' : '#F7F4EB',
+                borderColor: '#171717',
+                borderWidth: 2,
+                borderRadius: 8,
+                marginRight: isRow || isPill ? theme.spacing.md : 0,
+                marginBottom: isRow || isPill ? 0 : theme.spacing.sm,
               },
             ]}
           >
-            {subtitle}
-          </Text>
+            {iconName ? (
+              <Ionicons
+                name={iconName}
+                size={20}
+                color="#171717"
+              />
+            ) : (
+              <Text style={styles.iconText}>{icon}</Text>
+            )}
+          </View>
         )}
-      </View>
 
-      {/* Check Indicator */}
-      <View
-        style={[
-          styles.checkBadge,
-          {
-            backgroundColor: selected ? theme.colors.primary : 'transparent',
-            borderColor: selected ? theme.colors.primary : theme.colors.border,
-            borderWidth: 1.5,
-            borderRadius: theme.radius.circle,
-            marginLeft: theme.spacing.sm,
-          },
-        ]}
-      >
-        {selected && <Text style={styles.checkMark}>✓</Text>}
-      </View>
-    </AnimatedPressable>
+        {/* Content */}
+        <View style={{ flex: 1 }}>
+          <View style={styles.titleRow}>
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: '#171717',
+                  fontSize: isPill ? theme.typography.sizes.headline : theme.typography.sizes.body,
+                  fontWeight: theme.typography.weights.bold,
+                },
+                titleStyle,
+              ]}
+            >
+              {title}
+            </Text>
+            {selected && (
+              <Text style={styles.selectedIndicator}>●</Text>
+            )}
+          </View>
+          {subtitle && (
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  color: '#4A4A4A',
+                  fontSize: theme.typography.sizes.footnote,
+                  marginTop: theme.spacing.xxs,
+                },
+              ]}
+            >
+              {subtitle}
+            </Text>
+          )}
+        </View>
+
+        {/* Check indicator square badge */}
+        <View
+          style={[
+            styles.checkBadge,
+            {
+              backgroundColor: selected ? '#171717' : '#FFFFFF',
+              borderColor: '#171717',
+              borderWidth: 2,
+              borderRadius: 6,
+              marginLeft: theme.spacing.sm,
+            },
+          ]}
+        >
+          {selected && <Text style={styles.checkMark}>✓</Text>}
+        </View>
+      </AnimatedPressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    marginVertical: 5,
+    paddingRight: 4,
+    paddingBottom: 4,
+  },
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+  },
   card: {
-    marginVertical: 6,
     justifyContent: 'space-between',
     minHeight: 56,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconText: {
-    fontSize: 22,
+    fontSize: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectedIndicator: {
+    marginLeft: 6,
+    color: '#FF5533',
+    fontSize: 12,
   },
   title: {
     lineHeight: 20,
@@ -206,8 +239,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkMark: {
-    color: '#FFFFFF',
+    color: '#FFFDF7',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
 });

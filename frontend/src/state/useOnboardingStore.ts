@@ -30,6 +30,13 @@ interface OnboardingState {
 const NEED_PROFILE_KEY = '@mausam_need_profile';
 const PERSONA_PROFILE_KEY = '@mausam_persona_profile';
 
+const defaultNeedProfile = NeedEngine.computeProfile({
+  userTypeKeys: ['daily', 'commute'],
+  weatherFactorKeys: ['rain', 'heat'],
+  activePeriods: ['morning', 'evening'],
+});
+const defaultPersonaProfile = PersonaEngine.initializeFromNeedProfile(defaultNeedProfile, 'usr_default');
+
 export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   currentStep: 1,
   userTypeKeys: ['daily', 'commute'],
@@ -37,8 +44,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   weatherFactorKeys: ['rain', 'heat'],
   activePeriods: ['morning', 'evening'],
 
-  needProfile: null,
-  personaProfile: null,
+  needProfile: defaultNeedProfile,
+  personaProfile: defaultPersonaProfile,
 
   setStep: (step: number) => set({ currentStep: step }),
 

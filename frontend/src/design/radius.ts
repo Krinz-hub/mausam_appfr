@@ -1,23 +1,25 @@
+// Neo-Brutalist intentional corner radii
+// Strictly avoiding extreme modern SaaS pills (999) on cards/buttons; keeping structured 8px-12px corners
+
 export const radius = {
   none: 0,
-  xs: 8,
-  sm: 12,
-  md: 16,
-  lg: 20,
-  xl: 24,
-  pill: 999,
-  circle: 999,
+  xs: 4,
+  sm: 8,
+  md: 10,
+  lg: 12,
+  xl: 14,
+  pill: 10,
+  circle: 999, // Reserved strictly for tiny circular status dots
 
-  // Semantic mappings (Section 8)
-  button: 16,
-  card: 16,
-  cardLarge: 24,
-  hero: 24,
-  bubble: 20,
-  badge: 12,
-  input: 16,
-  chip: 999,
+  // Semantic mappings
+  button: 10,
+  card: 10,
+  cardLarge: 12,
+  hero: 12,
+  bubble: 10,
+  badge: 6,
+  input: 8,
+  chip: 8,
 };
 
 export type Radius = typeof radius;
-

@@ -9,6 +9,8 @@ import {
 } from '../engine/types';
 import { DecisionEngine } from '../engine/decision/decisionEngine';
 import { LearningEngine } from '../engine/learning/learningEngine';
+import { NeedEngine } from '../engine/need/needEngine';
+import { PersonaEngine } from '../engine/persona/personaEngine';
 import { useOnboardingStore } from './useOnboardingStore';
 import { CanonicalWeatherData } from '../services/weather/canonicalModel';
 
@@ -16,6 +18,8 @@ interface DecisionState {
   currentDecision: WeatherDecision | null;
   experience: ExperienceConfig | null;
   feedbackHistory: Record<string, { type: FeedbackType; reason?: FeedbackReasonCode }>;
+
+  lastWeatherSignature: string | null;
 
   computeDecision: (weather: CanonicalWeatherData) => void;
   submitFeedback: (
@@ -31,15 +35,32 @@ export const useDecisionStore = create<DecisionState>((set, get) => ({
   currentDecision: null,
   experience: null,
   feedbackHistory: {},
+  lastWeatherSignature: null,
 
   computeDecision: (weather: CanonicalWeatherData) => {
-    const persona = useOnboardingStore.getState().personaProfile;
-    if (!persona) return;
+    let persona = useOnboardingStore.getState().personaProfile;
+    if (!persona) {
+      const defaultNeed = NeedEngine.computeProfile({
+        userTypeKeys: ['daily', 'commute'],
+        weatherFactorKeys: ['rain', 'heat'],
+        activePeriods: ['morning', 'evening'],
+      });
+      persona = PersonaEngine.initializeFromNeedProfile(defaultNeed, 'usr_default');
+    }
 
     const currentHour = new Date().getHours();
+    const weatherKey = `${weather.locationName}_${weather.current.temperature}_${weather.current.conditionText}_${weather.current.weatherCode}_${weather.current.humidity}_${weather.current.windSpeed}_${weather.current.uvIndex}`;
+    const personaKey = `${persona.userId}_${persona.version}_${persona.confidence}_${persona.traits.rain_sensitive}_${persona.traits.heat_sensitive}_${persona.lastUpdated || ''}`;
+    const signature = `${weatherKey}__${personaKey}__${currentHour}`;
+
+    const state = get();
+    if (state.lastWeatherSignature === signature && state.currentDecision) {
+      return;
+    }
+
     const { decision, experience } = DecisionEngine.decide(weather, persona, currentHour);
 
-    set({ currentDecision: decision, experience });
+    set({ currentDecision: decision, experience, lastWeatherSignature: signature });
   },
 
   submitFeedback: async (
@@ -81,7 +102,7 @@ export const useDecisionStore = create<DecisionState>((set, get) => ({
       ...feedbackHistory,
       [decisionId]: { type, reason },
     };
-    set({ feedbackHistory: nextFeedback });
+    set({ feedbackHistory: nextFeedback, lastWeatherSignature: null });
     await AsyncStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(nextFeedback));
   },
 }));

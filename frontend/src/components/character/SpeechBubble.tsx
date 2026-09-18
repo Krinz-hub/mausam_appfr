@@ -20,49 +20,27 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {pointerDirection === 'up' && <View style={[styles.pointerUp, { borderBottomColor: theme.colors.backgroundCard }]} />}
-      <View
-        style={[
-          styles.bubble,
-          {
-            backgroundColor: theme.colors.backgroundCard,
-            borderColor: theme.colors.border,
-            borderRadius: theme.radius.bubble,
-            padding: theme.spacing.md,
-            ...theme.shadows.sm,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-              lineHeight: theme.typography.lineHeights.headline,
-            },
-          ]}
-        >
-          {text}
-        </Text>
-        {subtext && (
-          <Text
-            style={[
-              styles.subtext,
-              {
-                color: theme.colors.textSecondary,
-                fontSize: theme.typography.sizes.callout,
-                marginTop: theme.spacing.xs,
-                lineHeight: theme.typography.lineHeights.callout,
-              },
-            ]}
-          >
-            {subtext}
+      {pointerDirection === 'up' && (
+        <View style={styles.pointerUp} />
+      )}
+
+      <View style={styles.wrapper}>
+        <View style={styles.underlay} />
+        <View style={styles.bubble}>
+          <Text style={styles.title}>
+            {text}
           </Text>
-        )}
+          {subtext && (
+            <Text style={styles.subtext}>
+              {subtext}
+            </Text>
+          )}
+        </View>
       </View>
-      {pointerDirection === 'down' && <View style={[styles.pointerDown, { borderTopColor: theme.colors.backgroundCard }]} />}
+
+      {pointerDirection === 'down' && (
+        <View style={styles.pointerDown} />
+      )}
     </View>
   );
 };
@@ -71,36 +49,66 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     marginVertical: 8,
+    width: '100%',
+  },
+  wrapper: {
+    position: 'relative',
+    paddingRight: 4,
+    paddingBottom: 4,
+    maxWidth: '92%',
+    minWidth: 200,
+  },
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
   },
   bubble: {
-    borderWidth: 1.5,
-    minWidth: 180,
-    maxWidth: '92%',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 10,
+    padding: 14,
   },
   title: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#171717',
     textAlign: 'center',
+    lineHeight: 20,
   },
   subtext: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#4A4A4A',
     textAlign: 'center',
+    marginTop: 4,
+    lineHeight: 16,
   },
   pointerDown: {
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderTopWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    marginTop: -1,
+    borderTopColor: '#171717',
+    marginTop: -2,
   },
   pointerUp: {
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    marginBottom: -1,
+    borderBottomColor: '#171717',
+    marginBottom: -2,
   },
 });

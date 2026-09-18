@@ -10,8 +10,8 @@ export const typography = {
     bold: 'Comfortaa_700Bold',
   },
   sizes: {
-    heroTemp: 76,
-    display: 40,
+    heroTemp: 72,
+    display: 36,
     title1: 28,
     title2: 22,
     title3: 18,
@@ -30,17 +30,30 @@ export const typography = {
     heavy: '800' as TextStyle['fontWeight'],
   },
   lineHeights: {
-    heroTemp: 84,
-    display: 48,
-    title1: 34,
-    title2: 28,
-    title3: 24,
+    heroTemp: 78,
+    display: 42,
+    title1: 32,
+    title2: 26,
+    title3: 22,
     headline: 22,
     body: 21,
     callout: 20,
     subhead: 18,
     footnote: 16,
     caption: 14,
+  },
+  // Neo-brutalist annotation and badge typography presets
+  retroHeader: {
+    fontSize: 13,
+    fontWeight: '700' as TextStyle['fontWeight'],
+    letterSpacing: 1,
+    textTransform: 'uppercase' as TextStyle['textTransform'],
+  },
+  retroBadge: {
+    fontSize: 11,
+    fontWeight: '700' as TextStyle['fontWeight'],
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as TextStyle['textTransform'],
   },
 };
 
@@ -61,4 +74,3 @@ export function getComfortaaFontFamily(weight?: string): string {
 }
 
 export type Typography = typeof typography;
-

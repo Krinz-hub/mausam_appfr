@@ -1,53 +1,61 @@
-import { ViewStyle } from 'react-native';
+import { ViewStyle, Platform } from 'react-native';
+
+// Hand-Drawn Neo-Brutalism Hard Offset Shadows
+// No blurry material shadows; crisp printed/sticker-like hard offsets with #171717 ink
+
+export const hardShadow = (
+  x: number = 4,
+  y: number = 4,
+  color: string = '#171717'
+): ViewStyle => {
+  if (Platform.OS === 'web') {
+    return {
+      boxShadow: `${x}px ${y}px 0px ${color}`,
+    } as any;
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: x, height: y },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: Math.max(x, y),
+  };
+};
 
 export const shadows = {
-  none: {
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
-  } as ViewStyle,
+  none: (Platform.OS === 'web'
+    ? ({ boxShadow: 'none' } as any)
+    : {
+        shadowColor: 'transparent',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
+      }) as ViewStyle,
 
-  sm: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  } as ViewStyle,
+  // Subtle 2px 2px offset for small tags, badges, chips
+  sm: hardShadow(2, 2, '#171717'),
 
-  md: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 4,
-  } as ViewStyle,
+  // Default 4px 4px hard offset for standard cards, inputs, buttons
+  md: hardShadow(4, 4, '#171717'),
 
-  lg: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 8,
-  } as ViewStyle,
+  // Pronounced 5px 5px hard offset for major containers, dialogs, heroes
+  lg: hardShadow(5, 5, '#171717'),
 
-  cardSelected: {
-    shadowColor: '#2B7EE4',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 6,
-  } as ViewStyle,
+  // Card unselected & selected tactile offsets
+  card: hardShadow(4, 4, '#171717'),
+  cardSelected: hardShadow(4, 4, '#171717'),
 
-  softGlow: {
-    shadowColor: '#60A5FA',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 5,
-  } as ViewStyle,
+  // Button normal tactile state (collapses to pressed)
+  buttonNormal: hardShadow(4, 4, '#171717'),
+  buttonPressed: hardShadow(1, 1, '#171717'),
+
+  // Accent hard shadow (e.g. coral or amber printed stamp)
+  accentCoral: hardShadow(3, 3, '#FF5533'),
+  accentAmber: hardShadow(3, 3, '#FFB21A'),
+
+  // Legacy alias replaced with crisp accent shadow
+  softGlow: hardShadow(3, 3, '#FF5533'),
 };
 
 export type Shadows = typeof shadows;

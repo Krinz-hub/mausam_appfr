@@ -16,6 +16,7 @@ interface AuthState {
   setOnboardingCompleted: (completed: boolean) => Promise<void>;
   deleteAccount: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  continueAsGuest: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -46,40 +47,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // 1. Instant local restore from cache
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      const token = await ApiClient.getToken();
 
-      if (stored && token) {
+      if (stored) {
         const cachedUser: User = JSON.parse(stored);
         set({ user: cachedUser, isAuthenticated: true, isLoading: false });
 
-        // 2. Background sync with backend to verify validity
-        try {
-          const res = await ApiClient.getMe();
+        // 2. Background sync with backend to verify validity (non-blocking)
+        ApiClient.getMe().then(async (res) => {
           if (res && res.user) {
             const syncedUser = mapBackendUser(res.user);
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
             set({ user: syncedUser });
           }
-        } catch (err: any) {
-          // If token expired or unauthorized, clear session
-          if (err?.message?.includes('401') || err?.message?.includes('token') || err?.message?.includes('expired')) {
-            await AsyncStorage.multiRemove([
-              STORAGE_KEY,
-              '@mausam_auth_token',
-              '@mausam_need_profile',
-              '@mausam_persona_profile',
-              '@mausam_onboarding_state',
-            ]);
-            set({ user: null, isAuthenticated: false, isLoading: false });
-            return;
-          }
-        }
+        }).catch(() => {
+          // Keep cached user offline
+        });
         return;
       }
     } catch (e) {
       console.warn('Failed to restore session', e);
     }
-    set({ user: null, isAuthenticated: false, isLoading: false });
+
+    // Default guest session so the user can experience weather immediately
+    const guestUser: User = {
+      id: 'usr_guest',
+      name: 'Weather Explorer',
+      displayName: 'Weather Explorer',
+      email: '',
+      onboardingCompleted: true,
+      createdAt: new Date().toISOString(),
+    };
+    set({ user: guestUser, isAuthenticated: true, isLoading: false });
+  },
+
+  continueAsGuest: async () => {
+    const guestUser: User = {
+      id: 'usr_guest',
+      name: 'Weather Explorer',
+      displayName: 'Weather Explorer',
+      email: '',
+      onboardingCompleted: true,
+      createdAt: new Date().toISOString(),
+    };
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(guestUser));
+    set({ user: guestUser, isAuthenticated: true, isLoading: false, error: null });
   },
 
   login: async (email: string, password: string) => {

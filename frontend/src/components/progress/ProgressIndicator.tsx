@@ -25,7 +25,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
   useEffect(() => {
     progressAnim.value = withTiming(percentage, {
-      duration: theme.motion.duration.standard,
+      duration: 250,
     });
   }, [percentage]);
 
@@ -39,20 +39,12 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       accessibilityValue={{ min: 1, max: totalSteps, now: currentStep }}
       style={[
         styles.track,
-        {
-          backgroundColor: theme.colors.borderLight,
-          borderRadius: theme.radius.pill,
-        },
         style,
       ]}
     >
       <Animated.View
         style={[
           styles.fill,
-          {
-            backgroundColor: theme.colors.primary,
-            borderRadius: theme.radius.pill,
-          },
           animatedStyle,
         ]}
       />
@@ -62,11 +54,16 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
 const styles = StyleSheet.create({
   track: {
-    height: 8,
+    height: 12,
     width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 6,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
+    backgroundColor: '#FF5533',
   },
 });

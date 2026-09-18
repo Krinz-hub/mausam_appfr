@@ -84,23 +84,34 @@ export default function OnboardingScreen() {
     <AppScreen scrollable={true} edges={['top', 'bottom']}>
       {/* Top Header & Progress */}
       <View style={styles.topHeader}>
-        {currentStep > 1 && currentStep < 6 && (
+        {currentStep > 1 && currentStep < 6 ? (
           <Pressable
             onPress={handleBack}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Previous step"
-            style={styles.backButton}
+            style={({ pressed }) => [
+              styles.backButton,
+              {
+                backgroundColor: theme.colors.backgroundCard,
+                borderColor: '#171717',
+                transform: [{ translateX: pressed ? 2 : 0 }, { translateY: pressed ? 2 : 0 }],
+              },
+            ]}
           >
-            <Ionicons name="arrow-back" size={22} color={theme.colors.textSecondary} />
+            <Ionicons name="arrow-back" size={18} color={theme.colors.textPrimary} />
           </Pressable>
+        ) : (
+          <View style={{ width: 36 }} />
         )}
-        <View style={{ flex: 1, marginHorizontal: currentStep > 1 && currentStep < 6 ? 12 : 0 }}>
+        <View style={{ flex: 1, marginHorizontal: 12 }}>
           <ProgressIndicator currentStep={currentStep} totalSteps={6} />
         </View>
-        <Text style={[styles.stepCount, { color: theme.colors.textMuted }]}>
-          {currentStep}/6
-        </Text>
+        <View style={[styles.stepBadge, { backgroundColor: theme.colors.backgroundCard, borderColor: '#171717' }]}>
+          <Text style={[styles.stepCount, { color: theme.colors.textPrimary }]}>
+            {currentStep}/6
+          </Text>
+        </View>
       </View>
 
       {/* STEP 1: Welcome */}
@@ -262,32 +273,33 @@ export default function OnboardingScreen() {
               style={{ marginTop: 12 }}
             />
 
-            <View
-              style={[
-                styles.textInputCard,
-                {
-                  backgroundColor: theme.colors.backgroundCard,
-                  borderColor: theme.colors.border,
-                  borderRadius: theme.radius.card,
-                  ...theme.shadows.sm,
-                },
-              ]}
-            >
-              <TextInput
-                multiline
-                numberOfLines={4}
-                value={explanation}
-                onChangeText={setExplanation}
-                placeholder="e.g. I cycle to college every morning. Rain and heat are the biggest problem for me."
-                placeholderTextColor={theme.colors.textMuted}
+            <View style={styles.textInputWrapper}>
+              <View style={styles.textInputUnderlay} />
+              <View
                 style={[
-                  styles.textInput,
+                  styles.textInputCard,
                   {
-                    color: theme.colors.textPrimary,
-                    fontSize: theme.typography.sizes.body,
+                    backgroundColor: theme.colors.backgroundCard,
+                    borderColor: '#171717',
                   },
                 ]}
-              />
+              >
+                <TextInput
+                  multiline
+                  numberOfLines={4}
+                  value={explanation}
+                  onChangeText={setExplanation}
+                  placeholder="e.g. I cycle to college every morning. Rain and heat are the biggest problem for me."
+                  placeholderTextColor={theme.colors.textMuted}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: theme.colors.textPrimary,
+                      fontSize: theme.typography.sizes.body,
+                    },
+                  ]}
+                />
+              </View>
             </View>
           </View>
 
@@ -510,31 +522,43 @@ export default function OnboardingScreen() {
             </Text>
 
             {/* Sequential Animated Checkmarks */}
-            <View style={styles.checkmarksList}>
-              {checkmarkStep >= 1 && (
-                <View style={styles.checkItem}>
-                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
-                  <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
-                    Preferences saved
-                  </Text>
+            <View style={styles.checkmarksWrapper}>
+              <View style={styles.checkmarksUnderlay} />
+              <View style={[styles.checkmarksBox, { backgroundColor: theme.colors.backgroundCard, borderColor: '#171717' }]}>
+                <View style={styles.checkmarksHeader}>
+                  <Text style={styles.terminalLabel}>[ STATUS // SYSTEM READY ]</Text>
                 </View>
-              )}
-              {checkmarkStep >= 2 && (
-                <View style={styles.checkItem}>
-                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
-                  <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
-                    Personalized experience ready
-                  </Text>
-                </View>
-              )}
-              {checkmarkStep >= 3 && (
-                <View style={styles.checkItem}>
-                  <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} style={{ marginRight: 8 }} />
-                  <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
-                    Let's make brighter days together
-                  </Text>
-                </View>
-              )}
+                {checkmarkStep >= 1 && (
+                  <View style={styles.checkItem}>
+                    <View style={styles.checkBadge}>
+                      <Text style={styles.checkIcon}>✓</Text>
+                    </View>
+                    <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
+                      Preferences saved
+                    </Text>
+                  </View>
+                )}
+                {checkmarkStep >= 2 && (
+                  <View style={styles.checkItem}>
+                    <View style={styles.checkBadge}>
+                      <Text style={styles.checkIcon}>✓</Text>
+                    </View>
+                    <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
+                      Personalized experience ready
+                    </Text>
+                  </View>
+                )}
+                {checkmarkStep >= 3 && (
+                  <View style={styles.checkItem}>
+                    <View style={styles.checkBadge}>
+                      <Text style={styles.checkIcon}>✓</Text>
+                    </View>
+                    <Text style={[styles.checkText, { color: theme.colors.textPrimary }]}>
+                      Let's make brighter days together
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
 
@@ -559,16 +583,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backButton: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    borderWidth: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  backText: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  stepBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 2,
+    borderRadius: 8,
   },
   stepCount: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 12,
+    fontWeight: '800',
+    fontFamily: 'monospace',
   },
   stepContainer: {
     flex: 1,
@@ -597,10 +628,6 @@ const styles = StyleSheet.create({
   subtitle: {
     lineHeight: 22,
   },
-  heartIcon: {
-    fontSize: 28,
-    marginTop: 16,
-  },
   gridContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -608,35 +635,88 @@ const styles = StyleSheet.create({
   column: {
     flex: 1,
   },
+  textInputWrapper: {
+    width: '100%',
+    position: 'relative',
+    marginTop: 20,
+  },
+  textInputUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: -4,
+    bottom: -4,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
   textInputCard: {
     width: '100%',
     padding: 16,
-    marginTop: 20,
-    borderWidth: 1.5,
+    borderWidth: 2.5,
+    borderRadius: 10,
   },
   textInput: {
     minHeight: 88,
     textAlignVertical: 'top',
     lineHeight: 22,
   },
-  checkmarksList: {
+  checkmarksWrapper: {
     marginTop: 24,
     width: '100%',
-    maxWidth: 290,
+    maxWidth: 320,
+    position: 'relative',
+  },
+  checkmarksUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: -4,
+    bottom: -4,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
+  checkmarksBox: {
+    borderWidth: 2.5,
+    borderRadius: 10,
+    padding: 16,
+  },
+  checkmarksHeader: {
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#171717',
+    paddingBottom: 6,
+    marginBottom: 10,
+  },
+  terminalLabel: {
+    fontSize: 11,
+    fontFamily: 'monospace',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    color: '#171717',
   },
   checkItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 6,
   },
-  greenCheck: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  checkBadge: {
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 4,
+    backgroundColor: '#FFB21A',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 10,
   },
+  checkIcon: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#171717',
+  },
   checkText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
   bottomCta: {
     marginTop: 24,

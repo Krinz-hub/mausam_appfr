@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -34,29 +34,35 @@ export default function ForecastScreen() {
   const [selectedFactor, setSelectedFactor] = useState<FactorTab>('rain');
   const [selectedHourIndex, setSelectedHourIndex] = useState<number>(0);
 
+  const fallbackWeather = useMemo(
+    () => WeatherProvider.getFallbackData(location.name, location.latitude, location.longitude),
+    [location.name, location.latitude, location.longitude]
+  );
+
   const {
     data: weather,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['weather', 'forecast', location.latitude, location.longitude],
+    queryKey: ['weather', location.latitude, location.longitude],
     queryFn: () => WeatherProvider.fetchWeather(location),
+    placeholderData: fallbackWeather,
     enabled: !!location.latitude && !!location.longitude,
   });
 
-  if (isLoading) {
+  if (isError && !weather) {
     return (
       <AppScreen scrollable={false}>
-        <LoadingState message="Calculating 24-hour timeline and personalized weekly outlook..." />
+        <ErrorState onRetry={refetch} />
       </AppScreen>
     );
   }
 
-  if (isError || !weather) {
+  if (!weather) {
     return (
       <AppScreen scrollable={false}>
-        <ErrorState onRetry={refetch} />
+        <LoadingState message="Calculating 24-hour timeline and personalized weekly outlook..." />
       </AppScreen>
     );
   }
@@ -122,28 +128,14 @@ export default function ForecastScreen() {
       />
 
       {/* 7. Character Companion Note above safe area inset */}
-      <View
-        style={[
-          styles.characterNoteCard,
-          {
-            backgroundColor: theme.colors.backgroundCard,
-            shadowColor: theme.colors.textPrimary,
-          },
-        ]}
-      >
-        <Character state="happy" size={38} />
-        <Text
-          style={[
-            styles.characterNoteText,
-            {
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.sizes.footnote,
-              fontWeight: theme.typography.weights.medium,
-            },
-          ]}
-        >
-          I'll keep monitoring changes throughout the week for you.
-        </Text>
+      <View style={styles.characterNoteWrapper}>
+        <View style={styles.characterNoteUnderlay} />
+        <View style={styles.characterNoteCard}>
+          <Character state="happy" size={36} />
+          <Text style={styles.characterNoteText}>
+            I'll keep monitoring atmospheric shifts across the week for you.
+          </Text>
+        </View>
       </View>
     </AppScreen>
   );
@@ -154,20 +146,37 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 60,
   },
+  characterNoteWrapper: {
+    position: 'relative',
+    marginTop: 10,
+    marginBottom: 20,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  characterNoteUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
   characterNoteCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFF7DE',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginTop: 8,
-    marginBottom: 16,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 5,
-    elevation: 1,
   },
   characterNoteText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#171717',
     lineHeight: 16,
     marginLeft: 10,
     flex: 1,

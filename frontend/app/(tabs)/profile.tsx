@@ -15,6 +15,7 @@ import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useSettingsStore } from '../../src/state/useSettingsStore';
 import { useLocationStore } from '../../src/state/useLocationStore';
 import { audioManager } from '../../src/services/audio/audioManager';
+import { hapticManager } from '../../src/services/haptics/hapticManager';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -35,12 +36,14 @@ export default function ProfileScreen() {
   } = useSettingsStore();
 
   const handleSignOut = async () => {
+    hapticManager.impact('medium');
     audioManager.play('selection');
     await signOut();
     router.replace('/welcome');
   };
 
   const handleRetakeOnboarding = () => {
+    hapticManager.impact('medium');
     audioManager.play('selection');
     resetOnboarding();
     router.replace('/onboarding');
@@ -60,60 +63,40 @@ export default function ProfileScreen() {
     <AppScreen scrollable={true} contentContainerStyle={{ paddingBottom: 60 }}>
       {/* Header */}
       <View style={styles.header}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.title1,
-              fontWeight: theme.typography.weights.heavy,
-            },
-          ]}
-        >
+        <View style={styles.headerBadge}>
+          <Text style={styles.badgeDot}>●</Text>
+          <Text style={styles.badgeLabel}>CONTROL PANEL</Text>
+        </View>
+        <Text style={styles.title}>
           Your Profile
         </Text>
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          Personalized companion preferences & settings
+        <Text style={styles.subtitle}>
+          Companion preferences, active sensitivity & controls
         </Text>
       </View>
 
       {/* User Account Card */}
-      <View
-        style={[
-          styles.accountCard,
-          {
-            backgroundColor: theme.colors.backgroundCard,
-            borderColor: theme.colors.border,
-            borderRadius: theme.radius.card,
-            padding: theme.spacing.cardPadding,
-            ...theme.shadows.sm,
-          },
-        ]}
-      >
-        <View style={styles.accountRow}>
-          <Character state="happy" size="md" />
-          <View style={{ marginLeft: 16, flex: 1 }}>
-            <Text
-              style={[
-                styles.accountName,
-                {
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.title3,
-                  fontWeight: theme.typography.weights.bold,
-                },
-              ]}
-            >
-              {user?.name || user?.displayName || 'Weather Explorer'}
-            </Text>
-            {user?.email ? (
-              <Text style={[styles.accountEmail, { color: theme.colors.textSecondary }]}>
-                {user.email}
+      <View style={styles.cardWrapper}>
+        <View style={styles.cardUnderlay} />
+        <View style={styles.accountCard}>
+          <View style={styles.accountRow}>
+            <View style={styles.charContainer}>
+              <Character state="happy" size="md" />
+            </View>
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={styles.accountName}>
+                {user?.name || user?.displayName || 'Weather Explorer'}
               </Text>
-            ) : null}
-            <View style={[styles.verifiedBadge, { backgroundColor: theme.colors.primaryLight }]}>
-              <Text style={{ fontSize: 11, color: theme.colors.primaryDark, fontWeight: '600' }}>
-                Mausam Member
-              </Text>
+              {user?.email ? (
+                <Text style={styles.accountEmail}>
+                  {user.email}
+                </Text>
+              ) : null}
+              <View style={styles.verifiedBadge}>
+                <Text style={styles.verifiedText}>
+                  ★ MAUSAM PILOT
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -121,18 +104,12 @@ export default function ProfileScreen() {
 
       {/* 1. Visual Interests & Active Routines */}
       <View style={styles.section}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          Your Active Interests
-        </Text>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionDot}>●</Text>
+          <Text style={styles.sectionTitle}>
+            ACTIVE ROUTINES & SENSITIVITIES
+          </Text>
+        </View>
 
         <View style={styles.pillsRow}>
           {activeInterests.map((item, idx) => {
@@ -154,25 +131,19 @@ export default function ProfileScreen() {
                 : 'Daily life';
 
             return (
-              <View
-                key={idx}
-                style={[
-                  styles.pill,
-                  {
-                    backgroundColor: theme.colors.primaryLight,
-                    borderRadius: theme.radius.pill,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={iconName}
-                  size={14}
-                  color={theme.colors.primaryDark}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={[styles.pillText, { color: theme.colors.primaryDark }]}>
-                  {label}
-                </Text>
+              <View key={idx} style={styles.pillWrapper}>
+                <View style={styles.pillUnderlay} />
+                <View style={[styles.pill, { backgroundColor: '#FFB21A' }]}>
+                  <Ionicons
+                    name={iconName}
+                    size={14}
+                    color="#171717"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.pillText}>
+                    {label}
+                  </Text>
+                </View>
               </View>
             );
           })}
@@ -196,25 +167,19 @@ export default function ProfileScreen() {
                 : 'Air Quality';
 
             return (
-              <View
-                key={`n-${idx}`}
-                style={[
-                  styles.pill,
-                  {
-                    backgroundColor: theme.colors.backgroundCardMuted,
-                    borderRadius: theme.radius.pill,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={iconName}
-                  size={14}
-                  color={theme.colors.textSecondary}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={[styles.pillText, { color: theme.colors.textPrimary }]}>
-                  {label}
-                </Text>
+              <View key={`n-${idx}`} style={styles.pillWrapper}>
+                <View style={styles.pillUnderlay} />
+                <View style={[styles.pill, { backgroundColor: '#FFFDF7' }]}>
+                  <Ionicons
+                    name={iconName}
+                    size={14}
+                    color="#171717"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.pillText}>
+                    {label}
+                  </Text>
+                </View>
               </View>
             );
           })}
@@ -223,125 +188,130 @@ export default function ProfileScreen() {
 
       {/* 2. Settings Toggles */}
       <View style={styles.section}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          App Experience
-        </Text>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionDot}>●</Text>
+          <Text style={styles.sectionTitle}>
+            APPLICATION CONTROLS
+          </Text>
+        </View>
 
-        <View
-          style={[
-            styles.settingsList,
-            {
-              backgroundColor: theme.colors.backgroundCard,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radius.card,
-              ...theme.shadows.sm,
-            },
-          ]}
-        >
-          {/* Active Location Row */}
-          <Pressable
-            onPress={() => setLocationModalVisible(true)}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel={`Active Location: ${location.name}. Tap to change.`}
-            style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
-                Active Location
-              </Text>
-              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                {location.name} {location.isPrecise ? '• GPS Locked' : '• Network Area'}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
-          </Pressable>
-
-          {/* Sound Feedback Toggle */}
-          <View style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
-                Playful Sound Effects
-              </Text>
-              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                Tactile chimes on taps & completions
-              </Text>
-            </View>
-            <Switch
-              value={soundEnabled}
-              onValueChange={toggleSound}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-            />
-          </View>
-
-          {/* Temperature Unit Toggle */}
-          <View style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
-                Temperature Units
-              </Text>
-              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                Currently: {temperatureUnit === 'celsius' ? 'Celsius (°C)' : 'Fahrenheit (°F)'}
-              </Text>
-            </View>
+        <View style={styles.settingsWrapper}>
+          <View style={styles.settingsUnderlay} />
+          <View style={styles.settingsList}>
+            {/* Active Location Row */}
             <Pressable
-              onPress={toggleUnit}
-              style={[
-                styles.unitToggleBtn,
-                {
-                  backgroundColor: theme.colors.primaryLight,
-                  borderColor: theme.colors.primary,
-                  borderRadius: theme.radius.pill,
-                },
-              ]}
+              onPress={() => {
+                hapticManager.selection();
+                audioManager.play('selection');
+                setLocationModalVisible(true);
+              }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={`Active Location: ${location.name}. Tap to change.`}
+              style={styles.settingRow}
             >
-              <Text style={[styles.unitToggleText, { color: theme.colors.primaryDark }]}>
-                {temperatureUnit === 'celsius' ? '°C' : '°F'}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>
+                  Active Location
+                </Text>
+                <Text style={styles.settingSub}>
+                  {location.name} {location.isPrecise ? '• GPS Locked' : '• Network Area'}
+                </Text>
+              </View>
+              <View style={styles.chevronBox}>
+                <Ionicons name="chevron-forward" size={16} color="#171717" />
+              </View>
             </Pressable>
-          </View>
 
-          {/* Notifications Toggle */}
-          <View style={[styles.settingRow, { borderBottomColor: theme.colors.borderLight }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
-                Atmospheric Alerts
-              </Text>
-              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                Contextual notifications before rain or heat
-              </Text>
+            {/* Sound Feedback Toggle */}
+            <View style={styles.settingRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>
+                  Tactile Audio Effects
+                </Text>
+                <Text style={styles.settingSub}>
+                  Playful chimes on taps & interactions
+                </Text>
+              </View>
+              <Switch
+                value={soundEnabled}
+                onValueChange={() => {
+                  hapticManager.selection();
+                  toggleSound();
+                }}
+                trackColor={{ false: '#D9D7CE', true: '#FF5533' }}
+                thumbColor={soundEnabled ? '#FFFDF7' : '#FFFFFF'}
+              />
             </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={toggleNotifications}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-            />
-          </View>
 
-          {/* Reduced Motion Toggle */}
-          <View style={styles.settingRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: theme.colors.textPrimary }]}>
-                Reduced Motion
-              </Text>
-              <Text style={[styles.settingSub, { color: theme.colors.textSecondary }]}>
-                Simplify floating & bounce transitions
-              </Text>
+            {/* Temperature Unit Toggle */}
+            <View style={styles.settingRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>
+                  Temperature Units
+                </Text>
+                <Text style={styles.settingSub}>
+                  Currently: {temperatureUnit === 'celsius' ? 'Celsius (°C)' : 'Fahrenheit (°F)'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  hapticManager.selection();
+                  audioManager.play('selection');
+                  toggleUnit();
+                }}
+                style={({ pressed }) => [
+                  styles.unitToggleBtn,
+                  pressed && { transform: [{ translateX: 1 }, { translateY: 1 }] },
+                ]}
+              >
+                <Text style={styles.unitToggleText}>
+                  {temperatureUnit === 'celsius' ? '°C' : '°F'}
+                </Text>
+              </Pressable>
             </View>
-            <Switch
-              value={reducedMotion}
-              onValueChange={toggleReducedMotion}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-            />
+
+            {/* Notifications Toggle */}
+            <View style={styles.settingRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>
+                  Atmospheric Alerts
+                </Text>
+                <Text style={styles.settingSub}>
+                  Contextual warnings before rain or storm
+                </Text>
+              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={() => {
+                  hapticManager.selection();
+                  toggleNotifications();
+                }}
+                trackColor={{ false: '#D9D7CE', true: '#FF5533' }}
+                thumbColor={notificationsEnabled ? '#FFFDF7' : '#FFFFFF'}
+              />
+            </View>
+
+            {/* Reduced Motion Toggle */}
+            <View style={[styles.settingRow, { borderBottomWidth: 0 }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>
+                  Reduced Motion
+                </Text>
+                <Text style={styles.settingSub}>
+                  Simplify floating & bounce transitions
+                </Text>
+              </View>
+              <Switch
+                value={reducedMotion}
+                onValueChange={() => {
+                  hapticManager.selection();
+                  toggleReducedMotion();
+                }}
+                trackColor={{ false: '#D9D7CE', true: '#FF5533' }}
+                thumbColor={reducedMotion ? '#FFFDF7' : '#FFFFFF'}
+              />
+            </View>
           </View>
         </View>
       </View>
@@ -349,7 +319,7 @@ export default function ProfileScreen() {
       {/* 3. Actions */}
       <View style={styles.actionsSection}>
         <SecondaryButton
-          label="Recalibrate Preferences"
+          label="Recalibrate Routine"
           onPress={handleRetakeOnboarding}
           style={{ marginBottom: 12 }}
         />
@@ -372,80 +342,211 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: 12,
   },
+  headerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  badgeDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  badgeLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.8,
+  },
   title: {
-    letterSpacing: -0.5,
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 36,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
+    color: '#4A4A4A',
+    fontWeight: '500',
     marginTop: 2,
   },
-  accountCard: {
+  cardWrapper: {
+    position: 'relative',
     marginVertical: 10,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
+  accountCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 16,
   },
   accountRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  charContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFF0D4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   accountName: {
-    letterSpacing: -0.2,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#171717',
   },
   accountEmail: {
-    fontSize: 13,
+    fontSize: 12,
+    color: '#717171',
     marginTop: 2,
   },
   verifiedBadge: {
     marginTop: 6,
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    backgroundColor: '#A8C7FF',
     alignSelf: 'flex-start',
+  },
+  verifiedText: {
+    fontSize: 10,
+    color: '#171717',
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   section: {
     marginTop: 20,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sectionDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
   sectionTitle: {
-    marginBottom: 10,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
   },
   pillsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
+  pillWrapper: {
+    position: 'relative',
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  pillUnderlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 8,
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
   },
   pillText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#171717',
+  },
+  settingsWrapper: {
+    position: 'relative',
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  settingsUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
   },
   settingsList: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
     overflow: 'hidden',
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#171717',
   },
   settingLabel: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#171717',
   },
   settingSub: {
-    fontSize: 12,
+    fontSize: 11,
+    color: '#717171',
+    fontWeight: '500',
     marginTop: 2,
   },
-  unitToggleBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+  chevronBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
     borderWidth: 1.5,
+    borderColor: '#171717',
+    backgroundColor: '#F7F4EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unitToggleBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 6,
+    backgroundColor: '#FFB21A',
   },
   unitToggleText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#171717',
   },
   actionsSection: {
     marginTop: 28,

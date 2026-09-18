@@ -1,192 +1,196 @@
-// Day Theme (Primary default according to Section 6 of spec)
+// Hand-Drawn Neo-Brutalism / Retro Web UI Color System
+// Primary background: #FFFDF7, Dark ink: #171717
+// Accents: #FF5533 (Coral), #FFB21A (Amber), #7A9E7E (Sage), #A8C7FF (Periwinkle), #F5D6E5 (Pink)
+
+export const neoBrutalistAccents = {
+  coral: '#FF5533',
+  amber: '#FFB21A',
+  sage: '#7A9E7E',
+  blue: '#A8C7FF',
+  pink: '#F5D6E5',
+  ink: '#171717',
+  paper: '#FFFDF7',
+  white: '#FFFFFF',
+  creamy: '#F7F4EB',
+};
+
+// Day Theme (Primary default)
 export const dayColors = {
   // Brand
-  primary: '#159FE3',
-  primaryHover: '#0C87C7',
-  primaryPressed: '#0C87C7',
-  primaryLight: '#E7F6FC',
-  primaryUltraLight: '#F7FCFE',
-  primaryDark: '#0C87C7',
+  primary: '#FF5533',
+  primaryHover: '#E0482B',
+  primaryPressed: '#C73B20',
+  primaryLight: '#FFEBE6',
+  primaryUltraLight: '#FFF5F2',
+  primaryDark: '#B8321B',
 
-  // Atmospheric Backgrounds
-  background: '#F4FAFD',
-  backgroundSecondary: '#EAF6FB',
-  backgroundSky: '#E7F6FC',
+  // Curated Neo-Brutalist Accents
+  accentCoral: '#FF5533',
+  accentAmber: '#FFB21A',
+  accentSage: '#7A9E7E',
+  accentBlue: '#A8C7FF',
+  accentPink: '#F5D6E5',
+
+  // Sketchbook Paper Backgrounds
+  background: '#FFFDF7',
+  backgroundSecondary: '#F7F4EB',
+  backgroundSky: '#EBF3FF',
   backgroundCard: '#FFFFFF',
-  backgroundCardMuted: '#F7FCFE',
-  backgroundOverlay: 'rgba(244, 250, 253, 0.90)',
-  backgroundDarkOverlay: 'rgba(7, 21, 33, 0.45)',
+  backgroundCardMuted: '#FFFDF7',
+  backgroundOverlay: 'rgba(23, 23, 23, 0.40)',
+  backgroundDarkOverlay: 'rgba(23, 23, 23, 0.70)',
 
-  // Surfaces (Section 6)
+  // Surfaces
   surfacePrimary: '#FFFFFF',
-  surfaceSecondary: '#F7FCFE',
-  surfaceBlue: '#E7F6FC',
+  surfaceSecondary: '#F7F4EB',
+  surfaceBlue: '#A8C7FF',
 
-  // Borders (Section 9: default 0, soft subtle tones when functional)
-  border: 'transparent',
-  borderLight: 'transparent',
-  borderFunctional: '#E2EAF4',
-  borderSelected: '#159FE3',
-  borderHighlight: '#35B7F2',
+  // Borders (Thick almost-black outlines)
+  border: '#171717',
+  borderLight: '#171717',
+  borderFunctional: '#171717',
+  borderSelected: '#171717',
+  borderHighlight: '#FF5533',
 
-  // Text Hierarchy (Section 6)
-  textPrimary: '#12324A',
-  textSecondary: '#587184',
-  textMuted: '#8499A8',
-  textDisabled: '#AEBFC9',
-  textInverse: '#FFFFFF',
-  textLink: '#159FE3',
+  // Text Hierarchy
+  textPrimary: '#171717',
+  textSecondary: '#4A4A4A',
+  textMuted: '#717171',
+  textDisabled: '#A0A0A0',
+  textInverse: '#FFFDF7',
+  textLink: '#FF5533',
 
-  // Semantic Status Colors (Section 7)
-  good: '#21B77A',
-  goodSurface: '#E7F8F0',
-  warning: '#F2A93B',
-  warningSurface: '#FFF5DF',
-  danger: '#E85C5C',
-  dangerSurface: '#FDECEC',
-  info: '#159FE3',
-  infoSurface: '#E6F6FC',
+  // Semantic Status Colors
+  good: '#7A9E7E',
+  goodSurface: '#EAF4EC',
+  warning: '#FFB21A',
+  warningSurface: '#FFF6E0',
+  danger: '#FF5533',
+  dangerSurface: '#FFEBE6',
+  info: '#4B88E8',
+  infoSurface: '#EBF3FF',
 
   // Contextual Weather & Health Accents
-  weatherRain: '#159FE3',
-  weatherRainLight: '#E7F6FC',
-  weatherHeat: '#F2A93B',
-  weatherHeatLight: '#FFF5DF',
-  weatherCold: '#159FE3',
-  weatherColdLight: '#E7F6FC',
-  weatherWind: '#21B77A',
-  weatherWindLight: '#E7F8F0',
-  weatherUV: '#F2A93B',
-  weatherUVLight: '#FFF5DF',
-  weatherAQI: '#8499A8',
-  weatherAQILight: '#F4FAFD',
-  weatherStorm: '#E85C5C',
-  weatherStormLight: '#FDECEC',
+  weatherRain: '#4B88E8',
+  weatherRainLight: '#EBF3FF',
+  weatherHeat: '#FF5533',
+  weatherHeatLight: '#FFEBE6',
+  weatherCold: '#4B88E8',
+  weatherColdLight: '#EBF3FF',
+  weatherWind: '#7A9E7E',
+  weatherWindLight: '#EAF4EC',
+  weatherUV: '#FFB21A',
+  weatherUVLight: '#FFF6E0',
+  weatherAQI: '#717171',
+  weatherAQILight: '#F7F4EB',
+  weatherStorm: '#171717',
+  weatherStormLight: '#FFEBE6',
 
   // Tactile States
-  cardSelectedBg: '#E7F6FC',
+  cardSelectedBg: '#FFF7DE',
   cardUnselectedBg: '#FFFFFF',
-  badgeBg: '#EAF6FB',
+  badgeBg: '#FFF0D4',
 
   // Success / Error aliases for compatibility
-  success: '#21B77A',
-  successLight: '#E7F8F0',
-  error: '#E85C5C',
-  errorLight: '#FDECEC',
+  success: '#7A9E7E',
+  successLight: '#EAF4EC',
+  error: '#FF5533',
+  errorLight: '#FFEBE6',
 };
 
-// Night Theme (Section 6 of spec: real atmospheric dark, not an inverted day theme)
+// Night Theme (Inverted Ink Paper Neo-Brutalist)
 export const nightColors = {
   // Brand
-  primary: '#35B7F2',
-  primaryHover: '#1599D5',
-  primaryPressed: '#1599D5',
-  primaryLight: '#123A52',
-  primaryUltraLight: '#153449',
-  primaryDark: '#1599D5',
+  primary: '#FFB21A',
+  primaryHover: '#E59F13',
+  primaryPressed: '#CC8C0E',
+  primaryLight: '#382B14',
+  primaryUltraLight: '#282010',
+  primaryDark: '#E59F13',
 
-  // Atmospheric Backgrounds
-  background: '#071521',
-  backgroundSecondary: '#0B1F2E',
-  backgroundSky: '#123A52',
-  backgroundCard: '#102A3B',
-  backgroundCardMuted: '#153449',
-  backgroundOverlay: 'rgba(7, 21, 33, 0.90)',
-  backgroundDarkOverlay: 'rgba(3, 10, 16, 0.70)',
+  // Curated Neo-Brutalist Accents
+  accentCoral: '#FF5533',
+  accentAmber: '#FFB21A',
+  accentSage: '#7A9E7E',
+  accentBlue: '#A8C7FF',
+  accentPink: '#F5D6E5',
 
-  // Surfaces (Section 6)
-  surfacePrimary: '#102A3B',
-  surfaceSecondary: '#153449',
-  surfaceBlue: '#123A52',
+  // Dark Canvas Backgrounds
+  background: '#171717',
+  backgroundSecondary: '#1F1F1F',
+  backgroundSky: '#242424',
+  backgroundCard: '#242424',
+  backgroundCardMuted: '#1C1C1C',
+  backgroundOverlay: 'rgba(0, 0, 0, 0.70)',
+  backgroundDarkOverlay: 'rgba(0, 0, 0, 0.85)',
+
+  // Surfaces
+  surfacePrimary: '#242424',
+  surfaceSecondary: '#1C1C1C',
+  surfaceBlue: '#1F2A38',
 
   // Borders
-  border: 'transparent',
-  borderLight: 'transparent',
-  borderFunctional: '#153449',
-  borderSelected: '#35B7F2',
-  borderHighlight: '#66B9E8',
+  border: '#FFFDF7',
+  borderLight: '#FFFDF7',
+  borderFunctional: '#FFFDF7',
+  borderSelected: '#FFB21A',
+  borderHighlight: '#FFB21A',
 
-  // Text Hierarchy (Section 6)
-  textPrimary: '#F3FAFF',
-  textSecondary: '#B9CEDA',
-  textMuted: '#8199A8',
-  textDisabled: '#587184',
-  textInverse: '#071521',
-  textLink: '#35B7F2',
+  // Text Hierarchy
+  textPrimary: '#FFFDF7',
+  textSecondary: '#D0D0D0',
+  textMuted: '#9E9E9E',
+  textDisabled: '#686868',
+  textInverse: '#171717',
+  textLink: '#FFB21A',
 
-  // Semantic Status Colors (Section 7)
-  good: '#21B77A',
-  goodSurface: '#0E3024',
-  warning: '#F2A93B',
-  warningSurface: '#35250E',
-  danger: '#E85C5C',
-  dangerSurface: '#361414',
-  info: '#35B7F2',
-  infoSurface: '#123A52',
+  // Semantic Status Colors
+  good: '#7A9E7E',
+  goodSurface: '#192C1D',
+  warning: '#FFB21A',
+  warningSurface: '#362910',
+  danger: '#FF5533',
+  dangerSurface: '#361814',
+  info: '#A8C7FF',
+  infoSurface: '#192538',
 
   // Contextual Weather & Health Accents
-  weatherRain: '#35B7F2',
-  weatherRainLight: '#123A52',
-  weatherHeat: '#F2A93B',
-  weatherHeatLight: '#35250E',
-  weatherCold: '#66B9E8',
-  weatherColdLight: '#123A52',
-  weatherWind: '#21B77A',
-  weatherWindLight: '#0E3024',
-  weatherUV: '#F2A93B',
-  weatherUVLight: '#35250E',
-  weatherAQI: '#B9CEDA',
-  weatherAQILight: '#153449',
-  weatherStorm: '#E85C5C',
-  weatherStormLight: '#361414',
+  weatherRain: '#A8C7FF',
+  weatherRainLight: '#192538',
+  weatherHeat: '#FFB21A',
+  weatherHeatLight: '#362910',
+  weatherCold: '#A8C7FF',
+  weatherColdLight: '#192538',
+  weatherWind: '#7A9E7E',
+  weatherWindLight: '#192C1D',
+  weatherUV: '#FFB21A',
+  weatherUVLight: '#362910',
+  weatherAQI: '#D0D0D0',
+  weatherAQILight: '#1C1C1C',
+  weatherStorm: '#FF5533',
+  weatherStormLight: '#361814',
 
   // Tactile States
-  cardSelectedBg: '#153449',
-  cardUnselectedBg: '#102A3B',
-  badgeBg: '#0B1F2E',
+  cardSelectedBg: '#362910',
+  cardUnselectedBg: '#242424',
+  badgeBg: '#2E220C',
 
   // Success / Error aliases
-  success: '#21B77A',
-  successLight: '#0E3024',
-  error: '#E85C5C',
-  errorLight: '#361414',
+  success: '#7A9E7E',
+  successLight: '#192C1D',
+  error: '#FF5533',
+  errorLight: '#361814',
 };
 
-// Day-Cycle Atmospheric Gradients (Section 6)
+// Day-Cycle Gradients kept as flat accents or subtle steps for retro themes
 export const dayCycleGradients = {
-  dawn: {
-    top: '#DCEFFF',
-    bottom: '#F9F7F1',
-    accent: '#FFB45E',
-  },
-  morning: {
-    top: '#BFEAFF',
-    bottom: '#F4FBFF',
-    accent: '#159FE3',
-  },
-  afternoon: {
-    top: '#B7E6FA',
-    bottom: '#F4FBFD',
-    accent: '#159FE3',
-  },
-  sunset: {
-    top: '#FFD9B0',
-    bottom: '#F7C8D5',
-    accent: '#E9876C',
-  },
-  evening: {
-    top: '#203A5A',
-    bottom: '#0E2338',
-    accent: '#66B9E8',
-  },
-  night: {
-    top: '#071521',
-    bottom: '#0B1F2E',
-    accent: '#35B7F2',
-  },
+  dawn: { top: '#FFFDF7', bottom: '#FFFDF7', accent: '#FFB21A' },
+  morning: { top: '#FFFDF7', bottom: '#FFFDF7', accent: '#FF5533' },
+  afternoon: { top: '#FFFDF7', bottom: '#FFFDF7', accent: '#FF5533' },
+  sunset: { top: '#FFFDF7', bottom: '#FFFDF7', accent: '#FF5533' },
+  evening: { top: '#171717', bottom: '#171717', accent: '#A8C7FF' },
+  night: { top: '#171717', bottom: '#171717', accent: '#FFB21A' },
 };
 
-// Default export
 export const colors = dayColors;
 export type Colors = typeof dayColors;
-

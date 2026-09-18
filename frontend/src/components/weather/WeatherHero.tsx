@@ -4,6 +4,8 @@ import { AppText as Text } from '../common/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../design';
 import { WeatherIcon } from '../icons/WeatherIcon';
+import { audioManager } from '../../services/audio/audioManager';
+import { hapticManager } from '../../services/haptics/hapticManager';
 
 export interface WeatherHeroProps {
   greeting: string;
@@ -44,196 +46,325 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   const theme = useTheme();
   const nightActive = isNight !== undefined ? isNight : theme.isNight;
 
+  const handleLocationPress = () => {
+    hapticManager.selection();
+    audioManager.play('selection');
+    onPressLocation?.();
+  };
+
   return (
     <View style={[styles.container, style]}>
-      {/* Top Bar: Greeting & Location Pill */}
-      <View style={styles.topRow}>
-        <View>
-          <Text
-            style={[
-              styles.greeting,
-              {
-                color: theme.colors.textSecondary,
-                fontSize: theme.typography.sizes.body,
-                fontWeight: theme.typography.weights.medium,
-              },
-            ]}
-          >
-            {greeting}
-          </Text>
-          <Pressable
-            onPress={onPressLocation}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel={`Location: ${locationName}. Tap to change or refresh GPS`}
-            style={styles.locationContainer}
-          >
-            <Ionicons
-              name="location-sharp"
-              size={16}
-              color={theme.colors.primary}
-              style={{ marginRight: 3 }}
-            />
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.locationText,
-                {
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.headline,
-                  fontWeight: theme.typography.weights.bold,
-                  maxWidth: 210,
-                },
-              ]}
-            >
-              {isLocating ? 'Locating...' : locationName}
-            </Text>
-            <Ionicons
-              name={isPrecise ? 'navigate-circle' : 'chevron-down'}
-              size={14}
-              color={isPrecise ? theme.colors.primary : theme.colors.textMuted}
-              style={{ marginLeft: 4 }}
-            />
-          </Pressable>
+      {/* 1. Top Expressive Retro Header Bar (56-64px height) */}
+      <View style={styles.topHeaderBar}>
+        <View style={styles.brandTitleBox}>
+          <Text style={styles.brandDot}>●</Text>
+          <Text style={styles.brandTitle}>MAUSAM</Text>
+          <Text style={styles.brandSubtitle}>// LIVE</Text>
         </View>
-      </View>
 
-      {/* Large Hero Temperature Display */}
-      <View style={styles.tempRow}>
-        <Text
-          style={[
-            styles.tempText,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: 64,
-              lineHeight: 70,
-              fontWeight: theme.typography.weights.heavy,
-            },
+        <Pressable
+          onPress={handleLocationPress}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Location: ${locationName}. Tap to change or refresh GPS`}
+          style={({ pressed }) => [
+            styles.locationButton,
+            pressed && styles.locationButtonPressed,
           ]}
         >
-          {Math.round(temperature)}°
-        </Text>
-        <View style={styles.feelsLikeContainer}>
-          <View style={styles.conditionRow}>
-            <WeatherIcon
-              condition={conditionText}
-              isNight={nightActive}
-              sunrise={sunrise}
-              sunset={sunset}
-              size={18}
-              style={{ marginRight: 6 }}
-            />
-            <Text
-              style={[
-                styles.conditionSummary,
-                {
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.body,
-                  fontWeight: theme.typography.weights.semibold,
-                },
-              ]}
-            >
-              {conditionText}
-            </Text>
-          </View>
-          <Text
-            style={[
-              styles.feelsLikeText,
-              {
-                color: theme.colors.textSecondary,
-                fontSize: theme.typography.sizes.callout,
-                fontWeight: theme.typography.weights.medium,
-              },
-            ]}
-          >
-            Feels like {Math.round(feelsLike)}°
+          <Ionicons
+            name="location-sharp"
+            size={14}
+            color="#171717"
+            style={{ marginRight: 4 }}
+          />
+          <Text numberOfLines={1} style={styles.locationButtonText}>
+            {isLocating ? 'Locating...' : locationName}
           </Text>
-        </View>
+          <Ionicons
+            name={isPrecise ? 'navigate-circle' : 'chevron-down'}
+            size={13}
+            color="#171717"
+            style={{ marginLeft: 4 }}
+          />
+        </Pressable>
       </View>
 
-      {/* Quiet Metric Row (Section 37: Humidity 62% • Wind 12 km/h • UV 3) */}
-      {humidity !== undefined && (
-        <View style={styles.metricsRow}>
-          <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
-            Humidity {Math.round(humidity)}%
-          </Text>
-          <Text style={[styles.metricDot, { color: theme.colors.textMuted }]}>•</Text>
-          <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
-            Wind {Math.round(windSpeed ?? 0)} km/h
-          </Text>
-          {uvIndex !== undefined && (
-            <>
-              <Text style={[styles.metricDot, { color: theme.colors.textMuted }]}>•</Text>
-              <Text style={[styles.metricItem, { color: theme.colors.textSecondary }]}>
-                UV {Math.round(uvIndex)}
-              </Text>
-            </>
+      {/* Greeting tag */}
+      <Text style={styles.greetingText}>
+        {greeting}
+      </Text>
+
+      {/* 2. Main Physical Weather Panel */}
+      <View style={styles.cardWrapper}>
+        {/* Physical hard shadow underlay */}
+        <View style={styles.cardUnderlay} />
+
+        <View style={styles.cardBody}>
+          {/* Card retro title bar */}
+          <View style={styles.cardHeaderRow}>
+            <Text style={styles.cardLabel}>WEATHER REPORT</Text>
+            <View style={styles.liveBadge}>
+              <Text style={styles.liveBadgeDot}>●</Text>
+              <Text style={styles.liveBadgeText}>ONLINE</Text>
+            </View>
+          </View>
+
+          {/* Large Hero Temperature Display */}
+          <View style={styles.tempSection}>
+            <Text style={styles.tempText}>
+              {Math.round(temperature)}°
+            </Text>
+
+            <View style={styles.conditionBox}>
+              <View style={styles.conditionRow}>
+                <WeatherIcon
+                  condition={conditionText}
+                  isNight={nightActive}
+                  sunrise={sunrise}
+                  sunset={sunset}
+                  size={24}
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.conditionSummary}>
+                  {conditionText}
+                </Text>
+              </View>
+
+              <View style={styles.feelsLikeBadge}>
+                <Text style={styles.feelsLikeText}>
+                  Feels like {Math.round(feelsLike)}°
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Separator */}
+          <View style={styles.separator} />
+
+          {/* Structured Metrics Row */}
+          {humidity !== undefined && (
+            <View style={styles.metricsRow}>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>HUMIDITY</Text>
+                <Text style={styles.metricValue}>{Math.round(humidity)}%</Text>
+              </View>
+
+              <View style={styles.metricDivider} />
+
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>WIND</Text>
+                <Text style={styles.metricValue}>{Math.round(windSpeed ?? 0)} km/h</Text>
+              </View>
+
+              {uvIndex !== undefined && (
+                <>
+                  <View style={styles.metricDivider} />
+                  <View style={styles.metricItem}>
+                    <Text style={styles.metricLabel}>UV INDEX</Text>
+                    <Text style={styles.metricValue}>{Math.round(uvIndex)}</Text>
+                  </View>
+                </>
+              )}
+            </View>
           )}
         </View>
-      )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
-  topRow: {
+  topHeaderBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+    minHeight: 48,
   },
-  greeting: {
-    marginBottom: 2,
-  },
-  locationContainer: {
+  brandTitleBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFDF7',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
-  locationText: {
-    letterSpacing: -0.2,
+  brandDot: {
+    color: '#7A9E7E',
+    fontSize: 12,
+    marginRight: 6,
   },
-  locationIndicator: {
+  brandTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
+  },
+  brandSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FF5533',
+    marginLeft: 4,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    maxWidth: 190,
+  },
+  locationButtonPressed: {
+    transform: [{ translateX: 2 }, { translateY: 2 }],
+  },
+  locationButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#171717',
+    maxWidth: 125,
+  },
+  greetingText: {
     fontSize: 13,
-    marginLeft: 2,
+    fontWeight: '600',
+    color: '#4A4A4A',
+    marginBottom: 10,
+    letterSpacing: 0.2,
+  },
+  cardWrapper: {
+    position: 'relative',
+    marginVertical: 4,
+    paddingRight: 5,
+    paddingBottom: 5,
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 5,
+    top: 5,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
+  cardBody: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 16,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 1,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0D4',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  liveBadgeDot: {
+    color: '#FF5533',
+    fontSize: 8,
+    marginRight: 4,
+  },
+  liveBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.5,
+  },
+  tempSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 4,
+  },
+  tempText: {
+    fontSize: 68,
+    lineHeight: 74,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: -2,
+  },
+  conditionBox: {
+    alignItems: 'flex-end',
+    flex: 1,
+    marginLeft: 12,
   },
   conditionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
-  },
-  tempRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  tempText: {
-    letterSpacing: -2,
-  },
-  feelsLikeContainer: {
-    marginLeft: 16,
+    marginBottom: 6,
   },
   conditionSummary: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#171717',
     textTransform: 'capitalize',
-    marginBottom: 2,
+  },
+  feelsLikeBadge: {
+    backgroundColor: '#F7F4EB',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   feelsLikeText: {
-    letterSpacing: -0.2,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#171717',
+  },
+  separator: {
+    height: 2,
+    backgroundColor: '#171717',
+    marginVertical: 14,
   },
   metricsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
   },
   metricItem: {
-    fontSize: 13,
-    fontWeight: '500',
+    flex: 1,
+    alignItems: 'center',
   },
-  metricDot: {
-    marginHorizontal: 8,
-    fontSize: 12,
+  metricDivider: {
+    width: 2,
+    height: 24,
+    backgroundColor: '#171717',
+  },
+  metricLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  metricValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#171717',
   },
 });
-

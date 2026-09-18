@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { AppText as Text } from '../common/AppText';
-import { useTheme } from '../../design';
 import { Character } from '../character/Character';
 
 export interface LoadingStateProps {
@@ -13,36 +12,94 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Consulting the skies for you...',
   style,
 }) => {
-  const theme = useTheme();
+  const [dotCount, setDotCount] = useState(1);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDotCount((prev) => (prev % 3) + 1);
+    }, 450);
+    return () => clearInterval(timer);
+  }, []);
+
+  const dots = [1, 2, 3].map((i) => (i <= dotCount ? '●' : '○')).join(' ');
 
   return (
-    <View style={[styles.container, style]}>
-      <Character state="thinking" size="lg" />
-      <Text
-        style={[
-          styles.text,
-          {
-            color: theme.colors.textSecondary,
-            fontSize: theme.typography.sizes.body,
-            marginTop: theme.spacing.md,
-            fontWeight: theme.typography.weights.medium,
-          },
-        ]}
-      >
-        {message}
-      </Text>
+    <View style={[styles.wrapper, style]}>
+      <View style={styles.underlay} />
+      <View style={styles.card}>
+        <Character state="thinking" size="lg" />
+
+        <View style={styles.loadingBanner}>
+          <Text style={styles.loadingLabel}>LOADING</Text>
+          <Text style={styles.dotsText}>{dots}</Text>
+        </View>
+
+        <Text style={styles.messageText}>
+          {message}
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 200,
+  wrapper: {
+    position: 'relative',
+    marginHorizontal: 16,
+    marginVertical: 24,
+    paddingRight: 4,
+    paddingBottom: 4,
+    alignSelf: 'center',
+    width: '90%',
+    maxWidth: 360,
   },
-  text: {
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0D4',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  loadingLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 1,
+    marginRight: 6,
+  },
+  dotsText: {
+    fontSize: 12,
+    color: '#FF5533',
+    letterSpacing: 2,
+  },
+  messageText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4A4A4A',
     textAlign: 'center',
+    marginTop: 4,
   },
 });

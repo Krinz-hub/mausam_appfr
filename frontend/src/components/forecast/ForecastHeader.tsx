@@ -18,27 +18,16 @@ export const ForecastHeader: React.FC<ForecastHeaderProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontWeight: theme.typography.weights.heavy,
-            },
-          ]}
-        >
+        <View style={styles.badgeRow}>
+          <Text style={styles.badgeDot}>●</Text>
+          <Text style={styles.badgeLabel}>OUTLOOK & TIMELINE</Text>
+        </View>
+
+        <Text style={styles.title}>
           Forecast
         </Text>
-        <Text
-          style={[
-            styles.subtitle,
-            {
-              color: theme.colors.textSecondary,
-              fontWeight: theme.typography.weights.medium,
-            },
-          ]}
-        >
-          Hourly timeline & personalized week ahead • {locationName}
+        <Text style={styles.subtitle}>
+          24h hourly curves & weekly intelligence • {locationName}
         </Text>
       </View>
 
@@ -54,22 +43,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: 12,
+    paddingBottom: 14,
   },
   textContainer: {
     flex: 1,
     paddingRight: 14,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  badgeDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  badgeLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.8,
+  },
   title: {
-    fontSize: 34,
-    lineHeight: 40,
-    letterSpacing: -0.6,
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 38,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 13,
     lineHeight: 18,
-    marginTop: 4,
+    color: '#4A4A4A',
+    fontWeight: '500',
+    marginTop: 2,
   },
   buttonWrapper: {
     paddingTop: 4,

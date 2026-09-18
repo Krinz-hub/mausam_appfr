@@ -49,90 +49,119 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   const theme = useTheme();
 
   return (
-    <View
-      accessible={true}
-      accessibilityRole="summary"
-      accessibilityLabel={`${title}. ${shortMessage}`}
-      style={[
-        styles.card,
-        {
-          backgroundColor: isPrimary
-            ? (theme.isNight ? '#102A3B' : theme.colors.primaryLight)
-            : theme.colors.backgroundCard,
-          borderRadius: theme.radius.cardLarge,
-        },
-        style,
-      ]}
-    >
-      {/* Title Row with Real Vector Icon */}
-      <View style={styles.titleRow}>
-        <Ionicons
-          name={getInsightIcon(type)}
-          size={20}
-          color={
-            isPrimary
-              ? (theme.isNight ? '#35B7F2' : theme.colors.primaryDark)
-              : theme.colors.primary
-          }
-          style={styles.icon}
-        />
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: isPrimary
-                ? theme.typography.sizes.title3
-                : theme.typography.sizes.headline,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          {title}
-        </Text>
-      </View>
+    <View style={[styles.wrapper, style]}>
+      {/* Physical hard shadow underlay */}
+      <View style={styles.underlay} />
 
-      {/* Description with Breathing Space */}
-      <Text
+      <View
+        accessible={true}
+        accessibilityRole="summary"
+        accessibilityLabel={`${title}. ${shortMessage}`}
         style={[
-          styles.shortMessage,
+          styles.card,
           {
-            color: theme.colors.textSecondary,
-            fontSize: isPrimary
-              ? theme.typography.sizes.body
-              : theme.typography.sizes.callout,
-            lineHeight: isPrimary
-              ? theme.typography.lineHeights.body
-              : theme.typography.lineHeights.callout,
+            backgroundColor: isPrimary ? '#FFF0D4' : '#FFFFFF',
           },
         ]}
       >
-        {shortMessage}
-      </Text>
+        {/* Title Row with chunky icon container */}
+        <View style={styles.titleRow}>
+          <View
+            style={[
+              styles.iconBox,
+              {
+                backgroundColor: isPrimary ? '#FFB21A' : '#F7F4EB',
+              },
+            ]}
+          >
+            <Ionicons
+              name={getInsightIcon(type)}
+              size={18}
+              color="#171717"
+            />
+          </View>
+          <Text style={styles.title}>
+            {title}
+          </Text>
+          {isPrimary && (
+            <View style={styles.primaryBadge}>
+              <Text style={styles.primaryBadgeText}>KEY</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Description */}
+        <Text style={styles.shortMessage}>
+          {shortMessage}
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 22,
-    marginVertical: 8,
+  wrapper: {
+    position: 'relative',
+    marginVertical: 6,
+    paddingRight: 4,
+    paddingBottom: 4,
     width: '100%',
+  },
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
+  },
+  card: {
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 10,
+    padding: 16,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
-  icon: {
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#171717',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 10,
   },
   title: {
     flex: 1,
-    letterSpacing: -0.2,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#171717',
+  },
+  primaryBadge: {
+    backgroundColor: '#FF5533',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 6,
+  },
+  primaryBadgeText: {
+    color: '#FFFDF7',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   shortMessage: {
-    marginTop: 12,
-    marginBottom: 6,
+    fontSize: 14,
+    color: '#4A4A4A',
+    lineHeight: 20,
+    fontWeight: '500',
   },
 });
-

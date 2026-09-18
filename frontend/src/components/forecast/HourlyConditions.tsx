@@ -32,17 +32,12 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
 
   return (
     <View style={styles.section}>
-      <Text
-        style={[
-          styles.heading,
-          {
-            color: theme.colors.textPrimary,
-            fontWeight: theme.typography.weights.bold,
-          },
-        ]}
-      >
-        Hourly Conditions
-      </Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionDot}>●</Text>
+        <Text style={styles.heading}>
+          HOURLY CONDITIONS
+        </Text>
+      </View>
 
       <ScrollView
         horizontal
@@ -55,81 +50,63 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
           const displayTime = index === 0 ? 'NOW' : item.time;
 
           return (
-            <Pressable
-              key={index}
-              onPress={() => handleSelect(index)}
-              accessible={true}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${displayTime}, ${Math.round(item.temp)} degrees, ${item.conditionText}`}
-              style={({ pressed }) => [
-                styles.hourCard,
-                {
-                  backgroundColor: isSelected
-                    ? theme.colors.cardSelectedBg
-                    : theme.colors.backgroundCard,
-                  borderColor: isSelected ? theme.colors.primary : 'transparent',
-                  borderWidth: isSelected ? 2 : 0,
-                  shadowColor: isSelected ? theme.colors.primary : '#0F172A',
-                  shadowOpacity: isSelected ? 0.18 : 0.05,
-                  shadowRadius: isSelected ? 10 : 6,
-                  elevation: isSelected ? 5 : 2,
-                  opacity: pressed ? 0.9 : 1,
-                  transform: [{ scale: pressed ? 0.97 : isSelected ? 1.02 : 1 }],
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.hourTime,
+            <View key={index} style={styles.cardWrapper}>
+              <View style={styles.cardUnderlay} />
+
+              <Pressable
+                onPress={() => handleSelect(index)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${displayTime}, ${Math.round(item.temp)} degrees, ${item.conditionText}`}
+                style={({ pressed }) => [
+                  styles.hourCard,
                   {
-                    color: isSelected ? theme.colors.primary : theme.colors.textSecondary,
-                    fontWeight: isSelected
-                      ? theme.typography.weights.bold
-                      : theme.typography.weights.semibold,
+                    backgroundColor: isSelected ? '#FFB21A' : '#FFFFFF',
+                    borderWidth: isSelected ? 2.5 : 2,
                   },
+                  (pressed || isSelected) && styles.cardPressed,
                 ]}
               >
-                {displayTime}
-              </Text>
-
-              <View style={styles.iconContainer}>
-                <WeatherIcon
-                  condition={item.conditionText}
-                  hour={item.hour}
-                  time={item.timestamp || item.time}
-                  isNight={item.isNight}
-                  sunrise={sunrise}
-                  sunset={sunset}
-                  size={26}
-                />
-              </View>
-
-              <Text
-                style={[
-                  styles.hourTemp,
-                  {
-                    color: theme.colors.textPrimary,
-                    fontWeight: theme.typography.weights.bold,
-                  },
-                ]}
-              >
-                {Math.round(item.temp)}°
-              </Text>
-
-              {item.rainProb > 0 ? (
                 <Text
                   style={[
-                    styles.hourRainProb,
-                    { color: theme.colors.weatherRain },
+                    styles.hourTime,
+                    {
+                      fontWeight: isSelected ? '800' : '700',
+                      color: '#171717',
+                    },
                   ]}
                 >
-                  {item.rainProb}%
+                  {displayTime}
                 </Text>
-              ) : (
-                <Text style={styles.hourRainEmpty}> </Text>
-              )}
-            </Pressable>
+
+                <View style={styles.iconBox}>
+                  <WeatherIcon
+                    condition={item.conditionText}
+                    hour={item.hour}
+                    time={item.timestamp || item.time}
+                    isNight={item.isNight}
+                    sunrise={sunrise}
+                    sunset={sunset}
+                    size={22}
+                  />
+                </View>
+
+                <Text style={styles.hourTemp}>
+                  {Math.round(item.temp)}°
+                </Text>
+
+                {item.rainProb > 0 ? (
+                  <View style={styles.rainBadge}>
+                    <Text style={styles.rainText}>
+                      {item.rainProb}%
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.emptyBadgeSpacer} />
+                )}
+              </Pressable>
+            </View>
           );
         })}
       </ScrollView>
@@ -139,49 +116,87 @@ export const HourlyConditions: React.FC<HourlyConditionsProps> = ({
 
 const styles = StyleSheet.create({
   section: {
-    marginTop: 14,
-    marginBottom: 4,
+    marginVertical: 10,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sectionDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
   },
   heading: {
-    fontSize: 22,
-    lineHeight: 28,
-    marginBottom: 12,
-    letterSpacing: -0.3,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
   },
   carouselContainer: {
     paddingVertical: 4,
-    paddingRight: 20,
+    paddingRight: 16,
     flexDirection: 'row',
-    gap: 10,
+  },
+  cardWrapper: {
+    position: 'relative',
+    marginRight: 10,
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
   },
   hourCard: {
-    width: 110,
-    height: 160,
-    borderRadius: 22,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    width: 76,
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowOffset: { width: 0, height: 2 },
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    borderColor: '#171717',
+    minHeight: 116,
+  },
+  cardPressed: {
+    transform: [{ translateX: 1.5 }, { translateY: 1.5 }],
   },
   hourTime: {
-    fontSize: 13,
+    fontSize: 12,
     letterSpacing: 0.2,
+    marginBottom: 4,
   },
-  iconContainer: {
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
+  iconBox: {
+    marginVertical: 4,
   },
   hourTemp: {
-    fontSize: 20,
-    lineHeight: 26,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: -0.5,
   },
-  hourRainProb: {
-    fontSize: 12,
-    fontWeight: '700',
+  rainBadge: {
+    backgroundColor: '#EBF3FF',
+    borderWidth: 1,
+    borderColor: '#171717',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    marginTop: 4,
   },
-  hourRainEmpty: {
-    fontSize: 12,
+  rainText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
+  },
+  emptyBadgeSpacer: {
+    height: 16,
+    marginTop: 4,
   },
 });

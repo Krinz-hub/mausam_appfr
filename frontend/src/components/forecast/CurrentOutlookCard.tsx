@@ -19,119 +19,125 @@ export const CurrentOutlookCard: React.FC<CurrentOutlookCardProps> = ({
 }) => {
   const theme = useTheme();
 
-  const timePrefix = isCurrentHour ? 'Now' : selectedHour.time;
-  const title = `${timePrefix} Outlook: ${selectedHour.conditionText}`;
+  const timePrefix = isCurrentHour ? 'NOW' : selectedHour.time;
+  const title = `${timePrefix} // ${selectedHour.conditionText.toUpperCase()}`;
 
   // Compute metric display values
   let metricLabel = 'Rain Probability';
   let metricValueFormatted = `${selectedHour.rainProb}%`;
   let barValue = selectedHour.rainProb;
-  let barColor = theme.colors.weatherRain;
+  let barColor = '#4B88E8';
 
   if (selectedFactor === 'temp') {
     metricLabel = 'Temperature';
     metricValueFormatted = `${Math.round(selectedHour.temp)}°C`;
     barValue = Math.min(100, Math.max(0, ((selectedHour.temp - 10) / 35) * 100));
-    barColor = theme.colors.weatherHeat;
+    barColor = '#FF5533';
   } else if (selectedFactor === 'wind') {
     metricLabel = 'Wind Speed';
     metricValueFormatted = `${Math.round(selectedHour.windSpeed)} km/h`;
     barValue = Math.min(100, (selectedHour.windSpeed / 50) * 100);
-    barColor = theme.colors.weatherWind;
+    barColor = '#7A9E7E';
   } else if (selectedFactor === 'uv') {
     metricLabel = 'UV Index';
     metricValueFormatted = `${selectedHour.uvIndex} / 12`;
     barValue = Math.min(100, (selectedHour.uvIndex / 12) * 100);
-    barColor = theme.colors.weatherUV;
+    barColor = '#FFB21A';
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.colors.backgroundCard }]}>
-      <Text
-        style={[
-          styles.title,
-          {
-            color: theme.colors.textPrimary,
-            fontWeight: theme.typography.weights.bold,
-          },
-        ]}
-      >
-        {title}
-      </Text>
+    <View style={styles.wrapper}>
+      <View style={styles.underlay} />
 
-      <View style={styles.metricRow}>
-        <Text
-          style={[
-            styles.metricLabel,
-            {
-              color: theme.colors.textSecondary,
-              fontWeight: theme.typography.weights.medium,
-            },
-          ]}
-        >
-          {metricLabel}
-        </Text>
-        <Text
-          style={[
-            styles.metricValue,
-            {
-              color: theme.colors.textPrimary,
-              fontWeight: theme.typography.weights.bold,
-            },
-          ]}
-        >
-          {metricValueFormatted}
-        </Text>
-      </View>
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.headerDot}>●</Text>
+          <Text style={styles.title}>
+            {title}
+          </Text>
+        </View>
 
-      <View style={styles.barContainer}>
-        <AnimatedBar
-          label=""
-          value={barValue}
-          unit=""
-          color={barColor}
-          height={8}
-        />
+        <View style={styles.metricRow}>
+          <Text style={styles.metricLabel}>
+            {metricLabel.toUpperCase()}
+          </Text>
+          <Text style={styles.metricValue}>
+            {metricValueFormatted}
+          </Text>
+        </View>
+
+        <View style={styles.barContainer}>
+          <AnimatedBar
+            label=""
+            value={barValue}
+            unit=""
+            color={barColor}
+            height={10}
+          />
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    marginVertical: 6,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  underlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
   card: {
-    borderRadius: 22,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    minHeight: 135,
-    justifyContent: 'space-between',
-    marginVertical: 10,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  headerDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
   },
   title: {
-    fontSize: 17,
-    lineHeight: 23,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.5,
   },
   metricRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
     justifyContent: 'space-between',
-    marginTop: 12,
-    marginBottom: 6,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   metricLabel: {
-    fontSize: 14,
-    letterSpacing: -0.1,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
   },
   metricValue: {
-    fontSize: 22,
-    letterSpacing: -0.3,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#171717',
   },
   barContainer: {
-    marginTop: -2,
+    marginTop: 4,
   },
 });

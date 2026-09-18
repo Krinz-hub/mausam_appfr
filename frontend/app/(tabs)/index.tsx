@@ -19,12 +19,10 @@ import {
   SuggestionInsightItem,
   Character,
   WeatherCharacter,
-  CharacterBubble,
   FeedbackModal,
   LoadingState,
   ErrorState,
   LocationModal,
-  ThoughtBubble,
   WeatherIcon,
   Text,
 } from '../../src/components';
@@ -91,6 +89,12 @@ export default function HomeScreen() {
     };
   }, []);
 
+  // Memoize fallback data so placeholderData preserves reference stability across renders
+  const fallbackWeather = useMemo(
+    () => WeatherProvider.getFallbackData(location.name, location.latitude, location.longitude),
+    [location.name, location.latitude, location.longitude]
+  );
+
   // Weather Query keyed by exact coordinates
   const {
     data: weather,
@@ -101,14 +105,15 @@ export default function HomeScreen() {
   } = useQuery({
     queryKey: ['weather', location.latitude, location.longitude],
     queryFn: () => WeatherProvider.fetchWeather(location),
+    placeholderData: fallbackWeather,
     enabled: !!location.latitude && !!location.longitude,
   });
 
   useEffect(() => {
-    if (weather && persona) {
+    if (weather) {
       computeDecision(weather);
     }
-  }, [weather, persona]);
+  }, [weather, persona, computeDecision]);
 
   const handleFeedback = (decisionId: string, type: 'positive' | 'negative') => {
     if (type === 'positive') {
@@ -257,18 +262,18 @@ export default function HomeScreen() {
     return characterResolution?.state || 'sunny';
   }, [isTired, tiredIndex, currentSuggestion, characterResolution?.state]);
 
-  if (isLoading) {
+  if (isError && !weather) {
     return (
       <AppScreen scrollable={false}>
-        <LoadingState message="Connecting to atmospheric intelligence..." />
+        <ErrorState onRetry={refetch} />
       </AppScreen>
     );
   }
 
-  if (isError || !weather) {
+  if (!weather) {
     return (
       <AppScreen scrollable={false}>
-        <ErrorState onRetry={refetch} />
+        <LoadingState message="Connecting to atmospheric intelligence..." />
       </AppScreen>
     );
   }
@@ -322,17 +327,6 @@ export default function HomeScreen() {
               isTired={isTired}
               onPress={handleCharacterTap}
             />
-
-            <CharacterBubble
-              message={currentSuggestion.message}
-              tip={currentSuggestion.tip}
-              onPress={handleCharacterTap}
-              onSwipeLeft={handleNextSuggestion}
-              onSwipeRight={handlePrevSuggestion}
-              pointerPosition="above"
-              isTired={isTired}
-              style={{ marginTop: 8 }}
-            />
           </View>
         )}
 
@@ -357,18 +351,22 @@ export default function HomeScreen() {
         {/* 4. Small Supporting Information (Today's Flow) */}
         <View style={styles.supportingSection}>
           <View style={styles.sectionHeaderRow}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                {
-                  color: theme.isNight ? '#F3FAFF' : theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.headline,
-                  fontWeight: theme.typography.weights.bold,
-                },
-              ]}
-            >
-              Today's Flow
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ color: '#FF5533', fontSize: 10, marginRight: 6 }}>●</Text>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  {
+                    color: '#171717',
+                    fontSize: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.8,
+                  },
+                ]}
+              >
+                TODAY'S FLOW
+              </Text>
+            </View>
             <Pressable
               onPress={() => router.push('/(tabs)/forecast')}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -380,13 +378,13 @@ export default function HomeScreen() {
                 style={[
                   styles.viewMoreText,
                   {
-                    color: theme.isNight ? '#35B7F2' : theme.colors.primary,
-                    fontSize: theme.typography.sizes.callout,
-                    fontWeight: theme.typography.weights.semibold,
+                    color: '#FF5533',
+                    fontSize: 12,
+                    fontWeight: '800',
                   },
                 ]}
               >
-                Hourly timeline →
+                Timeline →
               </Text>
             </Pressable>
           </View>
@@ -400,61 +398,49 @@ export default function HomeScreen() {
             {weather.hourly.map((h, idx) => {
               const isCurrentHour = idx === 0;
               return (
-                <View
-                  key={idx}
-                  style={[
-                    styles.miniHourlyCard,
-                    {
-                      backgroundColor: theme.isNight
-                        ? isCurrentHour
-                          ? '#153449'
-                          : '#102A3B'
-                        : isCurrentHour
-                        ? theme.colors.surfaceSecondary
-                        : theme.colors.backgroundCard,
-                      borderRadius: 16,
-                      borderWidth: 0,
-                    },
-                  ]}
-                >
-                  <Text
+                <View key={idx} style={styles.miniCardWrapper}>
+                  <View style={styles.miniCardUnderlay} />
+                  <View
                     style={[
-                      styles.miniHourText,
+                      styles.miniHourlyCard,
                       {
-                        color: theme.isNight
-                          ? isCurrentHour
-                            ? '#F3FAFF'
-                            : '#B9CEDA'
-                          : theme.colors.textSecondary,
+                        backgroundColor: isCurrentHour ? '#FFB21A' : '#FFFFFF',
                       },
                     ]}
                   >
-                    {h.time}
-                  </Text>
-                  <WeatherIcon
-                    condition={h.conditionText}
-                    hour={h.hour}
-                    time={h.timestamp || h.time}
-                    isNight={h.isNight}
-                    sunrise={weather.current.sunrise}
-                    sunset={weather.current.sunset}
-                    size={22}
-                    style={{ marginVertical: 8 }}
-                  />
-                  <Text
-                    style={[
-                      styles.miniTemp,
-                      {
-                        color: theme.isNight
-                          ? isCurrentHour
-                            ? '#35B7F2'
-                            : '#F3FAFF'
-                          : theme.colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    {Math.round(h.temp)}°
-                  </Text>
+                    <Text
+                      style={[
+                        styles.miniHourText,
+                        {
+                          color: '#171717',
+                          fontWeight: isCurrentHour ? '800' : '700',
+                        },
+                      ]}
+                    >
+                      {h.time}
+                    </Text>
+                    <WeatherIcon
+                      condition={h.conditionText}
+                      hour={h.hour}
+                      time={h.timestamp || h.time}
+                      isNight={h.isNight}
+                      sunrise={weather.current.sunrise}
+                      sunset={weather.current.sunset}
+                      size={20}
+                      style={{ marginVertical: 6 }}
+                    />
+                    <Text
+                      style={[
+                        styles.miniTemp,
+                        {
+                          color: '#171717',
+                          fontWeight: '800',
+                        },
+                      ]}
+                    >
+                      {Math.round(h.temp)}°
+                    </Text>
+                  </View>
                 </View>
               );
             })}
@@ -463,46 +449,49 @@ export default function HomeScreen() {
 
         {/* 5. Progressive Disclosure Link to Raw Detailed Weather */}
         <View style={styles.detailLinkContainer}>
+          <View style={styles.detailUnderlay} />
           <Pressable
             onPress={() => router.push('/details/metrics')}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="View detailed metrics"
-            style={[
+            style={({ pressed }) => [
               styles.detailLinkCard,
-              {
-                backgroundColor: theme.colors.backgroundCardMuted,
-                borderColor: theme.colors.border,
-                borderRadius: theme.radius.card,
-              },
+              pressed && { transform: [{ translateX: 2 }, { translateY: 2 }] },
             ]}
           >
             <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  styles.detailTitle,
-                  {
-                    color: theme.colors.textPrimary,
-                    fontSize: theme.typography.sizes.body,
-                    fontWeight: theme.typography.weights.semibold,
-                  },
-                ]}
-              >
-                Atmospheric Diagnostics
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                <Text style={{ color: '#FF5533', fontSize: 10, marginRight: 6 }}>●</Text>
+                <Text
+                  style={[
+                    styles.detailTitle,
+                    {
+                      color: '#171717',
+                      fontSize: 14,
+                      fontWeight: '800',
+                    },
+                  ]}
+                >
+                  Atmospheric Diagnostics
+                </Text>
+              </View>
               <Text
                 style={[
                   styles.detailSubtitle,
                   {
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.sizes.footnote,
+                    color: '#4A4A4A',
+                    fontSize: 12,
+                    fontWeight: '500',
                   },
                 ]}
               >
                 Humidity, UV, AQI, pressure & visibility metrics
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+            <View style={styles.arrowBox}>
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#171717' }}>➔</Text>
+            </View>
           </Pressable>
         </View>
       </ScrollView>
@@ -556,40 +545,79 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 2,
     paddingRight: 20,
-    gap: 10,
+    flexDirection: 'row',
+  },
+  miniCardWrapper: {
+    position: 'relative',
+    marginRight: 10,
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  miniCardUnderlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 10,
   },
   miniHourlyCard: {
     width: 72,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#171717',
   },
   miniHourText: {
     fontSize: 12,
-    fontWeight: '500',
     marginBottom: 2,
   },
   miniTemp: {
     fontSize: 15,
-    fontWeight: '700',
     marginTop: 2,
   },
   detailLinkContainer: {
-    marginTop: 28,
+    position: 'relative',
+    marginTop: 24,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  detailUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
   },
   detailLinkCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
   },
-
   detailTitle: {
     marginBottom: 2,
   },
   detailSubtitle: {},
-  arrowIcon: {
-    fontSize: 16,
-    marginLeft: 8,
+  arrowBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFB21A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
 });

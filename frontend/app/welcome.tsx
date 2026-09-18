@@ -10,16 +10,17 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/design';
-import { AppScreen, PrimaryButton, Character, Text } from '../src/components';
+import { AppScreen, PrimaryButton, SecondaryButton, Character, Text } from '../src/components';
 import { useAuthStore } from '../src/state/useAuthStore';
 import { audioManager } from '../src/services/audio/audioManager';
+import { hapticManager } from '../src/services/haptics/hapticManager';
 
 type AuthMode = 'login' | 'register';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { login, register, isLoading, error: storeError, clearError } = useAuthStore();
+  const { login, register, continueAsGuest, isLoading, error: storeError, clearError } = useAuthStore();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
@@ -29,6 +30,7 @@ export default function WelcomeScreen() {
   const [localError, setLocalError] = useState<string | null>(null);
 
   const switchMode = (newMode: AuthMode) => {
+    hapticManager.selection();
     audioManager.play('selection');
     setMode(newMode);
     setLocalError(null);
@@ -72,6 +74,7 @@ export default function WelcomeScreen() {
 
     setLocalError(null);
     clearError();
+    hapticManager.impact('medium');
     audioManager.play('selection');
 
     try {
@@ -105,329 +108,209 @@ export default function WelcomeScreen() {
           <View style={styles.heroSection}>
             <Character state="happy" size="hero" />
 
-            <Text
-              style={[
-                styles.appName,
-                {
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.display,
-                  fontWeight: theme.typography.weights.heavy,
-                  marginTop: theme.spacing.lg,
-                },
-              ]}
-            >
-              Mausam
-            </Text>
+            <View style={styles.brandTitleRow}>
+              <Text style={styles.brandDot}>●</Text>
+              <Text style={styles.appName}>
+                MAUSAM
+              </Text>
+            </View>
 
-            <Text
-              style={[
-                styles.tagline,
-                {
-                  color: theme.colors.textSecondary,
-                  fontSize: theme.typography.sizes.body,
-                  marginTop: theme.spacing.xs,
-                  lineHeight: theme.typography.lineHeights.body,
-                },
-              ]}
-            >
-              A personalized weather companion crafted for you.
+            <Text style={styles.tagline}>
+              Personalized weather intelligence with companion personality.
             </Text>
           </View>
 
-          {/* Card Container */}
-          <View
-            style={[
-              styles.authCard,
-              {
-                backgroundColor: theme.colors.backgroundCard,
-                borderColor: theme.colors.border,
-                borderRadius: theme.radius.card,
-                padding: theme.spacing.xl,
-                ...theme.shadows.md,
-              },
-            ]}
-          >
-            {/* Mode Switcher Tabs */}
-            <View
-              style={[
-                styles.tabContainer,
-                {
-                  backgroundColor: theme.colors.backgroundCardMuted,
-                  borderRadius: theme.radius.pill,
-                },
-              ]}
-            >
-              <Pressable
-                onPress={() => switchMode('login')}
-                style={[
-                  styles.tabButton,
-                  mode === 'login' && [
-                    styles.tabButtonActive,
-                    {
-                      backgroundColor: theme.colors.primary,
-                      borderRadius: theme.radius.pill,
-                    },
-                  ],
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    {
-                      color:
-                        mode === 'login'
-                          ? theme.colors.textInverse
-                          : theme.colors.textSecondary,
-                      fontWeight:
-                        mode === 'login'
-                          ? theme.typography.weights.bold
-                          : theme.typography.weights.medium,
-                    },
-                  ]}
-                >
-                  Sign In
-                </Text>
-              </Pressable>
+          {/* Retro Window Card Container */}
+          <View style={styles.cardWrapper}>
+            <View style={styles.cardUnderlay} />
 
-              <Pressable
-                onPress={() => switchMode('register')}
-                style={[
-                  styles.tabButton,
-                  mode === 'register' && [
-                    styles.tabButtonActive,
-                    {
-                      backgroundColor: theme.colors.primary,
-                      borderRadius: theme.radius.pill,
-                    },
-                  ],
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    {
-                      color:
-                        mode === 'register'
-                          ? theme.colors.textInverse
-                          : theme.colors.textSecondary,
-                      fontWeight:
-                        mode === 'register'
-                          ? theme.typography.weights.bold
-                          : theme.typography.weights.medium,
-                    },
-                  ]}
-                >
-                  Create Account
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* Error Message */}
-            {activeError ? (
-              <View
-                style={[
-                  styles.errorBanner,
-                  {
-                    backgroundColor: theme.colors.errorLight || '#FEE2E2',
-                    borderRadius: theme.radius.sm,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="alert-circle"
-                  size={16}
-                  color={theme.colors.error || '#DC2626'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={[
-                    styles.errorText,
-                    { color: theme.colors.error || '#DC2626' },
-                  ]}
-                >
-                  {activeError}
-                </Text>
+            <View style={styles.authCard}>
+              {/* Retro Window Header */}
+              <View style={styles.windowHeader}>
+                <View style={styles.windowHeaderLeft}>
+                  <Text style={styles.windowDot}>●</Text>
+                  <Text style={styles.windowTitle}>TERMINAL // ACCESS</Text>
+                </View>
+                <Text style={styles.windowStatus}>ONLINE</Text>
               </View>
-            ) : null}
 
-            {/* Form Fields */}
-            <View style={styles.form}>
-              {mode === 'register' ? (
-                <View style={styles.inputGroup}>
-                  <Text
+              <View style={styles.cardContent}>
+                {/* Mode Switcher Tabs */}
+                <View style={styles.tabContainer}>
+                  <Pressable
+                    onPress={() => switchMode('login')}
                     style={[
-                      styles.inputLabel,
-                      { color: theme.colors.textPrimary },
+                      styles.tabButton,
+                      mode === 'login' ? styles.tabButtonActive : styles.tabButtonInactive,
                     ]}
                   >
-                    Full Name
-                  </Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      {
-                        backgroundColor: theme.colors.background,
-                        borderColor: theme.colors.border,
-                        borderRadius: theme.radius.input,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="person-outline"
-                      size={18}
-                      color={theme.colors.textSecondary}
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
+                    <Text
                       style={[
-                        styles.input,
-                        { color: theme.colors.textPrimary },
+                        styles.tabText,
+                        { fontWeight: mode === 'login' ? '800' : '600' },
                       ]}
-                      placeholder="e.g. Maya Lin"
-                      placeholderTextColor={theme.colors.textMuted}
-                      value={name}
-                      onChangeText={(val) => {
-                        setName(val);
-                        handleInputChange();
+                    >
+                      {mode === 'login' ? 'SIGN IN ●' : 'SIGN IN'}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => switchMode('register')}
+                    style={[
+                      styles.tabButton,
+                      mode === 'register' ? styles.tabButtonActive : styles.tabButtonInactive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        { fontWeight: mode === 'register' ? '800' : '600' },
+                      ]}
+                    >
+                      {mode === 'register' ? 'REGISTER ●' : 'REGISTER'}
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {/* Error Message */}
+                {activeError ? (
+                  <View style={styles.errorBanner}>
+                    <Text style={styles.errorIcon}>⚠</Text>
+                    <Text style={styles.errorText}>
+                      {activeError}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Form Fields */}
+                <View style={styles.form}>
+                  {mode === 'register' ? (
+                    <View style={styles.inputGroup}>
+                      <Text style={styles.inputLabel}>
+                        FULL NAME
+                      </Text>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons
+                          name="person-outline"
+                          size={18}
+                          color="#171717"
+                          style={styles.inputIcon}
+                        />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g. Maya Lin"
+                          placeholderTextColor="#717171"
+                          value={name}
+                          onChangeText={(val) => {
+                            setName(val);
+                            handleInputChange();
+                          }}
+                          autoCapitalize="words"
+                          autoCorrect={false}
+                        />
+                      </View>
+                    </View>
+                  ) : null}
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>
+                      EMAIL ADDRESS
+                    </Text>
+                    <View style={styles.inputWrapper}>
+                      <Ionicons
+                        name="mail-outline"
+                        size={18}
+                        color="#171717"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="you@example.com"
+                        placeholderTextColor="#717171"
+                        value={email}
+                        onChangeText={(val) => {
+                          setEmail(val);
+                          handleInputChange();
+                        }}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>
+                      PASSWORD
+                    </Text>
+                    <View style={styles.inputWrapper}>
+                      <Ionicons
+                        name="lock-closed-outline"
+                        size={18}
+                        color="#171717"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={[styles.input, { flex: 1 }]}
+                        placeholder={mode === 'register' ? 'At least 6 characters' : 'Enter your password'}
+                        placeholderTextColor="#717171"
+                        value={password}
+                        onChangeText={(val) => {
+                          setPassword(val);
+                          handleInputChange();
+                        }}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none"
+                      />
+                      <Pressable
+                        onPress={() => setShowPassword(!showPassword)}
+                        hitSlop={8}
+                        style={styles.passwordToggle}
+                      >
+                        <Ionicons
+                          name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                          size={18}
+                          color="#171717"
+                        />
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  <View style={{ marginTop: 8 }}>
+                    <PrimaryButton
+                      label={mode === 'login' ? 'SIGN IN ➔' : 'CREATE ACCOUNT ➔'}
+                      onPress={handleSubmit}
+                      loading={isLoading}
+                    />
+                  </View>
+
+                  <View style={{ marginTop: 10 }}>
+                    <SecondaryButton
+                      label="EXPLORE AS GUEST ➔"
+                      onPress={async () => {
+                        await continueAsGuest();
+                        router.replace('/(tabs)');
                       }}
-                      autoCapitalize="words"
-                      autoCorrect={false}
                     />
                   </View>
                 </View>
-              ) : null}
 
-              <View style={styles.inputGroup}>
-                <Text
-                  style={[
-                    styles.inputLabel,
-                    { color: theme.colors.textPrimary },
-                  ]}
+                {/* Bottom Mode Switch Link */}
+                <Pressable
+                  onPress={() => switchMode(mode === 'login' ? 'register' : 'login')}
+                  style={styles.switchLink}
                 >
-                  Email Address
-                </Text>
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    {
-                      backgroundColor: theme.colors.background,
-                      borderColor: theme.colors.border,
-                      borderRadius: theme.radius.input,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="mail-outline"
-                    size={18}
-                    color={theme.colors.textSecondary}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { color: theme.colors.textPrimary },
-                    ]}
-                    placeholder="you@example.com"
-                    placeholderTextColor={theme.colors.textMuted}
-                    value={email}
-                    onChangeText={(val) => {
-                      setEmail(val);
-                      handleInputChange();
-                    }}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text
-                  style={[
-                    styles.inputLabel,
-                    { color: theme.colors.textPrimary },
-                  ]}
-                >
-                  Password
-                </Text>
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    {
-                      backgroundColor: theme.colors.background,
-                      borderColor: theme.colors.border,
-                      borderRadius: theme.radius.input,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={18}
-                    color={theme.colors.textSecondary}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { color: theme.colors.textPrimary, flex: 1 },
-                    ]}
-                    placeholder={mode === 'register' ? 'At least 6 characters' : 'Enter your password'}
-                    placeholderTextColor={theme.colors.textMuted}
-                    value={password}
-                    onChangeText={(val) => {
-                      setPassword(val);
-                      handleInputChange();
-                    }}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                  />
-                  <Pressable
-                    onPress={() => setShowPassword(!showPassword)}
-                    hitSlop={8}
-                    style={styles.passwordToggle}
-                  >
-                    <Ionicons
-                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                      size={18}
-                      color={theme.colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-              </View>
-
-              <View style={{ marginTop: theme.spacing.md }}>
-                <PrimaryButton
-                  label={mode === 'login' ? 'Sign In' : 'Create Account'}
-                  onPress={handleSubmit}
-                  loading={isLoading}
-                />
+                  <Text style={styles.switchText}>
+                    {mode === 'login'
+                      ? "Don't have an account? "
+                      : 'Already have an account? '}
+                    <Text style={styles.switchHighlight}>
+                      {mode === 'login' ? 'Register here' : 'Sign in here'}
+                    </Text>
+                  </Text>
+                </Pressable>
               </View>
             </View>
-
-            {/* Bottom Mode Switch Link */}
-            <Pressable
-              onPress={() => switchMode(mode === 'login' ? 'register' : 'login')}
-              style={styles.switchLink}
-            >
-              <Text
-                style={[
-                  styles.switchText,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                {mode === 'login'
-                  ? "Don't have an account? "
-                  : 'Already have an account? '}
-                <Text
-                  style={{
-                    color: theme.colors.primary,
-                    fontWeight: theme.typography.weights.bold,
-                  }}
-                >
-                  {mode === 'login' ? 'Create one' : 'Sign In'}
-                </Text>
-              </Text>
-            </Pressable>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -444,92 +327,188 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 20,
     paddingHorizontal: 16,
   },
   heroSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  brandTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  brandDot: {
+    color: '#FF5533',
+    fontSize: 16,
+    marginRight: 6,
   },
   appName: {
-    letterSpacing: -1,
-    textAlign: 'center',
+    fontSize: 34,
+    fontWeight: '900',
+    color: '#171717',
+    letterSpacing: -0.5,
   },
   tagline: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#4A4A4A',
     textAlign: 'center',
-    maxWidth: 320,
+    maxWidth: 300,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  cardWrapper: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: 400,
+    paddingRight: 5,
+    paddingBottom: 5,
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 5,
+    top: 5,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
   },
   authCard: {
     width: '100%',
-    maxWidth: 420,
-    borderWidth: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: '#171717',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  windowHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F7F4EB',
+    borderBottomWidth: 2,
+    borderBottomColor: '#171717',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  windowHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  windowDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  windowTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
+  },
+  windowStatus: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#7A9E7E',
+    letterSpacing: 0.5,
+  },
+  cardContent: {
+    padding: 20,
   },
   tabContainer: {
     flexDirection: 'row',
-    padding: 4,
-    marginBottom: 20,
+    gap: 8,
+    marginBottom: 18,
   },
   tabButton: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
   },
   tabButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: '#FFB21A',
+  },
+  tabButtonInactive: {
+    backgroundColor: '#FFFDF7',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 12,
+    color: '#171717',
+    letterSpacing: 0.4,
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFEBE6',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginBottom: 16,
+    marginBottom: 14,
+  },
+  errorIcon: {
+    fontSize: 14,
+    marginRight: 6,
   },
   errorText: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#171717',
     flex: 1,
   },
   form: {
-    gap: 14,
+    gap: 12,
   },
   inputGroup: {
-    gap: 6,
+    gap: 4,
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#171717',
+    borderRadius: 8,
     paddingHorizontal: 12,
     height: 48,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 8,
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
+    color: '#171717',
     height: '100%',
   },
   passwordToggle: {
     padding: 4,
   },
   switchLink: {
-    marginTop: 20,
+    marginTop: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   switchText: {
-    fontSize: 13,
+    fontSize: 12,
+    color: '#4A4A4A',
+    fontWeight: '500',
+  },
+  switchHighlight: {
+    color: '#FF5533',
+    fontWeight: '800',
   },
 });

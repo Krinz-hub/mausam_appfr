@@ -17,6 +17,7 @@ import {
   Text,
 } from '../../src/components';
 import { WeatherProvider } from '../../src/services/weather/openMeteoProvider';
+import { DecisionEngine } from '../../src/engine/decision/decisionEngine';
 import { useOnboardingStore } from '../../src/state/useOnboardingStore';
 import { useDecisionStore } from '../../src/state/useDecisionStore';
 import { useLocationStore } from '../../src/state/useLocationStore';
@@ -37,6 +38,11 @@ export default function TipsScreen() {
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [activeDecisionId, setActiveDecisionId] = useState<string>('');
 
+  const fallbackWeather = React.useMemo(
+    () => WeatherProvider.getFallbackData(location.name, location.latitude, location.longitude),
+    [location.name, location.latitude, location.longitude]
+  );
+
   const {
     data: weather,
     isLoading,
@@ -46,14 +52,15 @@ export default function TipsScreen() {
   } = useQuery({
     queryKey: ['weather', location.latitude, location.longitude],
     queryFn: () => WeatherProvider.fetchWeather(location),
+    placeholderData: fallbackWeather,
     enabled: !!location.latitude && !!location.longitude,
   });
 
   React.useEffect(() => {
-    if (weather && persona) {
+    if (weather) {
       computeDecision(weather);
     }
-  }, [weather, persona]);
+  }, [weather, persona, computeDecision]);
 
   const handleFeedback = (decisionId: string, type: 'positive' | 'negative') => {
     if (type === 'positive') {
@@ -68,15 +75,7 @@ export default function TipsScreen() {
     submitFeedback(decisionId, 'negative', reason);
   };
 
-  if (isLoading) {
-    return (
-      <AppScreen scrollable={false}>
-        <LoadingState message="Ranking personalized recommendations for your day..." />
-      </AppScreen>
-    );
-  }
-
-  if (isError || !weather || !experience) {
+  if (isError && !weather) {
     return (
       <AppScreen scrollable={false}>
         <ErrorState onRetry={refetch} />
@@ -84,9 +83,19 @@ export default function TipsScreen() {
     );
   }
 
+  if (!weather) {
+    return (
+      <AppScreen scrollable={false}>
+        <LoadingState message="Ranking personalized recommendations for your day..." />
+      </AppScreen>
+    );
+  }
+
+  const activeExperience = experience || DecisionEngine.decide(weather, persona || useOnboardingStore.getState().personaProfile!, new Date().getHours()).experience;
+
   const allInsights = [
-    { ...experience.primaryInsight, isPrimary: true },
-    ...experience.cards.map((c) => ({ ...c, isPrimary: false, reasonCodes: [] })),
+    { ...activeExperience.primaryInsight, isPrimary: true },
+    ...activeExperience.cards.map((c) => ({ ...c, isPrimary: false, reasonCodes: [] })),
   ];
 
   return (
@@ -103,67 +112,49 @@ export default function TipsScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={{ color: '#FF5533', fontSize: 10, marginRight: 6 }}>●</Text>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: '#717171', letterSpacing: 0.8 }}>
+              ADVISORY MATRIX
+            </Text>
+          </View>
           <Text
             style={[
               styles.title,
               {
-                color: theme.colors.textPrimary,
-                fontSize: theme.typography.sizes.title1,
-                fontWeight: theme.typography.weights.heavy,
+                color: '#171717',
+                fontSize: 30,
+                fontWeight: '800',
               },
             ]}
           >
-            Personal Insights
+            Insights & Tips
           </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+          <Text style={[styles.subtitle, { color: '#4A4A4A', fontWeight: '500' }]}>
             Tailored suggestions ranked by your sensitivity and routine
           </Text>
         </View>
 
         {/* Character Status Banner */}
-        <View
-          style={[
-            styles.bannerCard,
-            {
-              backgroundColor: theme.colors.backgroundSky,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radius.card,
-            },
-          ]}
-        >
-          <Character state="happy" size="md" />
-          <View style={{ flex: 1, marginLeft: 14 }}>
-            <Text
-              style={[
-                styles.bannerTitle,
-                {
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.typography.sizes.headline,
-                  fontWeight: theme.typography.weights.bold,
-                },
-              ]}
-            >
-              Adapting to your feedback
-            </Text>
-            <Text
-              style={[
-                styles.bannerText,
-                {
-                  color: theme.colors.textSecondary,
-                  fontSize: theme.typography.sizes.callout,
-                  marginTop: 2,
-                },
-              ]}
-            >
-              Every thumbs up or down tunes tomorrow’s suggestions.
-            </Text>
+        <View style={styles.bannerWrapper}>
+          <View style={styles.bannerUnderlay} />
+          <View style={styles.bannerCard}>
+            <Character state="happy" size="md" />
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={styles.bannerTitle}>
+                Adapting to your feedback
+              </Text>
+              <Text style={styles.bannerText}>
+                Every thumbs up or down tunes tomorrow’s suggestions.
+              </Text>
+            </View>
           </View>
         </View>
 
         {/* Ranked Insights List */}
         <View style={styles.insightsList}>
           {allInsights.map((insight, index) => {
-            const currentDecisionId = experience.decisionId;
+            const currentDecisionId = activeExperience.decisionId;
             const feedbackStatus = feedbackHistory[currentDecisionId]?.type;
 
             return (
@@ -207,17 +198,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 2,
   },
+  bannerWrapper: {
+    position: 'relative',
+    marginVertical: 12,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  bannerUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
+  },
   bannerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    marginVertical: 12,
+    backgroundColor: '#FFF0D4',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
   },
   bannerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#171717',
     letterSpacing: -0.2,
   },
   bannerText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#4A4A4A',
     lineHeight: 18,
+    marginTop: 2,
   },
   insightsList: {
     marginTop: 8,

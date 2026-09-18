@@ -30,10 +30,14 @@ export class WeatherProvider {
     const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.latitude}&longitude=${coords.longitude}&current=us_aqi,pm2_5,pm10`;
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
+
       const [weatherRes, aqiRes] = await Promise.allSettled([
-        fetch(weatherUrl),
-        fetch(aqiUrl),
+        fetch(weatherUrl, { signal: controller.signal }),
+        fetch(aqiUrl, { signal: controller.signal }),
       ]);
+      clearTimeout(timeoutId);
 
       if (weatherRes.status !== 'fulfilled' || !weatherRes.value.ok) {
         throw new Error('Weather fetch failed');
@@ -56,13 +60,25 @@ export class WeatherProvider {
     }
   }
 
+  private static fallbackCache: Map<string, { data: CanonicalWeatherData; timestamp: number }> = new Map();
+
   public static getFallbackData(
     name: string = 'Bengaluru',
     lat: number = 12.9716,
     lon: number = 77.5946
   ): CanonicalWeatherData {
+    const roundedLat = typeof lat === 'number' ? lat.toFixed(2) : '0';
+    const roundedLon = typeof lon === 'number' ? lon.toFixed(2) : '0';
+    const currentHour = new Date().getHours();
+    const cacheKey = `${name}_${roundedLat}_${roundedLon}_${currentHour}`;
+    const cached = this.fallbackCache.get(cacheKey);
+    const nowMs = Date.now();
+
+    if (cached && nowMs - cached.timestamp < 10 * 60 * 1000) {
+      return cached.data;
+    }
+
     const now = new Date();
-    const currentHour = now.getHours();
 
     const todayStr = now.toISOString().split('T')[0];
     const sunriseStr = `${todayStr}T06:08`;
@@ -107,7 +123,7 @@ export class WeatherProvider {
 
     const currentIsNight = determineIsNight(now, currentHour, sunriseStr, sunsetStr);
 
-    return {
+    const fallbackData: CanonicalWeatherData = {
       locationName: name,
       latitude: lat,
       longitude: lon,
@@ -132,5 +148,8 @@ export class WeatherProvider {
       daily,
       lastUpdated: now.toISOString(),
     };
+
+    this.fallbackCache.set(cacheKey, { data: fallbackData, timestamp: nowMs });
+    return fallbackData;
   }
 }

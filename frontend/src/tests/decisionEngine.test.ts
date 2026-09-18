@@ -89,3 +89,29 @@ test('DecisionEngine - Severe storm overrides standard lifestyle routines', () =
   assert.equal(experience.primaryInsight.type, 'severe_storm');
   assert.equal(experience.characterState, 'thunderstorm');
 });
+
+test('WeatherProvider - getFallbackData returns memoized stable reference', () => {
+  const data1 = WeatherProvider.getFallbackData('Bengaluru', 12.9716, 77.5946);
+  const data2 = WeatherProvider.getFallbackData('Bengaluru', 12.9716, 77.5946);
+
+  // Exact reference equality ensures React Query placeholderData does not cause infinite re-renders
+  assert.equal(data1, data2);
+});
+
+test('useDecisionStore - computeDecision is idempotent and does not update state on identical inputs', async () => {
+  const { useDecisionStore } = await import('../state/useDecisionStore');
+  const weather = WeatherProvider.getFallbackData('Bengaluru', 12.9716, 77.5946);
+
+  // First call
+  useDecisionStore.getState().computeDecision(weather);
+  const decision1 = useDecisionStore.getState().currentDecision;
+  assert.ok(decision1);
+
+  // Repeated call with identical weather snapshot
+  useDecisionStore.getState().computeDecision(weather);
+  const decision2 = useDecisionStore.getState().currentDecision;
+
+  // The decision object must not change reference if weather is unchanged
+  assert.equal(decision1, decision2);
+});
+

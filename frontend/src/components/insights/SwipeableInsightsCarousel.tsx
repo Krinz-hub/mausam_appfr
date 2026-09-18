@@ -75,7 +75,6 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
   const isScrollingRef = useRef<boolean>(false);
   const lastReportedIndexRef = useRef<number>(activeIndex);
 
-  // Measure container width dynamically to ensure pixel-perfect snapping across devices
   const handleLayout = (e: LayoutChangeEvent) => {
     const width = Math.round(e.nativeEvent.layout.width);
     if (width > 0 && width !== containerWidth) {
@@ -83,7 +82,6 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
     }
   };
 
-  // Synchronize ScrollView offset when activeIndex is changed externally (e.g. character tap or bubble swipe)
   useEffect(() => {
     if (containerWidth > 0 && !isScrollingRef.current) {
       if (lastReportedIndexRef.current !== activeIndex) {
@@ -119,61 +117,38 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
     [containerWidth, items.length, onIndexChange]
   );
 
-  const handleNavigate = (targetIndex: number) => {
+  const handleNavigate = (newIndex: number) => {
     if (items.length === 0) return;
-    const nextIndex = (targetIndex + items.length) % items.length;
-    lastReportedIndexRef.current = nextIndex;
+    const boundedIndex = Math.max(0, Math.min(newIndex, items.length - 1));
+    if (boundedIndex === activeIndex) return;
+
     hapticManager.selection();
     audioManager.play('selection');
-    onIndexChange(nextIndex);
+    onIndexChange(boundedIndex);
+
     if (containerWidth > 0) {
       scrollViewRef.current?.scrollTo({
-        x: nextIndex * containerWidth,
+        x: boundedIndex * containerWidth,
         animated: true,
       });
     }
   };
 
-  if (!items || items.length === 0) {
-    return null;
-  }
+  if (!items || items.length === 0) return null;
 
   const safeIndex = Math.max(0, Math.min(activeIndex, items.length - 1));
 
   return (
     <View style={[styles.container, style]} onLayout={handleLayout}>
-      {/* Top Header Row with Section Title, Counter Badge, and Chevron Controls */}
-      <View style={styles.headerRow}>
+      {/* Neo-brutalist carousel utility header */}
+      <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: theme.isNight ? '#F3FAFF' : theme.colors.textPrimary,
-                fontSize: theme.typography.sizes.headline,
-                fontWeight: theme.typography.weights.bold,
-              },
-            ]}
-          >
-            Insights & Suggestions
+          <Text style={styles.headerDot}>●</Text>
+          <Text style={styles.headerTitle}>
+            INTELLIGENCE POOL
           </Text>
-          <View
-            style={[
-              styles.counterBadge,
-              {
-                backgroundColor: theme.isNight ? 'rgba(53, 183, 242, 0.18)' : theme.colors.primaryLight,
-                borderColor: theme.isNight ? 'rgba(53, 183, 242, 0.35)' : 'rgba(0, 0, 0, 0.08)',
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.counterText,
-                {
-                  color: theme.isNight ? '#35B7F2' : theme.colors.primaryDark,
-                },
-              ]}
-            >
+          <View style={styles.counterBadge}>
+            <Text style={styles.counterText}>
               {safeIndex + 1}/{items.length}
             </Text>
           </View>
@@ -183,46 +158,30 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
         <View style={styles.navControls}>
           <Pressable
             onPress={() => handleNavigate(safeIndex - 1)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 6 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
             style={({ pressed }) => [
               styles.navButton,
-              {
-                backgroundColor: theme.isNight ? '#102A3B' : theme.colors.backgroundCard,
-                borderColor: theme.isNight ? 'rgba(255, 255, 255, 0.12)' : theme.colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
+              pressed && styles.navButtonPressed,
             ]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Previous suggestion"
           >
-            <Ionicons
-              name="chevron-back"
-              size={16}
-              color={theme.isNight ? '#F3FAFF' : theme.colors.textPrimary}
-            />
+            <Ionicons name="chevron-back" size={15} color="#171717" />
           </Pressable>
 
           <Pressable
             onPress={() => handleNavigate(safeIndex + 1)}
-            hitSlop={{ top: 10, bottom: 10, left: 6, right: 10 }}
+            hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
             style={({ pressed }) => [
               styles.navButton,
-              {
-                backgroundColor: theme.isNight ? '#102A3B' : theme.colors.backgroundCard,
-                borderColor: theme.isNight ? 'rgba(255, 255, 255, 0.12)' : theme.colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
+              pressed && styles.navButtonPressed,
             ]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Next suggestion"
           >
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={theme.isNight ? '#F3FAFF' : theme.colors.textPrimary}
-            />
+            <Ionicons name="chevron-forward" size={15} color="#171717" />
           </Pressable>
         </View>
       </View>
@@ -247,111 +206,63 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
         >
           {items.map((item, idx) => {
             const isPrimary = item.isPrimary ?? (idx === 0);
-            const cardBg = isPrimary
-              ? (theme.isNight ? '#102A3B' : theme.colors.primaryLight)
-              : (theme.isNight ? '#0E2333' : theme.colors.backgroundCard);
-
-            const iconColor = isPrimary
-              ? (theme.isNight ? '#35B7F2' : theme.colors.primaryDark)
-              : theme.colors.primary;
+            const cardBg = isPrimary ? '#FFF7DE' : '#FFFFFF';
+            const badgeBg = isPrimary ? '#FFB21A' : '#EBF3FF';
 
             return (
               <View
                 key={item.id || idx}
                 style={[styles.slide, { width: containerWidth }]}
               >
-                <View
-                  style={[
-                    styles.card,
-                    {
-                      backgroundColor: cardBg,
-                      borderRadius: theme.radius.cardLarge || 22,
-                      borderColor: theme.isNight ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-                    },
-                  ]}
-                >
-                  {/* Top Meta Row (Badge, Category Icon, Swipe Cue) */}
-                  <View style={styles.cardHeader}>
-                    <View style={styles.badgeRow}>
-                      <View
-                        style={[
-                          styles.iconCircle,
-                          {
-                            backgroundColor: theme.isNight
-                              ? 'rgba(53, 183, 242, 0.15)'
-                              : 'rgba(255, 255, 255, 0.8)',
-                          },
-                        ]}
-                      >
-                        <Ionicons name={getInsightIcon(item.type)} size={17} color={iconColor} />
-                      </View>
-                      <Text
-                        style={[
-                          styles.badgeText,
-                          {
-                            color: iconColor,
-                            fontWeight: theme.typography.weights.semibold,
-                          },
-                        ]}
-                      >
-                        {item.badge || (isPrimary ? 'Priority Intelligence' : 'Contextual Advisory')}
-                      </Text>
-                    </View>
+                <View style={styles.cardWrapper}>
+                  {/* Hard offset shadow underlay */}
+                  <View style={styles.cardUnderlay} />
 
-                    <View style={styles.swipeCue}>
-                      <Ionicons
-                        name="swap-horizontal"
-                        size={14}
-                        color={theme.isNight ? '#7A9CB5' : theme.colors.textMuted}
-                      />
-                      <Text
-                        style={[
-                          styles.swipeCueText,
-                          {
-                            color: theme.isNight ? '#7A9CB5' : theme.colors.textMuted,
-                          },
-                        ]}
-                      >
-                        Swipe
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Title */}
-                  <Text
+                  <View
                     style={[
-                      styles.cardTitle,
-                      {
-                        color: theme.colors.textPrimary,
-                        fontSize: isPrimary
-                          ? theme.typography.sizes.title3
-                          : theme.typography.sizes.headline,
-                        fontWeight: theme.typography.weights.bold,
-                      },
+                      styles.card,
+                      { backgroundColor: cardBg },
                     ]}
                   >
-                    {item.message}
-                  </Text>
+                    {/* Top Meta Row (Badge, Category Icon, Swipe Cue) */}
+                    <View style={styles.cardHeader}>
+                      <View style={styles.badgeRow}>
+                        <View
+                          style={[
+                            styles.iconBox,
+                            { backgroundColor: badgeBg },
+                          ]}
+                        >
+                          <Ionicons
+                            name={getInsightIcon(item.type)}
+                            size={16}
+                            color="#171717"
+                          />
+                        </View>
+                        <Text style={styles.badgeText}>
+                          {item.badge || (isPrimary ? 'Priority Intelligence' : 'Contextual Advisory')}
+                        </Text>
+                      </View>
 
-                  {/* Body / Description */}
-                  {item.tip ? (
-                    <Text
-                      style={[
-                        styles.cardMessage,
-                        {
-                          color: theme.colors.textSecondary,
-                          fontSize: isPrimary
-                            ? theme.typography.sizes.body
-                            : theme.typography.sizes.callout,
-                          lineHeight: isPrimary
-                            ? theme.typography.lineHeights.body
-                            : theme.typography.lineHeights.callout,
-                        },
-                      ]}
-                    >
-                      {item.tip}
+                      <View style={styles.swipeCue}>
+                        <Text style={styles.swipeCueText}>
+                          SWIPE ➔
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Title */}
+                    <Text style={styles.cardTitle}>
+                      {item.message}
                     </Text>
-                  ) : null}
+
+                    {/* Body / Description */}
+                    {item.tip ? (
+                      <Text style={styles.cardMessage}>
+                        {item.tip}
+                      </Text>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             );
@@ -359,7 +270,7 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
         </ScrollView>
       )}
 
-      {/* Bottom Pagination Dots */}
+      {/* Bottom Pagination Dots (Retro Squares) */}
       {items.length > 1 && (
         <View style={styles.paginationRow}>
           {items.map((_, idx) => {
@@ -369,23 +280,15 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
                 key={idx}
                 onPress={() => handleNavigate(idx)}
                 hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
-                style={({ pressed }) => [
-                  styles.dotTouch,
-                  pressed && { opacity: 0.6 },
-                ]}
+                style={styles.dotTouch}
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel={`Go to suggestion ${idx + 1}`}
               >
                 <View
                   style={[
-                    styles.dot,
-                    isActive ? styles.dotActive : styles.dotInactive,
-                    {
-                      backgroundColor: isActive
-                        ? (theme.isNight ? '#35B7F2' : theme.colors.primary)
-                        : (theme.isNight ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.15)'),
-                    },
+                    styles.squareDot,
+                    isActive ? styles.squareDotActive : styles.squareDotInactive,
                   ]}
                 />
               </Pressable>
@@ -400,121 +303,167 @@ export const SwipeableInsightsCarousel: React.FC<SwipeableInsightsCarouselProps>
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginVertical: 10,
+    marginVertical: 6,
   },
-  headerRow: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
     paddingHorizontal: 2,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  sectionTitle: {
-    letterSpacing: -0.2,
+  headerDot: {
+    color: '#FF5533',
+    fontSize: 10,
+    marginRight: 6,
+  },
+  headerTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.8,
   },
   counterBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    borderWidth: 1,
+    backgroundColor: '#FFF0D4',
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    marginLeft: 8,
   },
   counterText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#171717',
   },
   navControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   navButton: {
     width: 28,
     height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
-    ...Platform.select({
-      web: { cursor: 'pointer' } as any,
-      default: {},
-    }),
+    alignItems: 'center',
+    marginLeft: 6,
+  },
+  navButtonPressed: {
+    transform: [{ translateX: 1 }, { translateY: 1 }],
   },
   scrollContent: {
-    alignItems: 'stretch',
+    alignItems: 'center',
   },
   slide: {
-    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  cardWrapper: {
+    position: 'relative',
+    marginVertical: 4,
+    paddingRight: 4,
+    paddingBottom: 4,
+    width: '100%',
+  },
+  cardUnderlay: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 12,
   },
   card: {
-    padding: 20,
-    borderWidth: 1,
-    minHeight: 120,
-    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#171717',
+    borderRadius: 12,
+    padding: 16,
+    minHeight: 115,
   },
   cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    flex: 1,
   },
-  iconCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
+  iconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#171717',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   badgeText: {
-    fontSize: 12,
-    letterSpacing: 0.1,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#171717',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   swipeCue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    opacity: 0.85,
+    backgroundColor: '#F7F4EB',
+    borderWidth: 1,
+    borderColor: '#171717',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   swipeCueText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#717171',
+    letterSpacing: 0.5,
   },
   cardTitle: {
-    letterSpacing: -0.2,
-    marginBottom: 6,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#171717',
+    lineHeight: 22,
+    marginBottom: 4,
   },
   cardMessage: {
-    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#4A4A4A',
+    lineHeight: 18,
   },
   paginationRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    marginTop: 10,
+    alignItems: 'center',
+    marginTop: 8,
   },
   dotTouch: {
-    paddingVertical: 4,
-    paddingHorizontal: 2,
+    padding: 4,
   },
-  dot: {
-    height: 6,
-    borderRadius: 3,
+  squareDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    marginHorizontal: 3,
   },
-  dotInactive: {
-    width: 6,
+  squareDotActive: {
+    backgroundColor: '#FF5533',
   },
-  dotActive: {
-    width: 18,
+  squareDotInactive: {
+    backgroundColor: '#FFFFFF',
   },
 });

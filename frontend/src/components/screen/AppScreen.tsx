@@ -9,7 +9,6 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../design';
 
 export interface AppScreenProps {
@@ -29,13 +28,10 @@ export const AppScreen: React.FC<AppScreenProps> = ({
   style,
   contentContainerStyle,
   backgroundColor,
-  useAtmosphereGradient = true,
-  gradientColors,
   edges = ['top', 'left', 'right'],
 }) => {
   const theme = useTheme();
   const bg = backgroundColor || theme.colors.background;
-  const gradient = theme.dayCycle?.gradient;
 
   const content = scrollable ? (
     <ScrollView
@@ -70,17 +66,9 @@ export const AppScreen: React.FC<AppScreenProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
       <StatusBar
-        barStyle={theme.dayCycle.statusBarStyle}
-        backgroundColor={Platform.OS === 'android' ? 'transparent' : undefined}
-        translucent={Platform.OS === 'android'}
+        barStyle={theme.isNight ? 'light-content' : 'dark-content'}
+        backgroundColor={Platform.OS === 'android' ? bg : undefined}
       />
-      {useAtmosphereGradient && (gradientColors || gradient) ? (
-        <LinearGradient
-          colors={gradientColors || [gradient!.top, gradient!.bottom]}
-          style={StyleSheet.absoluteFill}
-        />
-      ) : null}
-
       <SafeAreaView edges={edges} style={[styles.safeArea, style]}>
         {content}
       </SafeAreaView>
@@ -106,4 +94,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

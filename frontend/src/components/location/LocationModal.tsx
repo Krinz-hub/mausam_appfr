@@ -381,20 +381,28 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheetContainer: {
-    maxHeight: '85%',
-    borderTopWidth: 1,
-    paddingTop: 16,
     paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingTop: 16,
+    maxHeight: '85%',
+    backgroundColor: '#FFFDF7',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderColor: '#171717',
   },
   sheetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: '#171717',
+    marginBottom: 12,
   },
   sheetTitle: {
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   sheetSubtitle: {
     fontSize: 12,
@@ -403,7 +411,10 @@ const styles = StyleSheet.create({
   closeButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -412,12 +423,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   detectActionsRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   detectButton: {
     flex: 1.2,
@@ -426,6 +437,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FF5533',
   },
   detectButtonIcon: {
     fontSize: 16,
@@ -441,7 +456,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderWidth: 1,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
   },
   detectButtonTextSecondary: {
     fontSize: 13,
@@ -451,7 +469,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderWidth: 1,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
     marginBottom: 16,
   },
   searchIcon: {
@@ -461,6 +482,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     padding: 0,
+    color: '#171717',
   },
   clearSearch: {
     fontSize: 14,
@@ -468,7 +490,8 @@ const styles = StyleSheet.create({
   },
   sectionHeading: {
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    fontWeight: '800',
     marginBottom: 10,
   },
   resultsList: {
@@ -477,8 +500,9 @@ const styles = StyleSheet.create({
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
+    paddingVertical: 12,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#171717',
   },
   resultPin: {
     fontSize: 16,
@@ -486,10 +510,13 @@ const styles = StyleSheet.create({
   },
   resultName: {
     fontSize: 14,
+    fontWeight: '700',
+    color: '#171717',
   },
   resultRegion: {
     fontSize: 12,
     marginTop: 1,
+    color: '#717171',
   },
   popularSection: {
     marginTop: 6,
@@ -502,9 +529,14 @@ const styles = StyleSheet.create({
   hubChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderWidth: 1,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    backgroundColor: '#FFFFFF',
   },
   hubText: {
     fontSize: 12,
+    fontWeight: '700',
+    color: '#171717',
   },
 });

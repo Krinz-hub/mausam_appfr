@@ -49,51 +49,45 @@ export const ForecastMetricSelector: React.FC<ForecastMetricSelectorProps> = ({
         {METRIC_TABS.map((tab) => {
           const isSelected = selectedFactor === tab.id;
           return (
-            <Pressable
-              key={tab.id}
-              onPress={() => handlePress(tab.id)}
-              accessible={true}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${tab.label} metric`}
-              style={({ pressed }) => [
-                styles.tabPill,
-                {
-                  backgroundColor: isSelected
-                    ? (theme.isNight ? theme.colors.cardSelectedBg : theme.colors.surfaceBlue)
-                    : theme.colors.backgroundCard,
-                  borderColor: isSelected ? theme.colors.primary : 'transparent',
-                  borderWidth: isSelected ? 2 : 0,
-                  shadowColor: isSelected ? theme.colors.primary : '#0F172A',
-                  shadowOpacity: isSelected ? 0.15 : 0.04,
-                  shadowRadius: isSelected ? 8 : 6,
-                  elevation: isSelected ? 4 : 2,
-                  opacity: pressed ? 0.85 : 1,
-                  transform: [{ scale: pressed ? 0.96 : 1 }],
-                },
-              ]}
-            >
-              <Ionicons
-                name={tab.icon}
-                size={16}
-                color={isSelected ? theme.colors.primary : theme.colors.textSecondary}
-                style={styles.tabIcon}
-              />
-              <Text
-                style={[
-                  styles.tabLabel,
+            <View key={tab.id} style={styles.tabWrapper}>
+              {/* Hard shadow underlay */}
+              <View style={styles.tabUnderlay} />
+
+              <Pressable
+                onPress={() => handlePress(tab.id)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${tab.label} metric`}
+                style={({ pressed }) => [
+                  styles.tabButton,
                   {
-                    color: isSelected ? theme.colors.primary : theme.colors.textSecondary,
-                    fontSize: theme.typography.sizes.subhead,
-                    fontWeight: isSelected
-                      ? theme.typography.weights.bold
-                      : theme.typography.weights.medium,
+                    backgroundColor: isSelected ? '#FFB21A' : '#FFFFFF',
+                    borderWidth: isSelected ? 2.5 : 2,
                   },
+                  (pressed || isSelected) && styles.tabButtonPressed,
                 ]}
               >
-                {tab.label}
-              </Text>
-            </Pressable>
+                <Ionicons
+                  name={tab.icon}
+                  size={16}
+                  color="#171717"
+                  style={styles.tabIcon}
+                />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: '#171717',
+                      fontWeight: isSelected ? '800' : '600',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+                {isSelected && <Text style={styles.activeDot}>●</Text>}
+              </Pressable>
+            </View>
           );
         })}
       </ScrollView>
@@ -106,24 +100,47 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   scrollContent: {
-    paddingVertical: 2,
+    paddingVertical: 4,
     paddingRight: 16,
     flexDirection: 'row',
-    gap: 10,
   },
-  tabPill: {
+  tabWrapper: {
+    position: 'relative',
+    marginRight: 10,
+    paddingRight: 3,
+    paddingBottom: 3,
+  },
+  tabUnderlay: {
+    position: 'absolute',
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#171717',
+    borderRadius: 8,
+  },
+  tabButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    shadowOffset: { width: 0, height: 2 },
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderColor: '#171717',
+    minHeight: 40,
+  },
+  tabButtonPressed: {
+    transform: [{ translateX: 1.5 }, { translateY: 1.5 }],
   },
   tabIcon: {
     marginRight: 6,
   },
   tabLabel: {
     fontSize: 13,
+    letterSpacing: 0.2,
+  },
+  activeDot: {
+    marginLeft: 6,
+    color: '#FF5533',
+    fontSize: 9,
   },
 });
